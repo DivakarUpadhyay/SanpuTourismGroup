@@ -191,7 +191,7 @@ export function ToursPage() {
       { name: "destinationId", label: "Destination", type: "select", options: (lk.data?.destinations ?? []).map((d) => ({ value: d.id, label: d.name })), placeholder: "Choose" },
       { name: "businessUnitId", label: "Business unit", type: "select", options: (lk.data?.businessUnits ?? []).map((d) => ({ value: d.id, label: d.name })), placeholder: "Choose" },
       { name: "days", label: "Days", type: "number" }, { name: "basePrice", label: "Base price (TWD)", type: "number" },
-      { name: "imageUrl", label: "Image path (optional)", hint: "e.g. /images/photos/hualien.jpg; empty = destination image", placeholder: "/images/destinations/…" },
+      { name: "imageUrl", label: "Tour photo", type: "image", hint: "Leave empty to use the destination photo." },
       { name: "summary", label: "Summary", type: "textarea" }, { name: "isPublished", label: "Published", type: "checkbox" }]}
     toForm={(t) => t ? { ...t, imageUrl: t.imageUrl ?? "" } : { code: "", title: "", slogan: "", destinationId: "", businessUnitId: "", days: 2, basePrice: 5000, imageUrl: "", summary: "", isPublished: false }}
     save={(f, t) => { const body = { ...f, destinationId: Number(f.destinationId), businessUnitId: Number(f.businessUnitId) }; return t ? put(`/ops/tours/${t.tourId}`, body) : post("/ops/tours", body); }} />;

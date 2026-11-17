@@ -20,6 +20,9 @@ if (paymentOptions.Provider.Equals("ECPay", StringComparison.OrdinalIgnoreCase) 
 else
     builder.Services.AddSingleton<IPaymentGateway, SimulatedPaymentGateway>();
 builder.Services.AddScoped<PaymentService>();
+// uploaded images: a local folder outside the web root (Media:Root), served by MediaController
+builder.Services.AddSingleton<IMediaStore>(new LocalMediaStore(builder.Configuration["Media:Root"] ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "..", "storage", "media")));
+builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<CustomerBookingService>();
 builder.Services.AddScoped<BookingOpsService>();
 builder.Services.AddScoped<ApprovalService>();

@@ -76,7 +76,7 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
   if (STANDALONE) {   // no API server: answer from the bundled snapshot
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(opts.query ?? {})) if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
-    return standaloneApi<T>(opts.method ?? (opts.body !== undefined || opts.form ? "POST" : "GET"), path, qs, opts.body);
+    return standaloneApi<T>(opts.method ?? (opts.body !== undefined || opts.form ? "POST" : "GET"), path, qs, opts.form ?? opts.body);
   }
   // After a reload, pages can ask for data before the session is restored (child effects run before the provider's).
   // Wait for the shared refresh instead of sending a request that is sure to get 401.

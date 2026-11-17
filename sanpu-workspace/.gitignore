@@ -33,3 +33,5 @@ artifacts/newman/
 *.err
 .vercel-projects.local.json
 .vercel/
+
+storage/

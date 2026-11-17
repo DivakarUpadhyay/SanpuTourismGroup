@@ -29,7 +29,7 @@ export function PromotionsAdminPage() {
       fields={[
         { name: "title", label: "Title" }, { name: "subtitle", label: "Subtitle", type: "textarea" },
         { name: "placement", label: "Placement", type: "select", options: ["HomeStrip", "HomeHero", "Deals", "Checkout"].map((v) => ({ value: v, label: v })) },
-        { name: "badge", label: "Badge (short label)" }, { name: "imageUrl", label: "Image path", placeholder: "/images/photos/kinmen.jpg" },
+        { name: "badge", label: "Badge (short label)" }, { name: "imageUrl", label: "Banner image", type: "image" },
         { name: "ctaText", label: "Button text" }, { name: "ctaUrl", label: "Button link", placeholder: "/hotels" }, { name: "couponCode", label: "Coupon code (optional)" },
         { name: "startsAtUtc", label: "Starts", type: "date" }, { name: "endsAtUtc", label: "Ends", type: "date" }, { name: "priority", label: "Priority (0–100)", type: "number" },
         { name: "isActive", label: "Active", type: "checkbox" }]}
@@ -143,7 +143,7 @@ export function ServicesAdminPage() {
           { name: "departTime", label: "Departure time (HH:mm)" }, { name: "durationMin", label: "Duration (minutes)", type: "number" },
           { name: "capacity", label: "Default capacity per date", type: "number" }, { name: "maxPerBooking", label: "Max units per booking", type: "number" }, { name: "peoplePerUnit", label: "People per unit", type: "number" },
           { name: "basePrice", label: "Base price (TWD)", type: "number" }, { name: "rating", label: "Rating (1–5)", type: "number" }, { name: "features", label: "Features (comma separated)", type: "textarea" },
-          { name: "cancellationPolicy", label: "Cancellation policy" }, { name: "imageUrl", label: "Image path" }, { name: "isActive", label: "Active", type: "checkbox" }]}
+          { name: "cancellationPolicy", label: "Cancellation policy" }, { name: "imageUrl", label: "Photo", type: "image" }, { name: "isActive", label: "Active", type: "checkbox" }]}
         toForm={(s) => s ? { ...s, departTime: s.departTime?.slice(0, 5) ?? "", toPlaceId: s.toPlaceId ?? "", rating: s.rating ?? "", durationMin: s.durationMin ?? "" }
           : { code: "", kind: kind || "Hotel", name: "", fromPlaceId: "", toPlaceId: "", departTime: "", durationMin: "", capacity: 10, maxPerBooking: 4, peoplePerUnit: 2, basePrice: 3000, rating: "", features: "", cancellationPolicy: "Free cancellation until 24 hours before the start.", imageUrl: "/images/photos/taipei.jpg", isActive: true }}
         save={(f, row) => post("/ops/services", { ...f, serviceId: row?.serviceId ?? null, fromPlaceId: num(f.fromPlaceId), toPlaceId: num(f.toPlaceId), durationMin: num(f.durationMin),

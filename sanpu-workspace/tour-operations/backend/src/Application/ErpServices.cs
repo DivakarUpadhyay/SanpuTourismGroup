@@ -222,7 +222,7 @@ public sealed class OpsService(IErpRepository repo, ICurrentUser current)
             .Check(r.Days is >= 1 and <= 30, "days", "Use 1 to 30 days.")
             .Check(r.BasePrice > 0 && decimal.Round(r.BasePrice, 2) == r.BasePrice, "basePrice", "Enter a positive price.")
             .Check((r.Summary?.Length ?? 0) <= 2000, "summary", "Use at most 2000 characters.")
-            .Check(string.IsNullOrWhiteSpace(r.ImageUrl) || Regex.IsMatch(r.ImageUrl, @"^/images/[a-z0-9/_\-]+\.(svg|png|jpg|jpeg|webp)$"), "imageUrl", "Use a site image path like /images/destinations/hualien.svg (leave empty to use the destination image).")
+            .Check(string.IsNullOrWhiteSpace(r.ImageUrl) || CustomerRules.IsImagePath(r.ImageUrl), "imageUrl", "Upload a photo or choose one from the library (leave empty to use the destination image).")
             .ThrowIfAny();
         return repo.UpsertTourAsync(id, r, current.RequireUserId(), current.CorrelationId, ct);
     }

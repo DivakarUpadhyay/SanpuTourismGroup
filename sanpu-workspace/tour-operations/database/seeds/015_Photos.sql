@@ -12,5 +12,5 @@ UPDATE dbo.AppSettings SET SettingValue = '/images/photos/sunmoon.jpg' WHERE Set
 PRINT '015_Photos applied';
 
 INSERT dbo.AppSettings(SettingKey, SettingValue, ValueType, Category, Description, ValidationJson, IsPublic, IsEditable)
-SELECT 'Ui.HeroImage', N'/images/photos/hualien.jpg', 'String', 'Content', N'Home page hero photo (site image path)', N'{"maxLength":300}', 1, 1
+SELECT 'Ui.HeroImage', N'/images/photos/hualien.jpg', 'String', 'Content', N'Home page hero photo', N'{"maxLength":300}', 1, 1
 WHERE NOT EXISTS (SELECT 1 FROM dbo.AppSettings WHERE SettingKey = 'Ui.HeroImage');

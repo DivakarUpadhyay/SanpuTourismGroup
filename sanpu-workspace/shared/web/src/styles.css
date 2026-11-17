@@ -283,3 +283,20 @@ details summary { cursor: pointer; color: var(--accent); }
   .avatar { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, .sidebar, .toast, .modal { animation: none !important; transition: none !important; } }
+
+/* image picker (admin forms) */
+.img-pick { grid-column: 1 / -1; }
+.img-pick .label { font-size: 13px; font-weight: 500; }
+.ip-box { display: flex; gap: 16px; align-items: center; padding: 12px; border: 1.5px dashed var(--stroke-strong); border-radius: 12px; background: var(--card); transition: border-color .15s, background .15s; }
+.ip-box.drag { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+.ip-preview { position: relative; width: 168px; aspect-ratio: 16 / 10; flex: none; border-radius: 8px; background: var(--subtle, #eef2f6) center / cover no-repeat; display: grid; place-items: center; color: var(--muted); font-size: 12px; overflow: hidden; }
+.ip-preview > span { display: grid; justify-items: center; gap: 4px; }
+.ip-busy { position: absolute; inset: 0; place-content: center; background: rgba(15, 23, 42, .55); color: #fff; font-weight: 600; }
+.ip-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.ip-actions small { flex-basis: 100%; color: var(--muted); font-size: 12px; }
+.ip-lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; margin-top: 8px; max-height: 236px; overflow: auto; padding: 4px; }
+.ip-lib button { display: grid; gap: 4px; padding: 4px; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; font: inherit; text-align: left; }
+.ip-lib button.on, .ip-lib button:hover { border-color: var(--accent); }
+.ip-lib button > span { aspect-ratio: 4 / 3; border-radius: 6px; background: center / cover no-repeat; }
+.ip-lib small { font-size: 11px; color: var(--muted); text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 560px) { .ip-box { flex-direction: column; align-items: stretch; } .ip-preview { width: 100%; } }

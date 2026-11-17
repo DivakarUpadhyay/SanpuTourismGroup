@@ -54,6 +54,8 @@ function lookup(s: Snapshot, account: string, path: string, qs: URLSearchParams)
     const loose = Object.keys(pool).find((k) => k.split("?")[0] === path && [...noDates.entries()].every(([a, b]) => new URLSearchParams(k.split("?")[1] ?? "").get(a) === b));
     if (loose) return pool[loose];
   }
+  // a filter combination that was never recorded: show the same list unfiltered rather than an error
+  for (const pool of pools) { const any = Object.keys(pool).find((k) => k.split("?")[0] === path); if (any) return pool[any]; }
   return undefined;
 }
 
@@ -64,8 +66,9 @@ export async function standaloneApi<T>(method: string, path: string, qs: URLSear
   const s = await load();
   const account = standaloneAccount() ?? "anon";
   const days = offsetDays(s);
-  const b = (body ?? {}) as Record<string, unknown>;
+  const b = (body instanceof FormData ? {} : body ?? {}) as Record<string, unknown>;
   if (method === "GET") {
+    if (path === "/ops/media") return [] as T;
     if (path === "/auth/me" && account === "anon") throw new ApiError(401, "unauthorized", "Please sign in.");
     const hit = lookup(s, account, path, qs);
     if (hit === undefined) throw new ApiError(404, "not_found", "This page has no saved content in the online version.");
@@ -89,6 +92,11 @@ export async function standaloneApi<T>(method: string, path: string, qs: URLSear
     if (amount < c.minAmount) throw new ApiError(422, "coupon_min_amount", "Your total is below the minimum for this coupon.");
     const d = Math.min(amount, c.discountType === "Percent" ? Math.min(Math.round(amount * c.discountValue / 100), c.maxDiscount ?? Infinity) : c.discountValue);
     return { code: c.code, description: c.description, discountAmount: d, totalAfter: amount - d } as T;
+  }
+  if (path === "/ops/media" && body instanceof FormData) {   // keep the picture in this browser so the form can show it
+    const file = body.get("file") as File;
+    const url = await new Promise<string>((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = no; r.readAsDataURL(file); });
+    return { url, fileName: file.name, duplicate: false } as T;
   }
   if (path === "/contact") return { contactRef: `CR-${String(Math.floor(Math.random() * 900000) + 100000)}`, createdAtUtc: new Date().toISOString() } as T;
   if (path === "/public/newsletter") return { message: "Thanks for subscribing. Watch your inbox for travel ideas and member deals." } as T;

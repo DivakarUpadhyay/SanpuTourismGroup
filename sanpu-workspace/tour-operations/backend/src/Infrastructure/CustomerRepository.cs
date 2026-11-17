@@ -11,6 +11,11 @@ public sealed class CustomerRepository(Db db) : ICustomerRepository
 {
     private static IReadOnlyList<T> L<T>(IEnumerable<T> x) => x.AsList();
 
+    // ---------- media ----------
+    public async Task<MediaInsertRow> InsertMediaAsync(string fileName, string originalName, string contentType, int sizeBytes, string sha256, Guid uploadedBy, string correlationId, CancellationToken ct) =>
+        (await db.QuerySingleAsync<MediaInsertRow>("dbo.usp_Media_Insert", new { FileName = fileName, OriginalName = originalName, ContentType = contentType, SizeBytes = sizeBytes, Sha256 = sha256, UploadedBy = uploadedBy, CorrelationId = correlationId }, ct))!;
+    public Task<IReadOnlyList<MediaRow>> ListMediaAsync(CancellationToken ct) => db.QueryAsync<MediaRow>("dbo.usp_Media_List", new { Max = 60 }, ct);
+
     // ---------- help & contact ----------
     public Task<IReadOnlyList<HelpArticleRow>> HelpAsync(string? search, CancellationToken ct) => db.QueryAsync<HelpArticleRow>("dbo.usp_Help_List", new { Search = search }, ct);
     public Task HelpFeedbackAsync(int articleId, bool helpful, CancellationToken ct) => db.ExecuteAsync("dbo.usp_Help_Feedback", new { ArticleId = articleId, Helpful = helpful }, ct);

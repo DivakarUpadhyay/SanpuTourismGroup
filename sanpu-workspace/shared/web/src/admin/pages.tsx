@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ImagePicker } from "../image-picker";
 import { get, post, put, del } from "../api";
 import { useAuth, type MenuNode } from "../auth";
 import {
@@ -424,6 +425,8 @@ function SettingModal({ setting, onClose, onSaved }: { setting: Setting | null; 
         {!setting && <TextInput label="Category" value={f.category} onChange={(v) => setF({ ...f, category: v })} error={a.fieldError("category")} />}
         {f.valueType === "Bool"
           ? <SelectInput label="Value" value={f.value} onChange={(v) => setF({ ...f, value: v })} options={[{ value: "true", label: "true" }, { value: "false", label: "false" }]} error={a.fieldError("value")} testId="setting-value" />
+          : /Image$/.test(f.key) && f.valueType === "String"
+            ? <ImagePicker label="Image" value={f.value} onChange={(v) => setF({ ...f, value: v })} error={a.fieldError("value")} hint={setting?.description} testId="setting-value" />
           : f.valueType === "Json"
             ? <TextArea label="Value (JSON)" value={f.value} onChange={(v) => setF({ ...f, value: v })} error={a.fieldError("value")} hint={hint} data-testid="setting-value" />
             : <TextInput label={f.valueType === "SecretRef" ? "Environment variable name" : "Value"} value={f.value} onChange={(v) => setF({ ...f, value: v })} error={a.fieldError("value")} hint={hint || setting?.description} data-testid="setting-value" />}

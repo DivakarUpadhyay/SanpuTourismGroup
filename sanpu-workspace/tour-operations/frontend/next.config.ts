@@ -25,6 +25,8 @@ const config: NextConfig = {
   poweredByHeader: false,
   // The browser only talks to this origin; Next proxies /api to the ASP.NET Core API (cookies stay first-party).
   async rewrites() {
+    // the online (standalone) build has no API server: nothing is forwarded
+    if (process.env.NEXT_PUBLIC_STANDALONE === "1") return [];
     return [{ source: "/api/:path*", destination: `${api}/api/:path*` }];
   },
   async headers() {

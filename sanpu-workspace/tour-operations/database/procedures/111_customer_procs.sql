@@ -585,3 +585,24 @@ BEGIN
                   ELSE 2 END, s.Rating DESC, s.BasePrice;
 END;
 GO
+/* ================= MEDIA ================= */
+/* Records an uploaded image; the same bytes uploaded again return the existing file (no duplicates). */
+CREATE OR ALTER PROCEDURE dbo.usp_Media_Insert
+    @FileName varchar(60), @OriginalName nvarchar(200), @ContentType varchar(20), @SizeBytes int, @Sha256 char(64), @UploadedBy uniqueidentifier, @CorrelationId varchar(64) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    DECLARE @Existing varchar(60) = (SELECT TOP 1 FileName FROM dbo.MediaFiles WHERE Sha256 = @Sha256 AND ContentType = @ContentType);
+    IF @Existing IS NOT NULL BEGIN SELECT @Existing AS FileName, CAST(1 AS bit) AS Duplicate; RETURN; END
+    INSERT dbo.MediaFiles(FileName, OriginalName, ContentType, SizeBytes, Sha256, UploadedBy) VALUES (@FileName, @OriginalName, @ContentType, @SizeBytes, @Sha256, @UploadedBy);
+    EXEC dbo.usp_Audit_Write @UploadedBy, 'Media.Uploaded', 'Media', @FileName, NULL, @CorrelationId, NULL;
+    SELECT @FileName AS FileName, CAST(0 AS bit) AS Duplicate;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.usp_Media_List @Max int = 60 AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT TOP (@Max) m.FileName, m.OriginalName, m.ContentType, m.SizeBytes, m.CreatedAtUtc, u.DisplayName AS UploadedByName
+    FROM dbo.MediaFiles m JOIN dbo.Users u ON u.UserId = m.UploadedBy ORDER BY m.CreatedAtUtc DESC;
+END;
+GO

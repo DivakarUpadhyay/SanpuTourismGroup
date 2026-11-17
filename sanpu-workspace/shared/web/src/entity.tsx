@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { ImagePicker } from "./image-picker";
 import { Async, Checkbox, DataTable, FormError, Modal, PageHeader, SelectInput, TextArea, TextInput, useAction, useAsync, type Column } from "./ui";
 
 export interface FieldDef {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "select" | "checkbox" | "date" | "multicheck";
+  type?: "text" | "number" | "textarea" | "select" | "checkbox" | "date" | "multicheck" | "image";
   options?: { value: string | number; label: string }[];
   hint?: string;
   lockedOnEdit?: boolean;
@@ -64,6 +65,7 @@ export function FieldControl({ def, value, onChange, error, locked }: { def: Fie
   if (t === "checkbox") return <div className="field"><Checkbox label={def.label} checked={!!value} onChange={onChange} testId={`f-${def.name}`} />{error && <div className="error">{error}</div>}</div>;
   if (t === "select") return <SelectInput label={def.label} value={String(value ?? "")} onChange={onChange} options={def.options ?? []} error={error} hint={def.hint} placeholder={def.placeholder} testId={`f-${def.name}`} disabled={locked} />;
   if (t === "textarea") return <TextArea label={def.label} value={String(value ?? "")} onChange={onChange} error={error} hint={def.hint} data-testid={`f-${def.name}`} />;
+  if (t === "image") return <ImagePicker label={def.label} value={String(value ?? "")} onChange={onChange} hint={def.hint} error={error} testId={`f-${def.name}`} />;
   if (t === "multicheck") {
     const list = (value as string[]) ?? [];
     return (

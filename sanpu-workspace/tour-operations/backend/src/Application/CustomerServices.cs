@@ -14,7 +14,7 @@ public static class CustomerRules
     public static readonly string[] CouponKinds = ["Tour", "Hotel", "Flight", "Bus", "Taxi"];
     public static readonly string[] CouponAppliesTo = ["All", "Tour", "Hotel", "Flight", "Bus", "Taxi"];
     public static bool IsSitePath(string? v) => string.IsNullOrWhiteSpace(v) || (v.StartsWith('/') && !v.StartsWith("//") && v.Length <= 300);
-    public static bool IsImagePath(string? v) => string.IsNullOrWhiteSpace(v) || Regex.IsMatch(v, @"^/images/[a-z0-9/_\-]+\.(svg|png|jpg|jpeg|webp)$");
+    public static bool IsImagePath(string? v) => string.IsNullOrWhiteSpace(v) || Regex.IsMatch(v, @"^/images/[a-z0-9/_\-]+\.(svg|png|jpg|jpeg|webp)$") || Regex.IsMatch(v, @"^/api/v1/media/[a-f0-9]{32}\.(jpg|png|webp)$");
     public static bool IsCouponCode(string? v) => !string.IsNullOrWhiteSpace(v) && Regex.IsMatch(v.Trim(), "^[A-Za-z0-9-]{3,30}$");
 }
 
