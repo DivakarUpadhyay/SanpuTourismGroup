@@ -82,7 +82,7 @@ export function AiHome() {
                   <span className="slogan">{t.pace} pace<Demo show={t.isDemo} /></span>
                   <h3><Link href={planHref}>{t.name}</Link></h3>
                   <p>{t.description}</p>
-                  <div className="foot"><span className="facts"><span><Icon name="shield" size={14} />Accessibility checked</span></span><span className="go">Plan this trip →</span></div>
+                  <div className="foot"><span className="facts"><span><Icon name="shield" size={14} />Accessibility checked</span></span><Link className="go-btn" href={planHref} aria-label={`Plan this trip: ${t.name}`}>Plan this trip<Icon name="arrow" size={15} /></Link></div>
                 </div>
               </article>
             ))}

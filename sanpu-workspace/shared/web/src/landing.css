@@ -564,3 +564,11 @@ ul.sum li.total b { color: var(--accent); font-size: 20px; }
 /* brand mark is an SVG now */
 svg.brand-mark { background: none; box-shadow: none; border-radius: 0; flex: none; display: block; filter: drop-shadow(0 2px 6px rgba(11, 31, 58, .18)); }
 .auth-brand { width: 64px; height: 64px; border-radius: 18px; }
+
+/* card call-to-action: a real link above the whole-card link, with hover motion */
+.lp-card .go-btn { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13.5px; white-space: nowrap; transition: background .2s, color .2s, gap .2s, box-shadow .2s; }
+.lp-card .go-btn svg { transition: transform .2s; }
+.lp-card:hover .go-btn, .lp-card .go-btn:hover, .lp-card .go-btn:focus-visible { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(11, 92, 173, .28); }
+.lp-card:hover .go-btn svg, .lp-card .go-btn:hover svg { transform: translateX(3px); }
+.lp-card { cursor: pointer; }

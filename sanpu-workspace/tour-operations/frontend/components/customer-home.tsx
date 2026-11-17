@@ -30,7 +30,7 @@ export function TourTile({ t }: { t: TourCard }) {
         </div>
         <div className="foot">
           <span className="price"><small>From</small><b>{t.fromPrice != null ? money(t.fromPrice, t.currency) : "—"}</b></span>
-          <span className="go">View tour →</span>
+          <Link className="go-btn" href={`/tours/${t.code}`} aria-label={`View tour: ${t.title}`} data-testid={`view-${t.code}`}>View tour<Icon name="arrow" size={15} /></Link>
         </div>
       </div>
     </article>

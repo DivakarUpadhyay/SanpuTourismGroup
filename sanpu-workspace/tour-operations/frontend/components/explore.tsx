@@ -27,7 +27,7 @@ export function RecommendationCards({ list }: { list: Recommendation[] }) {
             <span className="slogan">{r.slogan}</span>
             <h3><Link href={`/tours/${r.code}`}>{r.title}</Link></h3>
             <p>{r.summary}</p>
-            <div className="foot"><span className="price"><small>From</small><b>{money(r.fromPrice, r.currency)}</b></span><span className="go">Next {fmtDate(r.nextDeparture)} →</span></div>
+            <div className="foot"><span className="price"><small>From · next {fmtDate(r.nextDeparture)}</small><b>{money(r.fromPrice, r.currency)}</b></span><Link className="go-btn" href={`/tours/${r.code}`} aria-label={`View tour: ${r.title}`}>View tour<Icon name="arrow" size={15} /></Link></div>
           </div>
         </article>
       ))}
