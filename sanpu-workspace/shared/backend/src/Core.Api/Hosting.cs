@@ -35,6 +35,8 @@ public sealed class SanpuAppOptions
     public int AuthRequestsPerMinute { get; set; } = 10;
     public int RequestsPerMinute { get; set; } = 600;
     public bool SwaggerEnabled { get; set; }
+    /// <summary>True only when the API is reached through known reverse proxies (Vercel rewrite + Cloudflare Tunnel): client IPs then come from X-Forwarded-For, so rate limits apply per visitor.</summary>
+    public bool TrustForwardedHeaders { get; set; }
     public bool DevOutboxApi { get; set; }
 }
 
@@ -172,6 +174,16 @@ public static class SanpuHosting
     public static WebApplication UseSanpuCore(this WebApplication app)
     {
         var options = app.Services.GetRequiredService<SanpuAppOptions>();
+        if (options.TrustForwardedHeaders)
+        {
+            var fwd = new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+            {
+                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+                ForwardLimit = 2   // Vercel + Cloudflare Tunnel
+            };
+            fwd.KnownIPNetworks.Clear(); fwd.KnownProxies.Clear();   // the API listens on localhost only; the tunnel is the sole way in
+            app.UseForwardedHeaders(fwd);
+        }
         app.UseMiddleware<CorrelationAndErrorMiddleware>();
         app.UseMiddleware<SecurityHeadersMiddleware>();
         if (!app.Environment.IsDevelopment()) app.UseHsts();

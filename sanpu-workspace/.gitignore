@@ -31,3 +31,5 @@ artifacts/ecpay/
 artifacts/newman/
 *.log
 *.err
+.vercel-projects.local.json
+.vercel/

@@ -1,0 +1,16 @@
+# Vercel only builds the two Next.js apps (and the shared web package); everything else stays out of the upload.
+**/backend/
+**/database/
+artifacts/
+storage/
+tests/
+docs/
+postman/
+scripts/
+tools/
+**/bin/
+**/obj/
+**/.next/
+node_modules/
+**/LOGINS.local.txt
+*.log
