@@ -83,34 +83,147 @@ export function PromoStrip({ placement = "HomeStrip" }: { placement?: string }) 
   );
 }
 
-interface PublicCoupon { code: string; description: string; discountType: string; discountValue: number; maxDiscount?: number; minAmount: number; appliesTo: string; endsAtUtc: string }
+interface PublicCoupon { code: string; description: string; discountType: "Percent" | "Fixed"; discountValue: number; maxDiscount?: number; minAmount: number; appliesTo: string;
+  startsAtUtc: string; endsAtUtc: string; usageLimit?: number; timesUsed: number; perCustomerLimit: number }
+
+const KIND_ROUTE: Record<string, [string, string, string]> = {
+  All: ["/tours", "Any booking", "sparkle"], Tour: ["/tours", "Guided tours", "map"], Hotel: ["/hotels", "Hotels", "building"],
+  Flight: ["/flights", "Flights", "plane"], Bus: ["/buses", "Buses", "bus"], Taxi: ["/taxis", "Airport taxis", "car"] };
+const SAVED_COUPON = "sanpu.coupon";
+/** Remembers a coupon picked on the Deals page so checkout can apply it automatically (per browser, best effort). */
+export const saveCoupon = (code: string, appliesTo: string) => { try { localStorage.setItem(SAVED_COUPON, JSON.stringify({ code, appliesTo })); } catch { /* storage unavailable */ } };
+const saving = (c: PublicCoupon, amount: number) => amount < c.minAmount ? 0 : Math.min(amount, c.discountType === "Percent" ? Math.min(Math.round(amount * c.discountValue / 100), c.maxDiscount ?? Infinity) : c.discountValue);
+
+function useNow(ms = 1000) { const [now, setNow] = useState(() => Date.now()); useEffect(() => { const t = setInterval(() => setNow(Date.now()), ms); return () => clearInterval(t); }, [ms]); return now; }
+function left(end: string, now: number) {
+  const s = Math.max(0, Math.floor((new Date(end).getTime() - now) / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return { d, h, m, sec, total: s };
+}
 
 export function DealsPage() {
+  const router = useRouter();
   const coupons = useAsync(() => get<PublicCoupon[]>("/marketing/coupons"), []);
+  const now = useNow();
+  const [kind, setKind] = useState("All");
+  const [sort, setSort] = useState("ending");
   const [copied, setCopied] = useState("");
+  const [calc, setCalc] = useState({ kind: "Hotel", amount: 8000 });
+  const list = useMemo(() => {
+    const all = (coupons.data ?? []).filter((c) => kind === "All" || c.appliesTo === kind || c.appliesTo === "All");
+    return [...all].sort((a, b) => sort === "saving" ? saving(b, 10000) - saving(a, 10000) : +new Date(a.endsAtUtc) - +new Date(b.endsAtUtc));
+  }, [coupons.data, kind, sort]);
+  const soonest = useMemo(() => [...(coupons.data ?? [])].sort((a, b) => +new Date(a.endsAtUtc) - +new Date(b.endsAtUtc))[0], [coupons.data]);
+  const best = useMemo(() => (coupons.data ?? []).filter((c) => c.appliesTo === "All" || c.appliesTo === calc.kind)
+    .map((c) => ({ c, s: saving(c, calc.amount) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s)[0], [coupons.data, calc]);
+  const use = (c: PublicCoupon) => { saveCoupon(c.code, c.appliesTo); router.push(KIND_ROUTE[c.appliesTo]?.[0] ?? "/tours"); };
+  const copy = (code: string) => { navigator.clipboard?.writeText(code).catch(() => {}); setCopied(code); setTimeout(() => setCopied(""), 1800); };
+  const t = soonest ? left(soonest.endsAtUtc, now) : null;
   return (
     <>
-      <section className="dt-hero" style={{ "--hero-img": "url(/images/photos/sunmoon.jpg)" } as React.CSSProperties}>
-        <div className="wrap"><p className="lp-eyebrow">Deals</p><h1>Offers and coupon codes</h1><p className="lp-lead" style={{ marginBottom: 0 }}>Use a code at checkout. Every code shows its dates, minimum spend and what it applies to.</p></div>
+      <section className="dl-hero">
+        <div className="wrap dl-hero-in">
+          <div>
+            <p className="lp-eyebrow"><Icon name="tag" size={14} />Deals</p>
+            <h1>Save on tours, stays and rides</h1>
+            <p className="lp-lead">Live coupon codes from our team. Pick one and we apply it for you at checkout.</p>
+            <div className="lp-cta"><a className="btn lg gold" href="#codes">See all codes</a><a className="btn lg glass" href="#calculator">Find my best code</a></div>
+          </div>
+          {soonest && t && (
+            <div className="dl-timer" aria-live="off">
+              <span className="dl-timer-label">Ending soonest</span>
+              <b className="dl-timer-code">{soonest.code}</b>
+              <span className="dl-timer-desc">{soonest.description}</span>
+              <div className="dl-clock">{([["d", t.d], ["h", t.h], ["m", t.m], ["s", t.sec]] as [string, number][]).map(([l, v]) => <span key={l}><b>{String(v).padStart(2, "0")}</b><small>{l === "d" ? "days" : l === "h" ? "hours" : l === "m" ? "min" : "sec"}</small></span>)}</div>
+              <button type="button" className="btn gold block" onClick={() => use(soonest)}>Use {soonest.code} now</button>
+            </div>
+          )}
+        </div>
       </section>
-      <section className="wrap lp-section"><PromoStrip placement="Deals" /></section>
-      <section className="wrap lp-section" aria-labelledby="cp-h">
-        <div className="lp-head"><div><p className="kicker">Coupon codes</p><h2 id="cp-h">Copy a code, save at checkout</h2></div></div>
-        <Async state={coupons} empty={(c) => c.length === 0}>{(list) => (
-          <div className="coupon-grid" data-testid="coupons">
-            {list.map((c) => (
-              <article key={c.code} className="coupon">
-                <div className="amt">{c.discountType === "Percent" ? `${c.discountValue}%` : money(c.discountValue)}<small>off</small></div>
-                <div className="info">
-                  <b>{c.description}</b>
-                  <span className="small muted">{c.appliesTo === "All" ? "Any booking" : `${c.appliesTo} bookings`}{c.minAmount > 0 ? ` · min ${money(c.minAmount)}` : ""}{c.maxDiscount ? ` · up to ${money(c.maxDiscount)}` : ""} · until {fmtDate(c.endsAtUtc)}</span>
-                  <span className="row"><code className="code">{c.code}</code>
-                    <button className="btn small" onClick={() => { navigator.clipboard?.writeText(c.code).catch(() => {}); setCopied(c.code); }}>{copied === c.code ? "Copied" : "Copy code"}</button></span>
-                </div>
-              </article>
-            ))}
+
+      <section className="wrap lp-section" aria-label="Featured offers"><PromoStrip placement="Deals" /></section>
+
+      <section className="wrap lp-section" id="codes" aria-labelledby="codes-h" style={{ scrollMarginTop: 80 }}>
+        <div className="lp-head">
+          <div><p className="kicker">Coupon codes</p><h2 id="codes-h">{list.length} {list.length === 1 ? "code" : "codes"} you can use today</h2></div>
+          <div className="seg-sort" role="group" aria-label="Sort">{[["ending", "Ending soon"], ["saving", "Biggest saving"]].map(([k, l]) =>
+            <button type="button" key={k} aria-pressed={sort === k} onClick={() => setSort(k)}>{l}</button>)}</div>
+        </div>
+        <div className="dest-chips" style={{ justifyContent: "flex-start", margin: "0 0 22px" }} role="group" aria-label="Booking type">
+          {Object.entries(KIND_ROUTE).map(([k, [, label, icon]]) => (
+            <button type="button" key={k} aria-pressed={kind === k} onClick={() => setKind(k)}><span className="dot all"><Icon name={icon} size={14} /></span>{k === "All" ? "All deals" : label}</button>
+          ))}
+        </div>
+        <Async state={coupons} empty={(c) => c.length === 0}>{() => (
+          <div className="dl-grid" data-testid="coupons">
+            {list.map((c) => {
+              const l = left(c.endsAtUtc, now);
+              const pct = c.usageLimit ? Math.min(100, Math.round(c.timesUsed * 100 / c.usageLimit)) : null;
+              const urgent = l.total < 3 * 86400;
+              return (
+                <article key={c.code} className={`dl-card${urgent ? " urgent" : ""}`} data-testid={`deal-${c.code}`}>
+                  <div className="dl-amt">
+                    <b className={c.discountType === "Percent" ? undefined : "sm"}>{c.discountType === "Percent" ? `${c.discountValue}%` : `NT$${c.discountValue.toLocaleString()}`}</b><small>off</small>
+                    <span className="dl-kind"><Icon name={KIND_ROUTE[c.appliesTo]?.[2] ?? "tag"} size={14} />{KIND_ROUTE[c.appliesTo]?.[1] ?? c.appliesTo}</span>
+                  </div>
+                  <div className="dl-body">
+                    <h3>{c.description}</h3>
+                    <ul className="dl-terms">
+                      {c.minAmount > 0 && <li>Min. order {money(c.minAmount)}</li>}
+                      {c.maxDiscount && <li>Save up to {money(c.maxDiscount)}</li>}
+                      <li>{c.perCustomerLimit === 1 ? "Once per customer" : `Up to ${c.perCustomerLimit} uses per customer`}</li>
+                    </ul>
+                    {pct !== null && <div className="dl-claim"><span style={{ width: `${Math.max(4, pct)}%` }} /><small>{pct}% claimed · {c.usageLimit! - c.timesUsed} left</small></div>}
+                    <div className="dl-foot">
+                      <span className={`dl-ends${urgent ? " hot" : ""}`}><Icon name="calendar" size={13} />{l.d > 0 ? `Ends in ${l.d}d ${l.h}h` : `Ends in ${l.h}h ${l.m}m`}</span>
+                      <span className="dl-actions">
+                        <button type="button" className={`dl-code${copied === c.code ? " done" : ""}`} onClick={() => copy(c.code)} aria-label={`Copy code ${c.code}`}>
+                          <code>{c.code}</code><span>{copied === c.code ? "Copied" : "Copy"}</span></button>
+                        <button type="button" className="btn primary small" onClick={() => use(c)} data-testid={`use-${c.code}`}>Use now</button>
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}</Async>
+      </section>
+
+      <section className="wrap lp-section" id="calculator" style={{ scrollMarginTop: 80 }} aria-labelledby="calc-h">
+        <div className="dl-calc">
+          <div>
+            <p className="kicker">Savings calculator</p>
+            <h2 id="calc-h">Which code saves you the most?</h2>
+            <p className="muted">Choose what you are booking and roughly how much it costs. We check every live code for you.</p>
+            <div className="dl-calc-in">
+              <div className="seg-sort" role="group" aria-label="What are you booking?">{["Tour", "Hotel", "Flight", "Bus", "Taxi"].map((k) =>
+                <button type="button" key={k} aria-pressed={calc.kind === k} onClick={() => setCalc({ ...calc, kind: k })}>{KIND_ROUTE[k][1]}</button>)}</div>
+              <label className="dl-range"><span>Booking total <b>{money(calc.amount)}</b></span>
+                <input type="range" min={500} max={40000} step={100} value={calc.amount} onChange={(e) => setCalc({ ...calc, amount: Number(e.target.value) })} aria-label="Booking total" /></label>
+            </div>
+          </div>
+          <div className="dl-best" aria-live="polite">
+            {best ? <>
+              <span className="dl-best-label">Best code</span>
+              <b className="dl-best-code">{best.c.code}</b>
+              <span className="dl-best-save">You save <b>{money(best.s)}</b></span>
+              <span className="small">You pay {money(calc.amount - best.s)} instead of {money(calc.amount)}</span>
+              <button type="button" className="btn gold block" onClick={() => use(best.c)}>Use {best.c.code}</button>
+            </> : <><span className="dl-best-label">No code fits yet</span><span className="small">Try a higher total or another booking type. Most codes have a minimum order.</span></>}
+          </div>
+        </div>
+      </section>
+
+      <section className="wrap lp-section" aria-labelledby="how-h">
+        <div className="lp-head"><div><p className="kicker">How it works</p><h2 id="how-h">Three steps to save</h2></div></div>
+        <div className="lp-steps">
+          <div className="lp-step"><h3>Pick a code</h3><p>Press Use now on any code. We remember it for you.</p></div>
+          <div className="lp-step"><h3>Book as usual</h3><p>Choose your tour, room, seat or ride. The code is applied at checkout automatically.</p></div>
+          <div className="lp-step"><h3>See your saving</h3><p>The discount is checked live and shown before you confirm. Cancel and the code is yours again.</p></div>
+        </div>
+        <div className="lp-band"><div><h2>Want member-only codes?</h2><p>Subscribe at the bottom of the page. One email a month with codes you will not find anywhere else.</p></div>
+          <div className="lp-cta"><a className="btn lg gold" href="#nl-email" onClick={() => setTimeout(() => document.getElementById("nl-email")?.focus(), 400)}>Subscribe</a><Link className="btn lg glass" href="/legal/terms#coupon-codes">Coupon terms</Link></div></div>
       </section>
     </>
   );

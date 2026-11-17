@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CouponField, MyServiceBookings, PaymentPanel, PaymentResultBanner } from "./travel";
+import { CouponField, MyServiceBookings, PaymentPanel, PaymentResultBanner, clearSavedCoupon } from "./travel";
 import {
   ApiError, Async, Card, Checkbox, ConfirmButton, DataTable, Demo, ErrorBox, FormError, PageHeader, Pill, SelectInput, TextArea, TextInput,
   fmtDate, fmtDateTime, get, money, newKey, post, useAction, useAsync, useAuth, useContent, useSetting
@@ -62,7 +62,7 @@ export function BookPage() {
             <form className="form" noValidate onSubmit={async (e) => {
               e.preventDefault();
               const r = await book.run(() => post<{ bookingId: number; bookingRef: string }>("/bookings", { holdId: hold.holdId, ...f, passportNo: f.passportNo || null, couponCode: coupon.code || null }), "Booking received");
-              if (r) router.push(`/my/bookings/${r.bookingId}`);
+              if (r) { if (coupon.code) clearSavedCoupon(); router.push(`/my/bookings/${r.bookingId}`); }
             }}>
               <div className="form cols">
                 <TextInput label="Lead traveler name" value={f.leadName} onChange={(v) => setF({ ...f, leadName: v })} error={book.fieldError("leadName")} data-testid="book-name" autoComplete="name" />

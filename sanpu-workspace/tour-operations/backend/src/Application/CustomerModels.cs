@@ -69,6 +69,7 @@ public sealed record PublicCouponRow
 {
     public string Code { get; init; } = ""; public string Description { get; init; } = ""; public string DiscountType { get; init; } = ""; public decimal DiscountValue { get; init; }
     public decimal? MaxDiscount { get; init; } public decimal MinAmount { get; init; } public string AppliesTo { get; init; } = ""; public DateTime EndsAtUtc { get; init; }
+    public DateTime StartsAtUtc { get; init; } public int? UsageLimit { get; init; } public int TimesUsed { get; init; } public int PerCustomerLimit { get; init; }
 }
 public sealed record OpsCouponRow
 {

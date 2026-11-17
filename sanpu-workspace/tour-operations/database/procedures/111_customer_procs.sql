@@ -56,7 +56,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Coupons_Public AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Code, Description, DiscountType, DiscountValue, MaxDiscount, MinAmount, AppliesTo, EndsAtUtc
+    SELECT Code, Description, DiscountType, DiscountValue, MaxDiscount, MinAmount, AppliesTo, StartsAtUtc, EndsAtUtc, UsageLimit, TimesUsed, PerCustomerLimit
     FROM dbo.Coupons WHERE IsPublic = 1 AND IsActive = 1 AND SYSUTCDATETIME() >= StartsAtUtc AND SYSUTCDATETIME() < EndsAtUtc
       AND (UsageLimit IS NULL OR TimesUsed < UsageLimit)
     ORDER BY EndsAtUtc;

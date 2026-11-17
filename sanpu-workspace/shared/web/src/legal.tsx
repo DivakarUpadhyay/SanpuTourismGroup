@@ -57,7 +57,7 @@ export function LegalPage() {
   const updated = doc.updatedAtUtc ? new Date(doc.updatedAtUtc).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : null;
   const minutes = Math.max(1, Math.round(doc.body.split(/\s+/).length / 220));
   return (
-    <article className="lg">
+    <article className="legal-page">
       <header className="lg-head">
         <p className="kicker">Legal</p>
         <h1>{doc.subject}</h1>

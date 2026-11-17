@@ -114,8 +114,16 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
 export const ServiceSearchPage = ({ kind }: { kind: Kind }) => <Suspense><SearchInner kind={kind} /></Suspense>;
 
 /* ---------------- coupon field (shared by tour and service checkout) ---------------- */
+/** Coupon chosen on the Deals page (localStorage), used only when it fits this booking type. */
+const savedCoupon = (kind: string) => {
+  try { const c = JSON.parse(localStorage.getItem("sanpu.coupon") ?? "null") as { code: string; appliesTo: string } | null; return c && (c.appliesTo === "All" || c.appliesTo === kind) ? c.code : ""; }
+  catch { return ""; }
+};
+/** Forget the saved coupon once a booking has used it. */
+export const clearSavedCoupon = () => { try { localStorage.removeItem("sanpu.coupon"); } catch { /* storage unavailable */ } };
+
 export function CouponField({ kind, amount, value, onApplied }: { kind: string; amount: number; value: string; onApplied: (code: string, discount: number) => void }) {
-  const [code, setCode] = useState(value);
+  const [code, setCode] = useState(() => value || savedCoupon(kind));
   const [state, setState] = useState<{ ok?: string; error?: string; busy?: boolean }>({});
   const check = async () => {
     if (!code.trim()) { onApplied("", 0); setState({}); return; }
@@ -125,7 +133,7 @@ export function CouponField({ kind, amount, value, onApplied }: { kind: string; 
       onApplied(r.code, r.discountAmount); setState({ ok: `${r.description}: −${money(r.discountAmount)}` });
     } catch (e) { onApplied("", 0); setState({ error: e instanceof ApiError ? e.message : "Could not check the code." }); }
   };
-  useEffect(() => { if (value && amount > 0) check(); }, [amount]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (code && amount > 0) check(); }, [amount]);   // eslint-disable-line react-hooks/exhaustive-deps   (also auto-applies a code saved on the Deals page)
   return (
     <div className="coupon-field">
       <label htmlFor="coupon">Coupon code</label>
@@ -175,7 +183,7 @@ function BookInner() {
                 const r = await a.run(() => post<{ serviceBookingId: number; bookingRef: string }>("/travel/bookings", {
                   serviceCode: code, date, endDate: s.kind === "Hotel" ? endDate : null, units, travelers, ...f, pickupAddress: s.kind === "Taxi" ? f.pickupAddress : null,
                   pickupTime: s.kind === "Taxi" ? f.pickupTime : null, couponCode: coupon.code || null, idempotencyKey: key }), "Booking confirmed");
-                if (r) router.push(`/my/bookings?booked=${r.bookingRef}&pay=Service:${r.serviceBookingId}`);
+                if (r) { if (coupon.code) clearSavedCoupon(); router.push(`/my/bookings?booked=${r.bookingRef}&pay=Service:${r.serviceBookingId}`); }
               }}>
                 <div className="form cols">
                   <TextInput label="Lead traveler name" value={f.leadName} onChange={(v) => setF({ ...f, leadName: v })} error={a.fieldError("leadName")} autoComplete="name" data-testid="svc-name" />
