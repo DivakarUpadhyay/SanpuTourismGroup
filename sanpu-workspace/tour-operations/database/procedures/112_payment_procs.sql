@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 112_payment_procs.sql — customer payments through a gateway: create intent (amount computed here), complete intent (idempotent),
    and the payment ledger for both order types. Replaces the earlier direct-pay procedures. */
 DROP PROCEDURE IF EXISTS dbo.usp_ServiceBooking_Pay;

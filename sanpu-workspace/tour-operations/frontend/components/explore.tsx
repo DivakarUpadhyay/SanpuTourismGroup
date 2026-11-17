@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Async, Card, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, useAction, useAsync, useAuth } from "@sanpu/web";
+import { Async, Card, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
 import { TourTile, type TourCard } from "./customer-home";
 
 const bg = (url?: string | null) => (url ? { backgroundImage: `url(${url})` } : undefined);
@@ -374,38 +374,72 @@ export function HelpPage() {
 
 export function ContactPage() {
   const { me } = useAuth();
+  const support = useSetting("Ui.SupportEmail", "");
+  const hours = useSetting("Ui.SupportHours", "Mon to Fri, 09:00 to 18:00 (Taiwan time)");
   const [f, setF] = useState({ name: "", email: "", topic: "Booking", bookingRef: "", message: "" });
   const [done, setDone] = useState<string | null>(null);
   const a = useAction();
+  const popular = useAsync(() => get<Article[]>("/help"), []);
   useEffect(() => { if (me) setF((x) => ({ ...x, name: x.name || me.user.displayName, email: x.email || me.user.email })); }, [me]);
+  const TOPICS: [string, string, string][] = [["Booking", "ticket", "A booking"], ["Change", "calendar", "Change a trip"], ["Payment", "tag", "Payment or refund"],
+    ["Feedback", "star", "Feedback"], ["Partnership", "handshake", "Partnership"], ["Other", "help", "Something else"]];
+  const needsRef = ["Booking", "Change", "Payment"].includes(f.topic);
+  const send = async () => {
+    const r = await a.run(() => post<{ contactRef: string }>("/contact", { ...f, bookingRef: needsRef && f.bookingRef ? f.bookingRef : null }));
+    if (r) { setDone(r.contactRef); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  };
   if (done) return (
-    <div className="card" style={{ maxWidth: 640, margin: "40px auto", padding: 32, textAlign: "center" }} data-testid="contact-done">
-      <div className="lp-feature" style={{ boxShadow: "none", padding: 0 }}><div className="ico" style={{ margin: "0 auto 14px" }}><Icon name="check" /></div></div>
-      <h1 style={{ fontSize: 24 }}>Thanks, we have your message</h1><p className="muted">Your reference is <b>{done}</b>. Our team replies within one working day.</p>
-      <Link className="btn primary" href="/help">Back to the help center</Link>
+    <div className="ct-done" data-testid="contact-done">
+      <span className="ct-done-ico"><Icon name="check" size={30} /></span>
+      <p className="kicker">Message sent</p>
+      <h1>Thanks, {f.name.split(" ")[0] || "traveler"}. We are on it.</h1>
+      <p>Your reference is <b>{done}</b>; mention it if you write to us again. Our team replies to <b>{f.email}</b> within one working day.</p>
+      <div className="row" style={{ justifyContent: "center" }}><Link className="btn primary lg" href="/help">Browse the help center</Link><Link className="btn lg" href="/">Back to home</Link></div>
     </div>
   );
   return (
-    <>
-      <PageHeader tagline="Contact" title="Contact our team" lead="Questions about a booking, a change or a partnership. We answer within one working day." />
-      <div className="grid two">
-        <Card title="Send a message">
-          <form className="form" noValidate onSubmit={async (e) => { e.preventDefault(); const r = await a.run(() => post<{ contactRef: string }>("/contact", { ...f, bookingRef: f.bookingRef || null })); if (r) setDone(r.contactRef); }}>
-            <TextInput label="Your name" value={f.name} onChange={(v) => setF({ ...f, name: v })} error={a.fieldError("name")} data-testid="contact-name" />
-            <TextInput label="Email" type="email" value={f.email} onChange={(v) => setF({ ...f, email: v })} error={a.fieldError("email")} data-testid="contact-email" />
-            <SelectInput label="Topic" value={f.topic} onChange={(v) => setF({ ...f, topic: v })} options={["Booking", "Change", "Payment", "Feedback", "Partnership", "Other"].map((t) => ({ value: t, label: t }))} error={a.fieldError("topic")} testId="contact-topic" />
-            <TextInput label="Booking reference (optional)" placeholder="BK-000123 or SB-000045" value={f.bookingRef} onChange={(v) => setF({ ...f, bookingRef: v.toUpperCase() })} error={a.fieldError("bookingRef")} />
-            <TextArea label="Message" value={f.message} onChange={(v) => setF({ ...f, message: v })} error={a.fieldError("message")} data-testid="contact-message" />
-            <div className="form-actions"><button className="btn primary" disabled={a.busy} data-testid="contact-submit">{a.busy ? "Sending…" : "Send message"}</button></div>
-          </form>
-        </Card>
-        <div className="grid" style={{ gap: 14, alignContent: "start" }}>
-          <div className="lp-feature"><div className="ico"><Icon name="help" /></div><h3>Find an answer now</h3><p>Most questions about payments, changes and coupons are answered in the <Link href="/help">help center</Link>.</p></div>
-          <div className="lp-feature"><div className="ico"><Icon name="ticket" /></div><h3>About an existing booking?</h3><p>Add your booking reference so we can find it straight away.</p></div>
-          <div className="lp-feature"><div className="ico"><Icon name="calendar" /></div><h3>Office hours</h3><p>Monday to Friday, 09:00 to 18:00 (Taiwan time).</p></div>
+    <div className="ct">
+      <aside className="ct-side">
+        <p className="kicker">Contact us</p>
+        <h1>We&apos;re here to help</h1>
+        <p className="ct-lead">Questions about a booking, a change to your plans or a partnership. Real people, based in Taiwan, reply within one working day.</p>
+        <ul className="ct-ways">
+          {support && <li><span className="ico"><Icon name="file" size={18} /></span><div><b>Email</b><a href={`mailto:${support}`}>{support}</a></div></li>}
+          <li><span className="ico"><Icon name="calendar" size={18} /></span><div><b>Office hours</b><span>{hours}</span></div></li>
+          <li><span className="ico"><Icon name="check" size={18} /></span><div><b>Reply time</b><span>Within one working day; booking and payment questions first</span></div></li>
+        </ul>
+        {(popular.data?.length ?? 0) > 0 && <div className="ct-faq">
+          <b>Quick answers</b>
+          {popular.data!.slice(0, 4).map((q) => <Link key={q.articleId} href="/help">{q.question}<Icon name="arrow" size={14} /></Link>)}
+        </div>}
+      </aside>
+
+      <form className="ct-form" noValidate onSubmit={(e) => { e.preventDefault(); send(); }}>
+        <fieldset className="ct-topics">
+          <legend>What is it about?</legend>
+          <div role="radiogroup" aria-label="Topic">
+            {TOPICS.map(([v, icon, label]) => (
+              <button type="button" key={v} role="radio" aria-checked={f.topic === v} onClick={() => setF({ ...f, topic: v })} data-testid={`topic-${v}`}>
+                <Icon name={icon} size={18} /><span>{label}</span>
+              </button>
+            ))}
+          </div>
+          {a.fieldError("topic") && <p className="error small">{a.fieldError("topic")}</p>}
+        </fieldset>
+        <div className="ct-row">
+          <TextInput label="Your name" autoComplete="name" value={f.name} onChange={(v) => setF({ ...f, name: v })} error={a.fieldError("name")} data-testid="contact-name" />
+          <TextInput label="Email" type="email" autoComplete="email" value={f.email} onChange={(v) => setF({ ...f, email: v })} error={a.fieldError("email")} data-testid="contact-email" />
         </div>
-      </div>
-    </>
+        {needsRef && <TextInput label="Booking reference (optional)" placeholder="BK-000123 or SB-000045" value={f.bookingRef} onChange={(v) => setF({ ...f, bookingRef: v.toUpperCase() })}
+          error={a.fieldError("bookingRef")} hint="Find it in My bookings. It helps us answer faster." />}
+        <div className="ct-msg">
+          <TextArea label="Message" rows={6} maxLength={2000} placeholder="Tell us what happened and how we can help." value={f.message} onChange={(v) => setF({ ...f, message: v })} error={a.fieldError("message")} data-testid="contact-message" />
+          <span className={`ct-count${f.message.length > 1900 ? " warn" : ""}`}>{f.message.length} / 2000</span>
+        </div>
+        <button className="btn primary lg block" disabled={a.busy} data-testid="contact-submit">{a.busy ? "Sending…" : "Send message"}</button>
+        <p className="small muted ct-note"><Icon name="lock" size={13} /> We only use your details to answer this message. See our <Link href="/legal/privacy.notice">privacy notice</Link>.</p>
+      </form>
+    </div>
   );
 }
 

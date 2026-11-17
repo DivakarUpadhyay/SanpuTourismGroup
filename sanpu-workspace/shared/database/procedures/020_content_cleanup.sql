@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 020_content_cleanup.sql — removes legacy "DEMO" / "(DEMO)" / "Fictional ..." wording from rows created by older seeds.
    Runs over every nvarchar column of the business tables; the insert-only audit log and token tables are never touched.
    Idempotent: rows without the old wording are not updated. */

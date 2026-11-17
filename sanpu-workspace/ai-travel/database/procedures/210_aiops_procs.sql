@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 210_aiops_procs.sql — AI Operations Copilot procedures.
    Extra error numbers: 50031 invalid_state · 50032 self_approval · 50038 stale_version · 50039 budget_exceeded */
 SET NOCOUNT ON;

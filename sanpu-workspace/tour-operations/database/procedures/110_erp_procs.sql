@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 110_erp_procs.sql — ERP stored procedures. Error numbers (in addition to the shared ones):
    50030 insufficient_capacity · 50031 invalid_state · 50032 self_approval · 50033 capacity_below_sold
    50034 not_approver · 50035 amount_exceeds_balance · 50036 hold_expired · 50037 departure_closed */

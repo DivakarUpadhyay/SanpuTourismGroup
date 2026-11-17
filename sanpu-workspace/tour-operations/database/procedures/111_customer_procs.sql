@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 111_customer_procs.sql — help center, contact, recommendations, calendar, compare, destination guides,
    promotions, coupons and the travel-services engine. Error contract: THROW 500xx with a code string. */
 

@@ -1,3 +1,6 @@
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;   -- required by persisted computed columns and filtered indexes, even when run outside db-setup
+GO
 /* 010_admin_procs.sql — auth + admin stored procedures (shared by both apps).
    Error contract: THROW <number>, '<stable_code>', 1. The API maps the number to an HTTP status.
      50001 not_found · 50009 concurrency_conflict · 50010 menu_cycle · 50011 has_children
