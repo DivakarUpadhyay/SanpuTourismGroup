@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Async, Card, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, useAction, useAsync, useAuth } from "@sanpu/web";
+import { Async, Card, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, useAction, useAsync, useAuth } from "@sanpu/web";
 import { TourTile, type TourCard } from "./customer-home";
 
 const bg = (url?: string | null) => (url ? { backgroundImage: `url(${url})` } : undefined);
@@ -121,26 +121,70 @@ function ToursInner() {
   const params = useSearchParams();
   const router = useRouter();
   const [q, setQ] = useState({ destination: params.get("destination") ?? "", month: params.get("month") ?? "", pax: Number(params.get("pax") ?? 1) || 1 });
+  const [sort, setSort] = useState(params.get("sort") ?? "date");
   const destinations = useAsync(() => get<Destination[]>("/catalog/destinations"), []);
   const tours = useAsync(() => get<TourCard[]>("/catalog/tours", q), [q.destination, q.month, q.pax]);
-  const [sort, setSort] = useState("date");
   const sorted = useMemo(() => [...(tours.data ?? [])].sort((a, b) =>
     sort === "price" ? (a.fromPrice ?? 9e9) - (b.fromPrice ?? 9e9) : sort === "days" ? a.days - b.days : String(a.nextDeparture).localeCompare(String(b.nextDeparture))), [tours.data, sort]);
-  const set = (next: typeof q) => { setQ(next); router.replace(`/tours?${new URLSearchParams({ destination: next.destination, month: next.month, pax: String(next.pax) })}`, { scroll: false }); };
+  const sync = (next: typeof q, nextSort = sort) => router.replace(`/tours?${new URLSearchParams({ destination: next.destination, month: next.month, pax: String(next.pax), sort: nextSort })}`, { scroll: false });
+  const set = (next: typeof q) => { setQ(next); sync(next); };
+  const dest = destinations.data?.find((d) => d.code === q.destination);
+  const now = new Date(), minMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const filtered = !!(q.destination || q.month || q.pax > 1);
   return (
-    <div className="wrap" style={{ paddingTop: 28 }}>
-      <PageHeader tagline="Tours" title="All guided tours" lead="Live prices and seats. Filter by where, when and how many." />
-      <div className="filter-bar card">
-        <SelectInput label="Destination" value={q.destination} onChange={(v) => set({ ...q, destination: v })} placeholder="Anywhere" options={(destinations.data ?? []).map((d) => ({ value: d.code, label: d.name }))} testId="tours-destination" />
-        <TextInput label="Month" type="month" value={q.month} onChange={(v) => set({ ...q, month: v })} data-testid="tours-month" />
-        <TextInput label="Travelers" type="number" min={1} max={20} value={q.pax} onChange={(v) => set({ ...q, pax: Math.max(1, Number(v) || 1) })} />
-        <SelectInput label="Sort by" value={sort} onChange={setSort} options={[{ value: "date", label: "Next departure" }, { value: "price", label: "Lowest price" }, { value: "days", label: "Shortest" }]} />
+    <div className="wrap tours-page">
+      <header className="tours-head">
+        <p className="kicker">Guided tours</p>
+        <h1>{dest ? `Tours in ${dest.name}` : "Find your next journey"}</h1>
+        <p>Live prices and seats on every departure. Small groups, our own coaches and local guides.</p>
+      </header>
+
+      <form className="find-bar" role="search" aria-label="Find tours" onSubmit={(e) => { e.preventDefault(); document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }); }}>
+        <label className="seg">
+          <span className="seg-label"><Icon name="map" size={14} />Where</span>
+          <select value={q.destination} onChange={(e) => set({ ...q, destination: e.target.value })} data-testid="tours-destination">
+            <option value="">Anywhere in Taiwan</option>
+            {(destinations.data ?? []).map((d) => <option key={d.code} value={d.code}>{d.name}</option>)}
+          </select>
+        </label>
+        <div className="seg">
+          <span className="seg-label"><Icon name="calendar" size={14} />When</span>
+          <DatePickerInput mode="month" min={minMonth} value={q.month} onChange={(v) => set({ ...q, month: v })} placeholder="Any month" aria-label="Month" data-testid="tours-month" />
+        </div>
+        <div className="seg">
+          <span className="seg-label"><Icon name="users" size={14} />Travelers</span>
+          <div className="stepper" role="group" aria-label="Travelers">
+            <button type="button" aria-label="Fewer travelers" disabled={q.pax <= 1} onClick={() => set({ ...q, pax: q.pax - 1 })}>−</button>
+            <output aria-live="polite">{q.pax} {q.pax === 1 ? "traveler" : "travelers"}</output>
+            <button type="button" aria-label="More travelers" disabled={q.pax >= 20} onClick={() => set({ ...q, pax: q.pax + 1 })}>+</button>
+          </div>
+        </div>
+        <button className="find-go" aria-label="Show tours"><Icon name="search" size={20} /><span>Search</span></button>
+      </form>
+
+      <div className="dest-chips" role="group" aria-label="Destinations">
+        <button type="button" aria-pressed={!q.destination} onClick={() => set({ ...q, destination: "" })}><span className="dot all"><Icon name="globe" size={14} /></span>All</button>
+        {(destinations.data ?? []).map((d) => (
+          <button type="button" key={d.code} aria-pressed={q.destination === d.code} onClick={() => set({ ...q, destination: q.destination === d.code ? "" : d.code })}>
+            <span className="dot" style={d.imageUrl ? { backgroundImage: `url(${d.imageUrl})` } : undefined} />{d.name}
+          </button>
+        ))}
       </div>
-      <div style={{ height: 18 }} />
+
+      <div className="results-bar" id="results">
+        <p aria-live="polite"><b>{tours.data ? tours.data.length : "…"}</b> {tours.data?.length === 1 ? "tour" : "tours"}{q.month ? ` in ${new Date(q.month + "-01").toLocaleString("en-GB", { month: "long", year: "numeric" })}` : ""}{q.pax > 1 ? ` with room for ${q.pax}` : ""}
+          {filtered && <button type="button" className="link-btn" onClick={() => set({ destination: "", month: "", pax: 1 })}>Clear all</button>}</p>
+        <div className="seg-sort" role="group" aria-label="Sort tours">
+          {[["date", "Soonest"], ["price", "Lowest price"], ["days", "Shortest"]].map(([k, l]) => (
+            <button type="button" key={k} aria-pressed={sort === k} onClick={() => { setSort(k); sync(q, k); }}>{l}</button>
+          ))}
+        </div>
+      </div>
+
       <div className={tours.loading && tours.data ? "refreshing" : undefined}>
         <Async state={tours} empty={(t) => t.length === 0}>{() => <div className="lp-cards" data-testid="tour-list">{sorted.map((t) => <TourTile key={t.code} t={t} />)}</div>}</Async>
       </div>
-      <p className="small muted" style={{ marginTop: 14 }}>Can&apos;t decide? <Link href="/compare">Compare tours side by side</Link> or see the <Link href="/calendar">departure calendar</Link>.</p>
+      <p className="small muted" style={{ marginTop: 18 }}>Can&apos;t decide? <Link href="/compare">Compare tours side by side</Link> or see the <Link href="/calendar">departure calendar</Link>.</p>
     </div>
   );
 }
