@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, get } from "@sanpu/web";
 
-interface Hit { kind: "Destination" | "Tour" | "Travel"; title: string; sub: string; href: string; img?: string | null }
+interface Hit { kind: "Destination" | "Tour" | "Travel"; title: string; sub: string; href: string; img?: string | null; icon?: string }
 interface Dest { code: string; name: string; region: string; imageUrl?: string | null }
 interface Tour { code: string; title: string; destinationName: string; days: number; imageUrl?: string | null }
 
 const TRAVEL: Hit[] = [
-  { kind: "Travel", title: "Hotels", sub: "Rooms across Taiwan", href: "/hotels" },
-  { kind: "Travel", title: "Flights", sub: "Island and east-coast flights", href: "/flights" },
-  { kind: "Travel", title: "Buses", sub: "Express and mountain buses", href: "/buses" },
-  { kind: "Travel", title: "Airport taxis", sub: "Fixed-price transfers", href: "/taxis" },
-  { kind: "Travel", title: "Deals", sub: "Coupon codes and offers", href: "/deals" },
+  { kind: "Travel", title: "Hotels", sub: "Rooms across Taiwan", href: "/hotels", icon: "building" },
+  { kind: "Travel", title: "Flights", sub: "Island and east-coast flights", href: "/flights", icon: "plane" },
+  { kind: "Travel", title: "Buses", sub: "Express and mountain buses", href: "/buses", icon: "bus" },
+  { kind: "Travel", title: "Airport taxis", sub: "Fixed-price transfers", href: "/taxis", icon: "car" },
+  { kind: "Travel", title: "Deals", sub: "Coupon codes and offers", href: "/deals", icon: "tag" },
 ];
 
 /** Header quick search: destinations, tours and travel services. Loads the (small, public) catalog once on first focus. */
@@ -54,9 +54,9 @@ export function HeaderSearch() {
         <div className="hs-pop" role="listbox">
           {!data ? <div className="hs-empty">Loading…</div> : hits.length === 0 ? <div className="hs-empty">No matches. Try a city like Taipei or Kinmen.</div> : hits.map((h, i) => (
             <button type="button" key={h.href} role="option" aria-selected={i === active} className={i === active ? "on" : undefined} onMouseEnter={() => setActive(i)} onClick={() => go(h)}>
-              <span className="hs-img" style={h.img ? { backgroundImage: `url(${h.img})` } : undefined}>{!h.img && <Icon name={h.kind === "Travel" ? "truck" : "map"} size={16} />}</span>
+              <span className="hs-img" style={h.img ? { backgroundImage: `url(${h.img})` } : undefined}>{!h.img && <Icon name={h.icon ?? "map"} size={16} />}</span>
               <span className="hs-txt"><b>{h.title}</b><small>{h.sub}</small></span>
-              <span className="hs-kind">{h.kind}</span>
+              <span className="hs-kind">{h.title === "Deals" ? "Offers" : h.kind}</span>
             </button>
           ))}
         </div>

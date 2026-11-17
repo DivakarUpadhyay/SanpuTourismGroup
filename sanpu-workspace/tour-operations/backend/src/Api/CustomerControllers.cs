@@ -66,6 +66,10 @@ public sealed class TravelController(TravelServicesService travel) : ControllerB
     [HttpGet("places"), AllowAnonymous]
     public Task<IReadOnlyList<PlaceRow>> Places([FromQuery] string? kind, CancellationToken ct) => travel.PlacesAsync(kind, ct);
 
+    /// <summary>Detail page data: description, facts, gallery, a 45-day price/availability calendar from `from`, and similar options.</summary>
+    [HttpGet("services/{code}"), AllowAnonymous]
+    public Task<ServiceDetail> Detail(string code, [FromQuery] DateTime? from, CancellationToken ct) => travel.DetailAsync(code, from, ct);
+
     /// <summary>Availability search. Hotels need check-in (date) and check-out (endDate); prices are totals for all nights.</summary>
     [HttpGet("search"), AllowAnonymous]
     public Task<IReadOnlyList<ServiceResultRow>> Search([FromQuery] string kind, [FromQuery] string? from, [FromQuery] string? to, [FromQuery] DateTime? date, [FromQuery] DateTime? endDate,

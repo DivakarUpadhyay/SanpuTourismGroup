@@ -81,6 +81,10 @@ public sealed class CustomerRepository(Db db) : ICustomerRepository
     // ---------- travel services ----------
     public Task<IReadOnlyList<PlaceRow>> PlacesAsync(string? kind, CancellationToken ct) => db.QueryAsync<PlaceRow>("dbo.usp_Places_List", new { Kind = kind }, ct);
 
+    public Task<ServiceDetail> ServiceDetailAsync(string code, DateTime from, CancellationToken ct) =>
+        db.MultipleAsync("dbo.usp_Services_Get", new { Code = code, From = from }, async g =>
+            new ServiceDetail((await g.ReadFirstAsync<ServiceDetailRow>()), L(await g.ReadAsync<ServiceDayRow>()), L(await g.ReadAsync<SimilarServiceRow>())), ct);
+
     public Task<IReadOnlyList<ServiceResultRow>> SearchServicesAsync(string kind, string? from, string? to, DateTime date, DateTime? endDate, int units, int travelers, string sort, CancellationToken ct) =>
         db.QueryAsync<ServiceResultRow>("dbo.usp_Services_Search", new { Kind = kind, From = from, To = to, Date = date, EndDate = endDate, Units = units, Travelers = travelers, Sort = sort }, ct);
 

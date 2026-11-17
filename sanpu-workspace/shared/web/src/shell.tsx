@@ -129,11 +129,11 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
   const newsletter = useSetting("Feature.Newsletter", "false") === "true";
   const { status } = useAuth();
   // landing and detail pages run edge to edge (full-width hero); every other page keeps the reading width
-  const bleed = path === "/" || /^\/(tours|destinations|hotels|flights|buses|taxis|deals)(\/|$)/.test(path);
+  const bleed = path === "/" || /^\/(tours|destinations|hotels|flights|buses|taxis|deals|services\/(?!book))(\/|$)?/.test(path);
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
   // on pages that start with a photo hero the header floats over it, then turns solid once the page scrolls
-  const overHero = path === "/" || /^\/(tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals)/.test(path);
+  const overHero = path === "/" || /^\/(tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals|services\/(?!book))/.test(path);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);

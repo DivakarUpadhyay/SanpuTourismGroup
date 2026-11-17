@@ -104,6 +104,24 @@ public sealed record MyServiceBookingRow
     public decimal TotalAmount { get; init; } public decimal DiscountAmount { get; init; } public string Currency { get; init; } = "TWD"; public string Status { get; init; } = ""; public string PaymentStatus { get; init; } = "";
     public DateTime CreatedAtUtc { get; init; } public TimeSpan? DepartTime { get; init; } public string? ImageUrl { get; init; }
 }
+/* ---------- service detail ---------- */
+public sealed record ServiceDetailRow
+{
+    public int ServiceId { get; init; } public string Code { get; init; } = ""; public string Kind { get; init; } = ""; public string Name { get; init; } = ""; public string? Description { get; init; }
+    public string? Address { get; init; } public string? Highlights { get; init; } public string? FactsJson { get; init; } public string? Gallery { get; init; } public decimal? Latitude { get; init; } public decimal? Longitude { get; init; }
+    public string? Features { get; init; } public string? CancellationPolicy { get; init; } public string? ImageUrl { get; init; } public decimal? Rating { get; init; } public TimeSpan? DepartTime { get; init; }
+    public int? DurationMin { get; init; } public int PeoplePerUnit { get; init; } public int MaxPerBooking { get; init; } public decimal BasePrice { get; init; } public string Currency { get; init; } = "TWD";
+    public string? ProviderName { get; init; } public string FromCode { get; init; } = ""; public string FromName { get; init; } = ""; public string FromCity { get; init; } = ""; public string? ToCode { get; init; }
+    public string? ToName { get; init; } public string? ToCity { get; init; }
+}
+public sealed record ServiceDayRow { public DateTime ServiceDate { get; init; } public decimal Price { get; init; } public int Available { get; init; } public string Status { get; init; } = ""; }
+public sealed record SimilarServiceRow
+{
+    public string Code { get; init; } = ""; public string Kind { get; init; } = ""; public string Name { get; init; } = ""; public string? ImageUrl { get; init; } public decimal? Rating { get; init; }
+    public TimeSpan? DepartTime { get; init; } public int? DurationMin { get; init; } public decimal BasePrice { get; init; } public string Currency { get; init; } = "TWD"; public string FromName { get; init; } = ""; public string? ToName { get; init; } public string FromCity { get; init; } = "";
+}
+public sealed record ServiceDetail(ServiceDetailRow Service, IReadOnlyList<ServiceDayRow> Calendar, IReadOnlyList<SimilarServiceRow> Similar);
+
 /* ---------- payments ---------- */
 public sealed record PaymentIntentRow
 {

@@ -82,12 +82,13 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
   const units = r.kind === "Flight" || r.kind === "Bus" ? applied.travelers : applied.units;
   const href = `/services/book?${new URLSearchParams({ code: r.code, date: applied.date, ...(r.kind === "Hotel" ? { endDate: applied.endDate } : {}), units: String(units), travelers: String(applied.travelers) })}`;
   const total = r.totalPrice * units;
+  const detail = `/services/${r.code}?${new URLSearchParams({ date: applied.date, ...(r.kind === "Hotel" ? { endDate: applied.endDate } : {}), units: String(applied.units), travelers: String(applied.travelers) })}`;
   return (
     <article className="svc-card" data-testid={`svc-${r.code}`}>
-      <div className="svc-img" style={{ backgroundImage: `url(${r.imageUrl ?? ""})` }} aria-hidden="true" />
+      <Link href={detail} className="svc-img" style={{ backgroundImage: `url(${r.imageUrl ?? ""})` }} aria-label={`Details: ${r.name}`} />
       <div className="svc-body">
         <div className="svc-top"><span className="slogan">{r.providerName}</span>{r.rating && <span className="rating"><Icon name="star" size={14} />{r.rating.toFixed(1)}</span>}</div>
-        <h3>{r.name}</h3>
+        <h3><Link href={detail} className="svc-title">{r.name}</Link></h3>
         {r.kind === "Hotel" ? <p className="small muted"><Icon name="map" size={14} /> {r.fromCity} · {r.nights} {r.nights === 1 ? "night" : "nights"}</p> : (
           <div className="svc-route">
             <div><b>{hhmm(r.departTime) || "Your time"}</b><span>{r.fromName}</span></div>
@@ -104,6 +105,7 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
         <b>{money(total, r.currency)}</b>
         <small>total for {units} {units === 1 ? META[r.kind].unit : META[r.kind].units}</small>
         <Link className="btn primary" href={href} data-testid={`svc-book-${r.code}`}>Select</Link>
+        <Link className="svc-more" href={detail} data-testid={`svc-detail-${r.code}`}>View details <Icon name="arrow" size={13} /></Link>
       </div>
     </article>
   );

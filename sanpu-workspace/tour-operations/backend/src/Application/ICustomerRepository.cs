@@ -32,6 +32,7 @@ public interface ICustomerRepository
 
     // travel services
     Task<IReadOnlyList<PlaceRow>> PlacesAsync(string? kind, CancellationToken ct);
+    Task<ServiceDetail> ServiceDetailAsync(string code, DateTime from, CancellationToken ct);
     Task<IReadOnlyList<ServiceResultRow>> SearchServicesAsync(string kind, string? from, string? to, DateTime date, DateTime? endDate, int units, int travelers, string sort, CancellationToken ct);
     Task<ServiceBookedRow> BookServiceAsync(Guid userId, ServiceBookRequest r, byte[]? phoneEnc, string? phoneMasked, TimeSpan? pickupTime, string correlationId, CancellationToken ct);
     Task<IReadOnlyList<MyServiceBookingRow>> MyServiceBookingsAsync(Guid userId, CancellationToken ct);

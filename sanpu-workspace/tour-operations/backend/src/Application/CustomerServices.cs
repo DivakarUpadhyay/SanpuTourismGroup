@@ -165,6 +165,12 @@ public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser
     public Task<IReadOnlyList<PlaceRow>> PlacesAsync(string? kind, CancellationToken ct) =>
         repo.PlacesAsync(CustomerRules.ServiceKinds.Contains(kind) ? kind : null, ct);
 
+    public Task<ServiceDetail> DetailAsync(string code, DateTime? from, CancellationToken ct)
+    {
+        if (!Regex.IsMatch(code ?? "", "^[A-Z0-9-]{3,30}$")) throw AppException.NotFound("Service");
+        return repo.ServiceDetailAsync(code!, (from ?? DateTime.UtcNow.Date.AddDays(1)).Date, ct);
+    }
+
     public Task<IReadOnlyList<ServiceResultRow>> SearchAsync(string kind, string? from, string? to, DateTime? date, DateTime? endDate, int? units, int? travelers, string? sort, CancellationToken ct)
     {
         var today = DateTime.UtcNow.Date;

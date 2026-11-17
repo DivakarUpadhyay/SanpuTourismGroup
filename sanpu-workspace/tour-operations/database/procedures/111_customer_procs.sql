@@ -558,3 +558,27 @@ BEGIN
     ORDER BY b.CreatedAtUtc DESC;
 END;
 GO
+/* Detail page: the service, a 45-day price/availability calendar from @From, and up to 4 similar options
+   (same type, same city for hotels or same route/destination city for transport). */
+CREATE OR ALTER PROCEDURE dbo.usp_Services_Get @Code varchar(30), @From date AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Sid int, @Kind varchar(10), @FromPlace int, @ToPlace int;
+    SELECT @Sid = ServiceId, @Kind = Kind, @FromPlace = FromPlaceId, @ToPlace = ToPlaceId FROM dbo.TravelServices WHERE Code = @Code AND IsActive = 1;
+    IF @Sid IS NULL THROW 50001, 'not_found', 1;
+    IF @From <= CAST(SYSUTCDATETIME() AS date) SET @From = DATEADD(DAY, 1, CAST(SYSUTCDATETIME() AS date));
+    SELECT s.ServiceId, s.Code, s.Kind, s.Name, s.Description, s.Address, s.Highlights, s.FactsJson, s.Gallery, s.Latitude, s.Longitude, s.Features, s.CancellationPolicy,
+           s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.PeoplePerUnit, s.MaxPerBooking, s.BasePrice, s.Currency, sp.Name AS ProviderName,
+           f.Code AS FromCode, f.Name AS FromName, f.City AS FromCity, tp.Code AS ToCode, tp.Name AS ToName, tp.City AS ToCity
+    FROM dbo.TravelServices s JOIN dbo.Places f ON f.PlaceId = s.FromPlaceId LEFT JOIN dbo.Places tp ON tp.PlaceId = s.ToPlaceId LEFT JOIN dbo.Suppliers sp ON sp.SupplierId = s.SupplierId
+    WHERE s.ServiceId = @Sid;
+    SELECT ServiceDate, Price, Capacity - Sold - Held AS Available, Status
+    FROM dbo.ServiceInventory WHERE ServiceId = @Sid AND ServiceDate >= @From AND ServiceDate < DATEADD(DAY, 45, @From) ORDER BY ServiceDate;
+    SELECT TOP 4 s.Code, s.Kind, s.Name, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.BasePrice, s.Currency, f.Name AS FromName, tp.Name AS ToName, f.City AS FromCity
+    FROM dbo.TravelServices s JOIN dbo.Places f ON f.PlaceId = s.FromPlaceId LEFT JOIN dbo.Places tp ON tp.PlaceId = s.ToPlaceId
+    WHERE s.IsActive = 1 AND s.Kind = @Kind AND s.ServiceId <> @Sid
+    ORDER BY CASE WHEN f.City = (SELECT City FROM dbo.Places WHERE PlaceId = @FromPlace) THEN 0                       -- same city / origin first
+                  WHEN @ToPlace IS NOT NULL AND tp.City = (SELECT City FROM dbo.Places WHERE PlaceId = @ToPlace) THEN 1   -- then same destination
+                  ELSE 2 END, s.Rating DESC, s.BasePrice;
+END;
+GO
