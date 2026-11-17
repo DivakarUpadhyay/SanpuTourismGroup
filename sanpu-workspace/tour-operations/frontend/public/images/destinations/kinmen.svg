@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 292" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: traditional village houses with curved red-brick roofs by the sea">
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec1e5"/><stop offset="1" stop-color="#f3e7d0"/></linearGradient></defs>
+<rect width="480" height="292" fill="url(#s)"/><rect y="150" width="480" height="40" fill="#5aa0c2"/><path d="M0 186 H480 V292 H0Z" fill="#e7d3a8"/>
+<g transform="translate(60 120)"><rect x="0" y="40" width="150" height="80" fill="#c46a46"/><path d="M-12 44 C20 30 40 24 75 20 C110 24 130 30 162 44 L150 50 H0Z" fill="#8f3a24"/>
+<rect x="62" y="74" width="26" height="46" fill="#5b3a2a"/><rect x="20" y="66" width="22" height="20" fill="#f3e2b8"/><rect x="108" y="66" width="22" height="20" fill="#f3e2b8"/></g>
+<g transform="translate(270 140)"><rect x="0" y="30" width="130" height="70" fill="#d07a52"/><path d="M-10 34 C20 20 40 16 65 12 C90 16 110 20 140 34 L130 40 H0Z" fill="#8f3a24"/>
+<rect x="52" y="60" width="24" height="40" fill="#5b3a2a"/><rect x="16" y="52" width="20" height="18" fill="#f3e2b8"/><rect x="94" y="52" width="20" height="18" fill="#f3e2b8"/></g>
+<rect x="438" y="196" width="6" height="30" fill="#6b4a2f"/><g fill="#4e7a43"><circle cx="440" cy="190" r="22"/><circle cx="455" cy="176" r="16"/></g>
+<g fill="#fff" opacity=".85"><ellipse cx="160" cy="50" rx="40" ry="9"/><ellipse cx="370" cy="70" rx="30" ry="8"/></g>
+</svg>

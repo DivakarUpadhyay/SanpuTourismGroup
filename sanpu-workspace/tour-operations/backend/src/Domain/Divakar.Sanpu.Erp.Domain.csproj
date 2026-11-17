@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ERP domain rules: no package references. -->
+</Project>

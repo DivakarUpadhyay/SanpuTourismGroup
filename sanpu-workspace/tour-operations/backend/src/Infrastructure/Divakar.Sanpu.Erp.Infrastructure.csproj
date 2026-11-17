@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Divakar.Sanpu.Erp.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\backend\src\Core.Infrastructure\Divakar.Sanpu.Core.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

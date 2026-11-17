@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 292" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: green rift valley with rice fields between mountains">
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb6e6"/><stop offset="1" stop-color="#d9ecf7"/></linearGradient><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd06b"/><stop offset="1" stop-color="#5f9e3a"/></linearGradient></defs>
+<rect width="480" height="292" fill="url(#s)"/><circle cx="390" cy="62" r="26" fill="#fff6d6"/>
+<path d="M0 150 L70 72 L130 128 L190 60 L260 140 L320 84 L400 132 L480 78 V200 H0Z" fill="#5c7f9e"/>
+<path d="M0 170 L90 112 L160 160 L240 104 L330 168 L410 120 L480 150 V220 H0Z" fill="#46705a"/>
+<path d="M0 196 C120 176 360 176 480 196 V292 H0Z" fill="url(#f)"/>
+<g stroke="#4c8a2c" stroke-width="2" opacity=".55" fill="none"><path d="M0 222 C140 206 340 206 480 222"/><path d="M0 246 C140 230 340 230 480 246"/><path d="M0 270 C140 256 340 256 480 270"/></g>
+<path d="M210 292 C226 250 250 222 268 196" stroke="#e8d9a8" stroke-width="10" fill="none" stroke-linecap="round"/>
+<g fill="#2f5d36"><circle cx="70" cy="200" r="12"/><circle cx="84" cy="204" r="9"/><circle cx="420" cy="202" r="13"/><circle cx="404" cy="206" r="8"/></g>
+<g fill="#fff" opacity=".85"><ellipse cx="120" cy="52" rx="34" ry="9"/><ellipse cx="270" cy="38" rx="40" ry="10"/></g>
+</svg>

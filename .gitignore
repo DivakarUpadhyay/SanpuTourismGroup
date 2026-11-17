@@ -1,0 +1,5 @@
+# root: per-project rules live in sanpu-workspace/.gitignore
+.vs/
+*.user
+Thumbs.db
+.DS_Store

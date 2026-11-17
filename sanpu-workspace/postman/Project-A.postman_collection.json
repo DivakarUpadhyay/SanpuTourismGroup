@@ -1,0 +1,3423 @@
+{
+  "info": {
+    "name": "Sanpu Tour Ops ERP (Project A)",
+    "description": "Generated from artifacts/openapi by tools/build-postman.mjs. Fictional demo data only. Tokens live in your local Postman environment, never in this file.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Smoke",
+      "item": [
+        {
+          "name": "Login with wrong password → 401 (no user enumeration)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"problem code invalid_credentials\", () => pm.expect(pm.response.json().code).to.eql(\"invalid_credentials\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"Wrong-Password-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Validation error → 422 with field errors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"problem code validation_failed\", () => pm.expect(pm.response.json().code).to.eql(\"validation_failed\"));",
+                  "pm.test(\"email error\", () => pm.expect(pm.response.json().errors.email).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as staff (ops manager)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"accessToken\", pm.response.json().accessToken);",
+                  "pm.test(\"token issued\", () => pm.expect(pm.response.json().accessToken).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{staffEmail}}\",\n  \"password\": \"{{staffPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Authorised read: operations dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"has kpis\", () => pm.expect(pm.response.json().kpis).to.have.property(\"pendingApprovals\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/dashboard",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Not found → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"problem code not_found\", () => pm.expect(pm.response.json().code).to.eql(\"not_found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/999999",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Forbidden write: ops manager cannot invite users → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/users/invite",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"x@demo.sanpu.test\",\n  \"displayName\": \"X\",\n  \"userType\": \"Staff\",\n  \"roleIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login as customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.environment.set(\"customeraccessToken\", pm.response.json().accessToken);",
+                  "pm.test(\"token issued\", () => pm.expect(pm.response.json().accessToken).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"{{testUserPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Workflow 1/4: find an open departure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().departures.find(x => x.seatsLeft > 2); pm.environment.set(\"departureId\", d.departureId); pm.environment.set(\"holdKey\", \"newman-\" + Date.now());"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/catalog/tours/TW-ERV-3D",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Workflow 2/4: hold one seat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"holdId\", pm.response.json().holdId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/bookings/holds",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customeraccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"departureId\": \"{{departureId}}\",\n  \"pax\": 1,\n  \"idempotencyKey\": \"{{holdKey}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Workflow 3/4: create the booking (Pending approval)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"pending\", () => pm.expect(pm.response.json().status).to.eql(\"Pending\")); pm.environment.set(\"bookingId\", pm.response.json().bookingId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customeraccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"holdId\": \"{{holdId}}\",\n  \"leadName\": \"Newman Smoke\",\n  \"leadPhone\": \"+886912000111\",\n  \"acceptTerms\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Workflow 4/4: staff approves → Confirmed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"approved\", () => pm.expect(pm.response.json().status).to.eql(\"Approved\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/{{bookingId}}/decision",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"Approved\",\n  \"comment\": \"Newman smoke\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog (customer)",
+      "item": [
+        {
+          "name": "GET /api/v1/catalog/destinations",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/catalog/destinations",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/catalog/tours",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/catalog/tours",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/catalog/tours/{code}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/catalog/tours/:code",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/catalog/departures/{id}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/catalog/departures/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings (customer)",
+      "item": [
+        {
+          "name": "POST /api/v1/bookings/holds",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/bookings/holds",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"departureId\": 0,\n  \"pax\": 0,\n  \"idempotencyKey\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.Create."
+          }
+        },
+        {
+          "name": "POST /api/v1/bookings",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"holdId\": \"00000000-0000-0000-0000-000000000000\",\n  \"leadName\": \"\",\n  \"leadPhone\": \"\",\n  \"passportNo\": \"\",\n  \"specialRequests\": \"\",\n  \"acceptTerms\": false,\n  \"couponCode\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.Create."
+          }
+        },
+        {
+          "name": "GET /api/v1/my/bookings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/my/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        },
+        {
+          "name": "GET /api/v1/my/bookings/{id}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/my/bookings/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        },
+        {
+          "name": "POST /api/v1/my/bookings/{id}/cancel",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/my/bookings/:id/cancel",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operations",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/dashboard",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/dashboard",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Ops.Dashboard.View."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/lookups",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/lookups",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Ops.Dashboard.View or Catalog.View or Departure.View or Supplier.View or Workflow.View or Task.View or GroupPlan.Simulate or Finance.Reconcile."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/business-units",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/business-units",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Catalog.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/business-units",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/business-units",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"name\": \"\",\n  \"kind\": \"\",\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Catalog.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/business-units/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/business-units/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"name\": \"\",\n  \"kind\": \"\",\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Catalog.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/suppliers",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/suppliers",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Supplier.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/suppliers",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/suppliers",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"name\": \"\",\n  \"supplierType\": \"\",\n  \"businessUnitId\": 0,\n  \"contactEmail\": \"\",\n  \"adapterType\": \"\",\n  \"webhookSecretRef\": \"\",\n  \"rateLimitPerMin\": 0,\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Supplier.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/suppliers/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/suppliers/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"name\": \"\",\n  \"supplierType\": \"\",\n  \"businessUnitId\": 0,\n  \"contactEmail\": \"\",\n  \"adapterType\": \"\",\n  \"webhookSecretRef\": \"\",\n  \"rateLimitPerMin\": 0,\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Supplier.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/tours",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/tours",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Catalog.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/tours",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/tours",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"title\": \"\",\n  \"slogan\": \"\",\n  \"destinationId\": 0,\n  \"businessUnitId\": 0,\n  \"days\": 0,\n  \"basePrice\": 0,\n  \"summary\": \"\",\n  \"isPublished\": false,\n  \"rowVersion\": \"\",\n  \"imageUrl\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Catalog.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/tours/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/tours/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"title\": \"\",\n  \"slogan\": \"\",\n  \"destinationId\": 0,\n  \"businessUnitId\": 0,\n  \"days\": 0,\n  \"basePrice\": 0,\n  \"summary\": \"\",\n  \"isPublished\": false,\n  \"rowVersion\": \"\",\n  \"imageUrl\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Catalog.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/departures",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/departures",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Departure.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/departures",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/departures",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tourId\": 0,\n  \"departureDate\": \"2026-11-17T09:14:36.687Z\",\n  \"capacity\": 0,\n  \"price\": 0,\n  \"status\": \"\",\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Departure.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/departures/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/departures/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tourId\": 0,\n  \"departureDate\": \"2026-11-17T09:14:36.689Z\",\n  \"capacity\": 0,\n  \"price\": 0,\n  \"status\": \"\",\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Departure.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/cost-assumptions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/cost-assumptions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: CostAssumption.Edit or GroupPlan.Simulate."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/cost-assumptions/{key}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/cost-assumptions/:key",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: CostAssumption.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/tasks",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/tasks",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Task.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/tasks/{id}",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/tasks/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"\",\n  \"assignToUserId\": \"00000000-0000-0000-0000-000000000000\",\n  \"note\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Task.Work."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/privacy/policies",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/privacy/policies",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Privacy.Manage."
+          }
+        },
+        {
+          "name": "PUT /api/v1/ops/privacy/policies/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/ops/privacy/policies/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keepDays\": 0,\n  \"action\": \"\",\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Privacy.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/privacy/run",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/privacy/run",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Privacy.Manage."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operations: bookings & finance",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/bookings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.View."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/bookings/{id}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/bookings/{id}/decision",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id/decision",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"\",\n  \"comment\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.Approve."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/bookings/{id}/cancel",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id/cancel",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.Cancel."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/bookings/{id}/payments",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id/payments",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 0,\n  \"method\": \"\",\n  \"idempotencyKey\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Finance.Payment."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/bookings/{id}/refunds",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id/refunds",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 0,\n  \"reason\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Finance.Refund."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/bookings/{id}/reveal-pii",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/bookings/:id/reveal-pii",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Pii.Reveal."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operations: approvals & workflows",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/approvals/inbox",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/approvals/inbox",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Approval.Act."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/approvals/{id}/act",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/approvals/:id/act",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"\",\n  \"comment\": \"\",\n  \"delegateToUserId\": \"00000000-0000-0000-0000-000000000000\",\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Approval.Act."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/workflows",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/workflows",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Workflow.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/workflows",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/workflows",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflowKey\": \"\",\n  \"entityType\": \"\",\n  \"name\": \"\",\n  \"steps\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Workflow.Edit."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Integration (suppliers / OTA)",
+      "item": [
+        {
+          "name": "POST /api/v1/integrations/webhooks/{supplierCode}",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/integrations/webhooks/:supplierCode",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/integrations/mock-send",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/integrations/mock-send",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierCode\": \"\",\n  \"eventType\": \"\",\n  \"idempotencyKey\": \"\",\n  \"payload\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Integration.Retry."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/integrations/events",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/integrations/events",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Integration.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/integrations/events/{id}/retry",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/integrations/events/:id/retry",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Integration.Retry."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operations: reconciliation & group simulation",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/reconciliation",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/reconciliation",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Finance.Reconcile."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/reconciliation/run",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/reconciliation/run",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"period\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Finance.Reconcile."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/reconciliation/{id}/resolve",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/reconciliation/:id/resolve",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"\",\n  \"note\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Finance.Reconcile."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/group-sim",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/group-sim",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: GroupPlan.Simulate."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/group-sim/run",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/group-sim/run",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"departureId\": 0,\n  \"vehicleCodes\": [],\n  \"targetMarginPct\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: GroupPlan.Simulate."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/group-sim/{id}/submit",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/group-sim/:id/submit",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: GroupPlan.Submit."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Help & contact",
+      "item": [
+        {
+          "name": "GET /api/v1/help",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/help",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/help/{id}/feedback",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/help/:id/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/contact",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/contact",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"\",\n  \"topic\": \"\",\n  \"bookingRef\": \"\",\n  \"message\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Discovery",
+      "item": [
+        {
+          "name": "POST /api/v1/discover/tours/{code}/view",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/discover/tours/:code/view",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/discover/recommendations",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/discover/recommendations",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/discover/calendar",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/discover/calendar",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/discover/compare",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/discover/compare",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/discover/destinations/{code}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/discover/destinations/:code",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deals",
+      "item": [
+        {
+          "name": "GET /api/v1/marketing/promotions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/marketing/promotions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/marketing/promotions/{id}/track",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/marketing/promotions/:id/track",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/marketing/coupons",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/marketing/coupons",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/marketing/coupons/check",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/marketing/coupons/check",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"\",\n  \"kind\": \"\",\n  \"amount\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hotels, flights, buses & taxis",
+      "item": [
+        {
+          "name": "GET /api/v1/travel/places",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/travel/places",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/travel/search",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/travel/search",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/travel/bookings",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/travel/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceCode\": \"\",\n  \"date\": \"2026-11-17T09:14:36.689Z\",\n  \"endDate\": \"2026-11-17T09:14:36.689Z\",\n  \"units\": 0,\n  \"travelers\": 0,\n  \"leadName\": \"\",\n  \"leadPhone\": \"\",\n  \"pickupAddress\": \"\",\n  \"pickupTime\": \"\",\n  \"notes\": \"\",\n  \"couponCode\": \"\",\n  \"acceptTerms\": false,\n  \"idempotencyKey\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.Create."
+          }
+        },
+        {
+          "name": "GET /api/v1/travel/my/bookings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/travel/my/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        },
+        {
+          "name": "POST /api/v1/travel/my/bookings/{id}/cancel",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/travel/my/bookings/:id/cancel",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketing (staff)",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/marketing/promotions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/marketing/promotions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Marketing.View or Marketing.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/marketing/promotions",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/marketing/promotions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promotionId\": 0,\n  \"title\": \"\",\n  \"subtitle\": \"\",\n  \"placement\": \"\",\n  \"imageUrl\": \"\",\n  \"ctaText\": \"\",\n  \"ctaUrl\": \"\",\n  \"couponCode\": \"\",\n  \"badge\": \"\",\n  \"startsAtUtc\": \"2026-11-17T09:14:36.689Z\",\n  \"endsAtUtc\": \"2026-11-17T09:14:36.689Z\",\n  \"priority\": 0,\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Marketing.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/marketing/coupons",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/marketing/coupons",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Marketing.View or Marketing.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/marketing/coupons",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/marketing/coupons",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"couponId\": 0,\n  \"code\": \"\",\n  \"description\": \"\",\n  \"discountType\": \"\",\n  \"discountValue\": 0,\n  \"maxDiscount\": 0,\n  \"minAmount\": 0,\n  \"appliesTo\": \"\",\n  \"startsAtUtc\": \"2026-11-17T09:14:36.689Z\",\n  \"endsAtUtc\": \"2026-11-17T09:14:36.689Z\",\n  \"usageLimit\": 0,\n  \"perCustomerLimit\": 0,\n  \"isPublic\": false,\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Marketing.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/marketing/coupons/{id}/redemptions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/marketing/coupons/:id/redemptions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Marketing.View or Marketing.Manage."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Help & contact (staff)",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/help/articles",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/help/articles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Help.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/help/articles",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/help/articles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"articleId\": 0,\n  \"category\": \"\",\n  \"question\": \"\",\n  \"answer\": \"\",\n  \"sortOrder\": 0,\n  \"isPublished\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Help.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/help/contacts",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/help/contacts",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Contact.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/help/contacts/{id}/status",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/help/contacts/:id/status",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Contact.Manage."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Travel services (staff)",
+      "item": [
+        {
+          "name": "GET /api/v1/ops/services",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/services",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Service.View or Service.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/services",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/services",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": 0,\n  \"code\": \"\",\n  \"kind\": \"\",\n  \"name\": \"\",\n  \"supplierId\": 0,\n  \"fromPlaceId\": 0,\n  \"toPlaceId\": 0,\n  \"departTime\": \"\",\n  \"durationMin\": 0,\n  \"capacity\": 0,\n  \"maxPerBooking\": 0,\n  \"peoplePerUnit\": 0,\n  \"basePrice\": 0,\n  \"rating\": 0,\n  \"features\": \"\",\n  \"cancellationPolicy\": \"\",\n  \"imageUrl\": \"\",\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Service.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/services/{id}/inventory",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/services/:id/inventory",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Service.View or Service.Manage."
+          }
+        },
+        {
+          "name": "POST /api/v1/ops/services/{id}/inventory",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/ops/services/:id/inventory",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"2026-11-17T09:14:36.689Z\",\n  \"to\": \"2026-11-17T09:14:36.689Z\",\n  \"capacity\": 0,\n  \"price\": 0,\n  \"status\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Service.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/services/bookings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/services/bookings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Service.View or Service.Manage."
+          }
+        },
+        {
+          "name": "GET /api/v1/ops/services/places",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/ops/services/places",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Service.View or Service.Manage."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "GET /api/v1/payments/summary",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/payments/summary",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        },
+        {
+          "name": "POST /api/v1/payments/checkout",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/payments/checkout",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderType\": \"\",\n  \"orderId\": 0,\n  \"mode\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        },
+        {
+          "name": "POST /api/v1/payments/{tradeNo}/refresh",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/payments/:tradeNo/refresh",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Booking.ViewOwn."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin: dashboard & audit",
+      "item": [
+        {
+          "name": "GET /api/v1/admin/dashboard",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/dashboard",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Dashboard.View."
+          }
+        },
+        {
+          "name": "GET /api/v1/admin/audit",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/audit",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Audit.View."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin: users & onboarding",
+      "item": [
+        {
+          "name": "GET /api/v1/admin/users",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/users",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Users.View."
+          }
+        },
+        {
+          "name": "GET /api/v1/admin/users/{id}",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Users.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/users/invite",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/users/invite",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"displayName\": \"\",\n  \"userType\": \"\",\n  \"roleIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/users/{id}/resend-invite",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id/resend-invite",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/users/{id}/roles",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id/roles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleIds\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/users/{id}/status",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id/status",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/users/{id}/revoke-sessions",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id/revoke-sessions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/users/{id}/force-reset",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/users/:id/force-reset",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Users.Edit."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin: roles & permissions",
+      "item": [
+        {
+          "name": "GET /api/v1/admin/roles",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/roles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Roles.View or Admin.Users.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/roles",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/roles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleKey\": \"\",\n  \"roleName\": \"\",\n  \"description\": \"\",\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Roles.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/roles/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/roles/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleKey\": \"\",\n  \"roleName\": \"\",\n  \"description\": \"\",\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Roles.Edit."
+          }
+        },
+        {
+          "name": "DELETE /api/v1/admin/roles/{id}",
+          "event": [],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/admin/roles/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Roles.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/roles/{id}/permissions",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/roles/:id/permissions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Roles.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/admin/permissions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/permissions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Permissions.View or Admin.Roles.View or Admin.Menus.View."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/permissions/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/permissions/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"\",\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Permissions.Edit."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin: menus",
+      "item": [
+        {
+          "name": "GET /api/v1/admin/menus",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/menus",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Menus.View."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/menus",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/menus",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parentMenuId\": 0,\n  \"menuKey\": \"\",\n  \"title\": \"\",\n  \"routePath\": \"\",\n  \"iconKey\": \"\",\n  \"sortOrder\": 0,\n  \"isVisible\": false,\n  \"isActive\": false,\n  \"isExternal\": false,\n  \"applicationArea\": \"\",\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Menus.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/menus/{id}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/menus/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"parentMenuId\": 0,\n  \"menuKey\": \"\",\n  \"title\": \"\",\n  \"routePath\": \"\",\n  \"iconKey\": \"\",\n  \"sortOrder\": 0,\n  \"isVisible\": false,\n  \"isActive\": false,\n  \"isExternal\": false,\n  \"applicationArea\": \"\",\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Menus.Edit."
+          }
+        },
+        {
+          "name": "DELETE /api/v1/admin/menus/{id}",
+          "event": [],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/admin/menus/:id",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Menus.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/menus/{id}/permissions",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/menus/:id/permissions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Menus.Edit."
+          }
+        },
+        {
+          "name": "POST /api/v1/admin/menus/{id}/move",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/menus/:id/move",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"direction\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Menus.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/admin/menus/preview",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/menus/preview",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Menus.View."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin: settings & content",
+      "item": [
+        {
+          "name": "GET /api/v1/admin/settings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/settings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Settings.View."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/settings/{key}",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/settings/:key",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"\",\n  \"valueType\": \"\",\n  \"category\": \"\",\n  \"description\": \"\",\n  \"isPublic\": false,\n  \"isActive\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Settings.Edit."
+          }
+        },
+        {
+          "name": "GET /api/v1/admin/content",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/content",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Admin.Content.Edit."
+          }
+        },
+        {
+          "name": "PUT /api/v1/admin/content",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/admin/content",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"templateKey\": \"\",\n  \"locale\": \"\",\n  \"kind\": \"\",\n  \"subject\": \"\",\n  \"body\": \"\",\n  \"isPublic\": false,\n  \"rowVersion\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Admin.Content.Edit."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/v1/auth/login",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/register",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"displayName\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/refresh",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/refresh",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/logout",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/logout",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/logout-all",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/logout-all",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Account.Self."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/forgot-password",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/forgot-password",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/reset-password",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/reset-password",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/auth/invitation",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/auth/invitation",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/accept-invitation",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/accept-invitation",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\",\n  \"displayName\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/auth/me",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/auth/me",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "Navigation",
+      "item": [
+        {
+          "name": "GET /api/v1/navigation/me",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/navigation/me",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": ""
+          }
+        },
+        {
+          "name": "GET /api/v1/navigation/public",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/navigation/public",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "PUT /api/v1/account/profile",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/account/profile",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"\",\n  \"phone\": \"\",\n  \"preferredLanguage\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Account.Self."
+          }
+        },
+        {
+          "name": "POST /api/v1/account/change-password",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/account/change-password",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"\",\n  \"newPassword\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires permission: Account.Self."
+          }
+        },
+        {
+          "name": "GET /api/v1/account/export",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/account/export",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Account.Self."
+          }
+        },
+        {
+          "name": "GET /api/v1/account/sessions",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/account/sessions",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "description": "Requires permission: Account.Self."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "GET /api/v1/public/settings",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/public/settings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "GET /api/v1/public/content",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/public/content",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Anonymous endpoint."
+          }
+        },
+        {
+          "name": "POST /api/v1/public/newsletter",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/public/newsletter",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Anonymous endpoint."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Divakar.Sanpu.AiOps.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\backend\src\Core.Application\Divakar.Sanpu.Core.Application.csproj" />
+  </ItemGroup>
+</Project>

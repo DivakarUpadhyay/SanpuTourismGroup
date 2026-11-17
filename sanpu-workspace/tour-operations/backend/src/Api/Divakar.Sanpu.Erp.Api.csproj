@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>divakar-sanpu-erp-api</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Divakar.Sanpu.Erp.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\backend\src\Core.Api\Divakar.Sanpu.Core.Api.csproj" />
+  </ItemGroup>
+</Project>

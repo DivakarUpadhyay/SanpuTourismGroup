@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Divakar.Sanpu.AiOps.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\shared\backend\src\Core.Infrastructure\Divakar.Sanpu.Core.Infrastructure.csproj" />
+    <PackageReference Include="Anthropic" Version="13.9.0" />
+  </ItemGroup>
+</Project>

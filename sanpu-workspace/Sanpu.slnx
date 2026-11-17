@@ -1,0 +1,65 @@
+<Solution>
+  <Folder Name="/ai-travel/" />
+  <Folder Name="/ai-travel/backend/" />
+  <Folder Name="/ai-travel/backend/src/" />
+  <Folder Name="/ai-travel/backend/src/Api/">
+    <Project Path="ai-travel/backend/src/Api/Divakar.Sanpu.AiOps.Api.csproj" />
+  </Folder>
+  <Folder Name="/ai-travel/backend/src/Application/">
+    <Project Path="ai-travel/backend/src/Application/Divakar.Sanpu.AiOps.Application.csproj" />
+  </Folder>
+  <Folder Name="/ai-travel/backend/src/Domain/">
+    <Project Path="ai-travel/backend/src/Domain/Divakar.Sanpu.AiOps.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ai-travel/backend/src/Infrastructure/">
+    <Project Path="ai-travel/backend/src/Infrastructure/Divakar.Sanpu.AiOps.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/ai-travel/backend/tests/" />
+  <Folder Name="/ai-travel/backend/tests/Integration/">
+    <Project Path="ai-travel/backend/tests/Integration/Divakar.Sanpu.AiOps.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/ai-travel/backend/tests/Unit/">
+    <Project Path="ai-travel/backend/tests/Unit/Divakar.Sanpu.AiOps.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/shared/" />
+  <Folder Name="/shared/backend/" />
+  <Folder Name="/shared/backend/src/" />
+  <Folder Name="/shared/backend/src/Core.Api/">
+    <Project Path="shared/backend/src/Core.Api/Divakar.Sanpu.Core.Api.csproj" />
+  </Folder>
+  <Folder Name="/shared/backend/src/Core.Application/">
+    <Project Path="shared/backend/src/Core.Application/Divakar.Sanpu.Core.Application.csproj" />
+  </Folder>
+  <Folder Name="/shared/backend/src/Core.Domain/">
+    <Project Path="shared/backend/src/Core.Domain/Divakar.Sanpu.Core.Domain.csproj" />
+  </Folder>
+  <Folder Name="/shared/backend/src/Core.Infrastructure/">
+    <Project Path="shared/backend/src/Core.Infrastructure/Divakar.Sanpu.Core.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/shared/backend/tests/" />
+  <Folder Name="/shared/backend/tests/Unit/">
+    <Project Path="shared/backend/tests/Unit/Divakar.Sanpu.Core.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/" />
+  <Folder Name="/tour-operations/backend/" />
+  <Folder Name="/tour-operations/backend/src/" />
+  <Folder Name="/tour-operations/backend/src/Api/">
+    <Project Path="tour-operations/backend/src/Api/Divakar.Sanpu.Erp.Api.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/backend/src/Application/">
+    <Project Path="tour-operations/backend/src/Application/Divakar.Sanpu.Erp.Application.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/backend/src/Domain/">
+    <Project Path="tour-operations/backend/src/Domain/Divakar.Sanpu.Erp.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/backend/src/Infrastructure/">
+    <Project Path="tour-operations/backend/src/Infrastructure/Divakar.Sanpu.Erp.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/backend/tests/" />
+  <Folder Name="/tour-operations/backend/tests/Integration/">
+    <Project Path="tour-operations/backend/tests/Integration/Divakar.Sanpu.Erp.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tour-operations/backend/tests/Unit/">
+    <Project Path="tour-operations/backend/tests/Unit/Divakar.Sanpu.Erp.UnitTests.csproj" />
+  </Folder>
+</Solution>

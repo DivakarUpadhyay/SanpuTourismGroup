@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 292" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: sunrise over a sea of clouds with mountain ridges and a small forest train">
+<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d4c8a"/><stop offset="0.55" stop-color="#f29e7a"/><stop offset="1" stop-color="#ffd9a0"/></linearGradient></defs>
+<rect width="480" height="292" fill="url(#s)"/><circle cx="240" cy="150" r="40" fill="#ffe7a8"/>
+<path d="M0 160 L80 108 L150 146 L230 96 L300 150 L380 104 L480 150 V200 H0Z" fill="#4a3f6b" opacity=".85"/>
+<g fill="#fff8f0"><ellipse cx="80" cy="186" rx="120" ry="22"/><ellipse cx="260" cy="194" rx="150" ry="24"/><ellipse cx="430" cy="184" rx="110" ry="20"/></g>
+<path d="M0 214 C100 200 380 200 480 214 V292 H0Z" fill="#2e4a3a"/>
+<g fill="#1f3529"><path d="M40 214 l14 -40 l14 40z"/><path d="M70 214 l12 -32 l12 32z"/><path d="M400 214 l14 -42 l14 42z"/><path d="M430 214 l10 -28 l10 28z"/></g>
+<path d="M0 252 H480" stroke="#7a5b3a" stroke-width="4"/>
+<g fill="#b8392e"><rect x="170" y="230" width="44" height="20" rx="4"/><rect x="218" y="230" width="40" height="20" rx="4"/><rect x="262" y="230" width="40" height="20" rx="4"/></g>
+<g fill="#ffe7a8"><rect x="176" y="234" width="8" height="7"/><rect x="190" y="234" width="8" height="7"/><rect x="224" y="234" width="8" height="7"/><rect x="238" y="234" width="8" height="7"/><rect x="268" y="234" width="8" height="7"/><rect x="282" y="234" width="8" height="7"/></g>
+<g fill="#222"><circle cx="182" cy="252" r="4"/><circle cx="204" cy="252" r="4"/><circle cx="230" cy="252" r="4"/><circle cx="250" cy="252" r="4"/><circle cx="274" cy="252" r="4"/><circle cx="294" cy="252" r="4"/></g>
+</svg>

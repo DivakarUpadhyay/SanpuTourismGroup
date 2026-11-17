@@ -1,0 +1,33 @@
+# build
+bin/
+obj/
+.vs/
+*.user
+node_modules/
+.next/
+out/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+# secrets & local data (never commit)
+.env
+.env.*
+!.env.example
+!.env.development
+.secrets/
+LOGINS.local.txt
+*.local.txt
+storage/
+uploads/
+
+# test artifacts
+tests/e2e/.auth/
+tests/e2e/results/
+tests/e2e/report/
+artifacts/screens/
+artifacts/visible/
+artifacts/ecpay/
+artifacts/newman/
+*.log
+*.err

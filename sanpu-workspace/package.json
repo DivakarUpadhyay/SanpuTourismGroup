@@ -1,0 +1,22 @@
+{
+  "name": "sanpu-workspace",
+  "private": true,
+  "description": "Sanpu portfolio prototypes by Divakar: Tour Operations ERP + AI Operations Copilot (fictional demo data)",
+  "workspaces": ["shared/web", "tour-operations/frontend", "ai-travel/frontend"],
+  "scripts": {
+    "dev:erp": "npm run dev -w tour-operations/frontend",
+    "dev:ai": "npm run dev -w ai-travel/frontend",
+    "build": "npm run build -w tour-operations/frontend && npm run build -w ai-travel/frontend",
+    "typecheck": "npm run typecheck -w tour-operations/frontend && npm run typecheck -w ai-travel/frontend",
+    "e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "newman": "node tools/run-newman.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.15.30",
+    "newman": "6.2.3",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
