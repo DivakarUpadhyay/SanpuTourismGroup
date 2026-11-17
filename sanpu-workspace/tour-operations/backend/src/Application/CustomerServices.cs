@@ -84,7 +84,7 @@ public sealed class DiscoveryService(ICustomerRepository repo, ISettings setting
     public Task<IReadOnlyList<CompareRow>> CompareAsync(string? codes, CancellationToken ct)
     {
         var list = (codes ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
-        if (list.Count is < 2 or > 3 || list.Any(c => !Regex.IsMatch(c, "^[A-Z0-9-]{3,30}$"))) throw AppException.Validation("codes", "Choose 2 or 3 tours to compare.");
+        if (list.Count is < 2 or > 3 || list.Any(c => !Regex.IsMatch(c, "^[A-Za-z0-9-]{3,120}$"))) throw AppException.Validation("codes", "Choose 2 or 3 tours to compare.");
         return repo.CompareAsync(list, ct);
     }
 
@@ -167,7 +167,7 @@ public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser
 
     public Task<ServiceDetail> DetailAsync(string code, DateTime? from, CancellationToken ct)
     {
-        if (!Regex.IsMatch(code ?? "", "^[A-Z0-9-]{3,30}$")) throw AppException.NotFound("Service");
+        if (!Regex.IsMatch(code ?? "", "^[A-Za-z0-9-]{3,120}$")) throw AppException.NotFound("Service");   // slug or code
         return repo.ServiceDetailAsync(code!, (from ?? DateTime.UtcNow.Date.AddDays(1)).Date, ct);
     }
 

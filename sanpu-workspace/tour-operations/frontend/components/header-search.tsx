@@ -5,8 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, get } from "@sanpu/web";
 
 interface Hit { kind: "Destination" | "Tour" | "Travel"; title: string; sub: string; href: string; img?: string | null; icon?: string }
-interface Dest { code: string; name: string; region: string; imageUrl?: string | null }
-interface Tour { code: string; title: string; destinationName: string; days: number; imageUrl?: string | null }
+interface Dest { code: string; slug?: string | null; name: string; region: string; imageUrl?: string | null }
+interface Tour { code: string; slug?: string | null; title: string; destinationName: string; days: number; imageUrl?: string | null }
 
 const TRAVEL: Hit[] = [
   { kind: "Travel", title: "Hotels", sub: "Rooms across Taiwan", href: "/hotels", icon: "building" },
@@ -33,8 +33,8 @@ export function HeaderSearch() {
   const hits = useMemo<Hit[]>(() => {
     const t = q.trim().toLowerCase();
     const all: Hit[] = [
-      ...(data?.dest ?? []).map((d) => ({ kind: "Destination" as const, title: d.name, sub: `${d.region} · destination guide`, href: `/destinations/${d.code}`, img: d.imageUrl })),
-      ...(data?.tours ?? []).map((x) => ({ kind: "Tour" as const, title: x.title, sub: `${x.destinationName} · ${x.days} days`, href: `/tours/${x.code}`, img: x.imageUrl })),
+      ...(data?.dest ?? []).map((d) => ({ kind: "Destination" as const, title: d.name, sub: `${d.region} · destination guide`, href: `/destinations/${d.slug ?? d.code}`, img: d.imageUrl })),
+      ...(data?.tours ?? []).map((x) => ({ kind: "Tour" as const, title: x.title, sub: `${x.destinationName} · ${x.days} days`, href: `/tours/${x.slug ?? x.code}`, img: x.imageUrl })),
       ...TRAVEL];
     return (t ? all.filter((h) => `${h.title} ${h.sub}`.toLowerCase().includes(t)) : all.filter((h) => h.kind !== "Tour")).slice(0, 8);
   }, [q, data]);

@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ApiError, Async, Card, Checkbox, ConfirmButton, ErrorBox, FormError, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput,
-  fmtDate, fmtDateTime, get, money, newKey, post, useAction, useAsync, useAuth, useContent
+  ApiError, Async, Card, Checkbox, CleanParams, ConfirmButton, ErrorBox, FormError, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput,
+  fmtDate, fmtDateTime, get, money, newKey, post, savePageParams, useAction, useAsync, useAuth, useContent
 } from "@sanpu/web";
 import { PromoStrip } from "./explore";
 
 type Kind = "Hotel" | "Flight" | "Bus" | "Taxi";
 interface Place { placeId: number; code: string; name: string; kind: string; city: string }
 interface Result {
-  serviceId: number; code: string; kind: Kind; name: string; features?: string; cancellationPolicy?: string; imageUrl?: string; rating?: number; departTime?: string; durationMin?: number;
+  serviceId: number; code: string; slug?: string | null; kind: Kind; name: string; features?: string; cancellationPolicy?: string; imageUrl?: string; rating?: number; departTime?: string; durationMin?: number;
   peoplePerUnit: number; maxPerBooking: number; currency: string; providerName?: string; fromCode: string; fromName: string; fromCity: string; toCode?: string; toName?: string; toCity?: string;
   available: number; totalPrice: number; nightlyPrice: number; nights: number;
 }
@@ -30,10 +30,8 @@ const dur = (m?: number) => (m ? `${Math.floor(m / 60) ? `${Math.floor(m / 60)} 
 const arrive = (t?: string, m?: number) => { if (!t || !m) return ""; const [h, mi] = t.split(":").map(Number); const x = h * 60 + mi + m; return `${String(Math.floor(x / 60) % 24).padStart(2, "0")}:${String(x % 60).padStart(2, "0")}${x >= 1440 ? " +1" : ""}`; };
 
 /* ---------------- search ---------------- */
-function SearchInner({ kind }: { kind: Kind }) {
+function SearchInner({ kind, params }: { kind: Kind; params: URLSearchParams }) {
   const meta = META[kind];
-  const params = useSearchParams();
-  const router = useRouter();
   const places = useAsync(() => get<Place[]>("/travel/places", { kind }), [kind]);
   const [q, setQ] = useState({
     from: params.get("from") ?? "", to: params.get("to") ?? "", date: params.get("date") ?? plus(14), endDate: params.get("endDate") ?? plus(16),
@@ -43,7 +41,7 @@ function SearchInner({ kind }: { kind: Kind }) {
   const results = useAsync(() => get<Result[]>("/travel/search", { kind, from: applied.from, to: applied.to, date: applied.date, endDate: kind === "Hotel" ? applied.endDate : undefined,
     units: applied.units, travelers: applied.travelers, sort: applied.sort }), [JSON.stringify(applied)]);
   const opts = (kinds?: string[]) => (places.data ?? []).filter((p) => !kinds || kinds.includes(p.kind)).map((p) => ({ value: p.code, label: kind === "Hotel" ? p.city : `${p.name}${p.kind === "Zone" ? ` (${p.city})` : ""}` }));
-  const submit = (next = q) => { setApplied(next); router.replace(`?${new URLSearchParams(Object.entries(next).map(([k, v]) => [k, String(v)]))}`, { scroll: false }); };
+  const submit = (next = q) => { setApplied(next); savePageParams(next); };   // kept for this tab, never in the URL
   return (
     <>
       <section className="dt-hero" style={{ "--hero-img": `url(${meta.image})` } as React.CSSProperties}>
@@ -82,13 +80,14 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
   const units = r.kind === "Flight" || r.kind === "Bus" ? applied.travelers : applied.units;
   const href = `/services/book?${new URLSearchParams({ code: r.code, date: applied.date, ...(r.kind === "Hotel" ? { endDate: applied.endDate } : {}), units: String(units), travelers: String(applied.travelers) })}`;
   const total = r.totalPrice * units;
-  const detail = `/services/${r.code}?${new URLSearchParams({ date: applied.date, ...(r.kind === "Hotel" ? { endDate: applied.endDate } : {}), units: String(applied.units), travelers: String(applied.travelers) })}`;
+  const detail = `/services/${r.slug ?? r.code}`;
+  const keep = () => savePageParams({ date: applied.date, endDate: r.kind === "Hotel" ? applied.endDate : undefined, units: applied.units, travelers: applied.travelers }, detail);   // carry the search into the detail page without a query string
   return (
     <article className="svc-card" data-testid={`svc-${r.code}`}>
-      <Link href={detail} className="svc-img" style={{ backgroundImage: `url(${r.imageUrl ?? ""})` }} aria-label={`Details: ${r.name}`} />
+      <Link href={detail} onClick={keep} className="svc-img" style={{ backgroundImage: `url(${r.imageUrl ?? ""})` }} aria-label={`Details: ${r.name}`} />
       <div className="svc-body">
         <div className="svc-top"><span className="slogan">{r.providerName}</span>{r.rating && <span className="rating"><Icon name="star" size={14} />{r.rating.toFixed(1)}</span>}</div>
-        <h3><Link href={detail} className="svc-title">{r.name}</Link></h3>
+        <h3><Link href={detail} onClick={keep} className="svc-title">{r.name}</Link></h3>
         {r.kind === "Hotel" ? <p className="small muted"><Icon name="map" size={14} /> {r.fromCity} · {r.nights} {r.nights === 1 ? "night" : "nights"}</p> : (
           <div className="svc-route">
             <div><b>{hhmm(r.departTime) || "Your time"}</b><span>{r.fromName}</span></div>
@@ -105,13 +104,13 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
         <b>{money(total, r.currency)}</b>
         <small>total for {units} {units === 1 ? META[r.kind].unit : META[r.kind].units}</small>
         <Link className="btn primary" href={href} data-testid={`svc-book-${r.code}`}>Select</Link>
-        <Link className="svc-more" href={detail} data-testid={`svc-detail-${r.code}`}>View details <Icon name="arrow" size={13} /></Link>
+        <Link className="svc-more" href={detail} onClick={keep} data-testid={`svc-detail-${r.code}`}>View details <Icon name="arrow" size={13} /></Link>
       </div>
     </article>
   );
 }
 
-export const ServiceSearchPage = ({ kind }: { kind: Kind }) => <Suspense><SearchInner kind={kind} /></Suspense>;
+export const ServiceSearchPage = ({ kind }: { kind: Kind }) => <CleanParams>{(p) => <SearchInner kind={kind} params={p} />}</CleanParams>;
 
 /* ---------------- coupon field (shared by tour and service checkout) ---------------- */
 /** Coupon chosen on the Deals page (localStorage), used only when it fits this booking type. */
@@ -146,8 +145,7 @@ export function CouponField({ kind, amount, value, onApplied }: { kind: string; 
 }
 
 /* ---------------- service checkout ---------------- */
-function BookInner() {
-  const p = useSearchParams();
+function BookInner({ p }: { p: URLSearchParams }) {
   const router = useRouter();
   const { status } = useAuth();
   const privacy = useContent("privacy.notice");
@@ -167,7 +165,7 @@ function BookInner() {
   const [coupon, setCoupon] = useState({ code: "", discount: 0 });
   const [key] = useState(() => newKey("svc"));
   const a = useAction();
-  useEffect(() => { if (status === "anonymous") router.replace(`/login?next=${encodeURIComponent(`/services/book?${p.toString()}`)}`); }, [status, router, p]);
+  useEffect(() => { if (status === "anonymous") { savePageParams(Object.fromEntries(p), "/services/book"); router.replace(`/login?next=${encodeURIComponent("/services/book")}`); } }, [status, router, p]);
   return (
     <Async state={svc}>{(s) => {
       const subtotal = s.totalPrice * units;
@@ -217,7 +215,7 @@ function BookInner() {
     }}</Async>
   );
 }
-export const ServiceBookPage = () => <Suspense><BookInner /></Suspense>;
+export const ServiceBookPage = () => <CleanParams>{(p) => <BookInner p={p} />}</CleanParams>;
 
 /* ---------------- payments ---------------- */
 interface PaySummary { summary: { orderRef: string; status: string; paymentStatus: string; totalAmount: number; amountPaid: number; balance: number; startDate: string; balanceDueDate?: string;
@@ -296,8 +294,7 @@ export function MyServiceBookings({ highlight }: { highlight?: string }) {
 }
 
 /** Banner after returning from the payment gateway (?payment=paid|failed|pending|invalid&ref=...). */
-export function PaymentResultBanner() {
-  const p = useSearchParams();
+export function PaymentResultBanner({ p }: { p: URLSearchParams }) {
   const outcome = p.get("payment"), ref = p.get("ref"), booked = p.get("booked");
   const msg = useMemo(() => {
     if (booked) return { tone: "ok", text: `Booking ${booked} is confirmed. You can pay now or pay a deposit below.` };

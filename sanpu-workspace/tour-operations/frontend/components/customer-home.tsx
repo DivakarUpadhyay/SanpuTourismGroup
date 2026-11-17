@@ -6,8 +6,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Async, DataTable, Demo, Icon, Pill, SelectInput, TextInput, fmtDate, get, money, post, useAsync, useAuth, useContent, useSetting } from "@sanpu/web";
 import { PromoStrip, RecommendedSection } from "./explore";
 
-export interface TourCard { imageUrl?: string | null; tourId: number; code: string; title: string; slogan?: string; days: number; currency: string; summary?: string; isDemo: boolean; destinationName: string; businessUnitName: string; fromPrice?: number; nextDeparture?: string; openDepartures: number }
-interface Destination { code: string; name: string; region: string; imageUrl?: string | null; tourCount: number }
+export interface TourCard { slug?: string | null; imageUrl?: string | null; tourId: number; code: string; title: string; slogan?: string; days: number; currency: string; summary?: string; isDemo: boolean; destinationName: string; businessUnitName: string; fromPrice?: number; nextDeparture?: string; openDepartures: number }
+interface Destination { code: string; slug?: string | null; name: string; region: string; imageUrl?: string | null; tourCount: number }
 
 const bg = (url?: string | null) => (url ? { backgroundImage: `url(${url})` } : undefined);
 
@@ -22,7 +22,7 @@ export function TourTile({ t }: { t: TourCard }) {
       </div>
       <div className="content">
         <span className="slogan">{t.slogan}<Demo show={t.isDemo} /></span>
-        <h3><Link href={`/tours/${t.code}`}>{t.title}</Link></h3>
+        <h3><Link href={`/tours/${t.slug ?? t.code}`}>{t.title}</Link></h3>
         <p>{t.summary}</p>
         <div className="facts">
           <span><Icon name="calendar" size={14} />{t.nextDeparture ? `Next: ${fmtDate(t.nextDeparture)}` : "No dates yet"}</span>
@@ -30,7 +30,7 @@ export function TourTile({ t }: { t: TourCard }) {
         </div>
         <div className="foot">
           <span className="price"><small>From</small><b>{t.fromPrice != null ? money(t.fromPrice, t.currency) : "—"}</b></span>
-          <Link className="go-btn" href={`/tours/${t.code}`} aria-label={`View tour: ${t.title}`} data-testid={`view-${t.code}`}>View tour<Icon name="arrow" size={15} /></Link>
+          <Link className="go-btn" href={`/tours/${t.slug ?? t.code}`} aria-label={`View tour: ${t.title}`} data-testid={`view-${t.code}`}>View tour<Icon name="arrow" size={15} /></Link>
         </div>
       </div>
     </article>

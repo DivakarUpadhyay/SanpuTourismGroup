@@ -22,6 +22,7 @@ public sealed record ContactStatusRequest(string Status);
 /* ---------- discovery ---------- */
 public sealed record RecommendationRow
 {
+    public string? Slug { get; init; }
     public string Code { get; init; } = ""; public string Title { get; init; } = ""; public string? Slogan { get; init; } public int Days { get; init; } public string Currency { get; init; } = "TWD";
     public string? Summary { get; init; } public string DestinationName { get; init; } = ""; public string Region { get; init; } = ""; public string? ImageUrl { get; init; } public string BusinessUnitName { get; init; } = "";
     public decimal? FromPrice { get; init; } public DateTime? NextDeparture { get; init; } public decimal Score { get; init; } public string Reason { get; init; } = "";
@@ -29,10 +30,11 @@ public sealed record RecommendationRow
 public sealed record CalendarRow
 {
     public int DepartureId { get; init; } public DateTime DepartureDate { get; init; } public decimal Price { get; init; } public int SeatsLeft { get; init; } public string Status { get; init; } = "";
-    public string TourCode { get; init; } = ""; public string TourTitle { get; init; } = ""; public int Days { get; init; } public string Currency { get; init; } = "TWD"; public string DestinationName { get; init; } = "";
+    public string TourCode { get; init; } = ""; public string? TourSlug { get; init; } public string TourTitle { get; init; } = ""; public int Days { get; init; } public string Currency { get; init; } = "TWD"; public string DestinationName { get; init; } = "";
 }
 public sealed record CompareRow
 {
+    public string? Slug { get; init; }
     public string Code { get; init; } = ""; public string Title { get; init; } = ""; public string? Slogan { get; init; } public int Days { get; init; } public string Currency { get; init; } = "TWD"; public string? Summary { get; init; }
     public string DestinationName { get; init; } = ""; public string Region { get; init; } = ""; public string BusinessUnitName { get; init; } = ""; public string? ImageUrl { get; init; }
     public string? BestTime { get; init; } public string? GettingThere { get; init; } public decimal? FromPrice { get; init; } public DateTime? NextDeparture { get; init; }
@@ -40,11 +42,13 @@ public sealed record CompareRow
 }
 public sealed record DestinationHeaderRow
 {
+    public string? Slug { get; init; }
     public int DestinationId { get; init; } public string Code { get; init; } = ""; public string Name { get; init; } = ""; public string Region { get; init; } = ""; public string? ImageUrl { get; init; }
     public string? Overview { get; init; } public string? BestTime { get; init; } public string? GettingThere { get; init; } public string? LocalTip { get; init; }
 }
 public sealed record DestinationTourRow
 {
+    public string? Slug { get; init; }
     public string Code { get; init; } = ""; public string Title { get; init; } = ""; public string? Slogan { get; init; } public int Days { get; init; } public string Currency { get; init; } = "TWD"; public string? Summary { get; init; }
     public string? ImageUrl { get; init; } public string DestinationName { get; init; } = ""; public string BusinessUnitName { get; init; } = ""; public decimal? FromPrice { get; init; } public DateTime? NextDeparture { get; init; } public int OpenDepartures { get; init; }
 }
@@ -89,6 +93,7 @@ public sealed record SavedIdRow { public int Id { get; init; } }
 public sealed record PlaceRow { public int PlaceId { get; init; } public string Code { get; init; } = ""; public string Name { get; init; } = ""; public string Kind { get; init; } = ""; public string City { get; init; } = ""; }
 public sealed record ServiceResultRow
 {
+    public string? Slug { get; init; }
     public int ServiceId { get; init; } public string Code { get; init; } = ""; public string Kind { get; init; } = ""; public string Name { get; init; } = ""; public string? Features { get; init; }
     public string? CancellationPolicy { get; init; } public string? ImageUrl { get; init; } public decimal? Rating { get; init; } public TimeSpan? DepartTime { get; init; } public int? DurationMin { get; init; }
     public int PeoplePerUnit { get; init; } public int MaxPerBooking { get; init; } public string Currency { get; init; } = "TWD"; public string? ProviderName { get; init; }
@@ -108,6 +113,7 @@ public sealed record MyServiceBookingRow
 /* ---------- service detail ---------- */
 public sealed record ServiceDetailRow
 {
+    public string? Slug { get; init; }
     public int ServiceId { get; init; } public string Code { get; init; } = ""; public string Kind { get; init; } = ""; public string Name { get; init; } = ""; public string? Description { get; init; }
     public string? Address { get; init; } public string? Highlights { get; init; } public string? FactsJson { get; init; } public string? Gallery { get; init; } public decimal? Latitude { get; init; } public decimal? Longitude { get; init; }
     public string? Features { get; init; } public string? CancellationPolicy { get; init; } public string? ImageUrl { get; init; } public decimal? Rating { get; init; } public TimeSpan? DepartTime { get; init; }
@@ -118,6 +124,7 @@ public sealed record ServiceDetailRow
 public sealed record ServiceDayRow { public DateTime ServiceDate { get; init; } public decimal Price { get; init; } public int Available { get; init; } public string Status { get; init; } = ""; }
 public sealed record SimilarServiceRow
 {
+    public string? Slug { get; init; }
     public string Code { get; init; } = ""; public string Kind { get; init; } = ""; public string Name { get; init; } = ""; public string? ImageUrl { get; init; } public decimal? Rating { get; init; }
     public TimeSpan? DepartTime { get; init; } public int? DurationMin { get; init; } public decimal BasePrice { get; init; } public string Currency { get; init; } = "TWD"; public string FromName { get; init; } = ""; public string? ToName { get; init; } public string FromCity { get; init; } = "";
 }

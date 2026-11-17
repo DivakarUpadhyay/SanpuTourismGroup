@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Async, Card, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
+import { Async, Card, CleanParams, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, savePageParams, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
 import { TourTile, type TourCard } from "./customer-home";
 
 const bg = (url?: string | null) => (url ? { backgroundImage: `url(${url})` } : undefined);
-interface Destination { code: string; name: string; region: string; imageUrl?: string | null; tourCount: number }
+interface Destination { code: string; slug?: string | null; name: string; region: string; imageUrl?: string | null; tourCount: number }
 
 /* ---------------- recommendations ---------------- */
-export interface Recommendation { code: string; title: string; slogan?: string; days: number; currency: string; summary?: string; destinationName: string; region: string;
+export interface Recommendation { code: string; slug?: string | null; title: string; slogan?: string; days: number; currency: string; summary?: string; destinationName: string; region: string;
   imageUrl?: string | null; businessUnitName: string; fromPrice?: number; nextDeparture?: string; reason: string }
 
 export function RecommendationCards({ list }: { list: Recommendation[] }) {
@@ -25,9 +25,9 @@ export function RecommendationCards({ list }: { list: Recommendation[] }) {
           </div>
           <div className="content">
             <span className="slogan">{r.slogan}</span>
-            <h3><Link href={`/tours/${r.code}`}>{r.title}</Link></h3>
+            <h3><Link href={`/tours/${r.slug ?? r.code}`}>{r.title}</Link></h3>
             <p>{r.summary}</p>
-            <div className="foot"><span className="price"><small>From · next {fmtDate(r.nextDeparture)}</small><b>{money(r.fromPrice, r.currency)}</b></span><Link className="go-btn" href={`/tours/${r.code}`} aria-label={`View tour: ${r.title}`}>View tour<Icon name="arrow" size={15} /></Link></div>
+            <div className="foot"><span className="price"><small>From · next {fmtDate(r.nextDeparture)}</small><b>{money(r.fromPrice, r.currency)}</b></span><Link className="go-btn" href={`/tours/${r.slug ?? r.code}`} aria-label={`View tour: ${r.title}`}>View tour<Icon name="arrow" size={15} /></Link></div>
           </div>
         </article>
       ))}
@@ -230,16 +230,14 @@ export function DealsPage() {
 }
 
 /* ---------------- tours list ---------------- */
-function ToursInner() {
-  const params = useSearchParams();
-  const router = useRouter();
+function ToursInner({ params }: { params: URLSearchParams }) {
   const [q, setQ] = useState({ destination: params.get("destination") ?? "", month: params.get("month") ?? "", pax: Number(params.get("pax") ?? 1) || 1 });
   const [sort, setSort] = useState(params.get("sort") ?? "date");
   const destinations = useAsync(() => get<Destination[]>("/catalog/destinations"), []);
   const tours = useAsync(() => get<TourCard[]>("/catalog/tours", q), [q.destination, q.month, q.pax]);
   const sorted = useMemo(() => [...(tours.data ?? [])].sort((a, b) =>
     sort === "price" ? (a.fromPrice ?? 9e9) - (b.fromPrice ?? 9e9) : sort === "days" ? a.days - b.days : String(a.nextDeparture).localeCompare(String(b.nextDeparture))), [tours.data, sort]);
-  const sync = (next: typeof q, nextSort = sort) => router.replace(`/tours?${new URLSearchParams({ destination: next.destination, month: next.month, pax: String(next.pax), sort: nextSort })}`, { scroll: false });
+  const sync = (next: typeof q, nextSort = sort) => savePageParams({ ...next, sort: nextSort });   // kept for this tab, never in the URL
   const set = (next: typeof q) => { setQ(next); sync(next); };
   const dest = destinations.data?.find((d) => d.code === q.destination);
   const now = new Date(), minMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -301,7 +299,7 @@ function ToursInner() {
     </div>
   );
 }
-export const ToursPage = () => <Suspense><ToursInner /></Suspense>;
+export const ToursPage = () => <CleanParams>{(p) => <ToursInner params={p} />}</CleanParams>;
 
 /* ---------------- destinations ---------------- */
 export function DestinationsPage() {
@@ -315,7 +313,7 @@ export function DestinationsPage() {
         <Async state={destinations} empty={(d) => d.length === 0}>{(list) => (
           <div className="lp-tiles" data-testid="destination-tiles">
             {list.map((d) => (
-              <Link key={d.code} href={`/destinations/${d.code}`} className="lp-tile">
+              <Link key={d.code} href={`/destinations/${d.slug ?? d.code}`} className="lp-tile">
                 <span className="bg" style={bg(d.imageUrl)} />
                 <span className="meta"><b>{d.name}</b><span>{d.region} · read the guide</span></span>
               </Link>
@@ -374,7 +372,7 @@ export function DestinationGuidePage() {
 }
 
 /* ---------------- departure calendar ---------------- */
-interface CalRow { departureId: number; departureDate: string; price: number; seatsLeft: number; status: string; tourCode: string; tourTitle: string; days: number; currency: string; destinationName: string }
+interface CalRow { departureId: number; departureDate: string; price: number; seatsLeft: number; status: string; tourCode: string; tourSlug?: string | null; tourTitle: string; days: number; currency: string; destinationName: string }
 
 export function CalendarPage() {
   const now = new Date();
@@ -396,7 +394,7 @@ export function CalendarPage() {
           <div key={d} className={`cal-day${byDay[d] ? " has" : ""}`}>
             <span className="n">{d}</span>
             {(byDay[d] ?? []).map((r) => (
-              <Link key={r.departureId} href={`/tours/${r.tourCode}#departures`} className={`cal-ev${r.seatsLeft <= 3 ? " low" : ""}`} title={`${r.tourTitle} · ${r.seatsLeft} seats`}>
+              <Link key={r.departureId} href={`/tours/${r.tourSlug ?? r.tourCode}#departures`} className={`cal-ev${r.seatsLeft <= 3 ? " low" : ""}`} title={`${r.tourTitle} · ${r.seatsLeft} seats`}>
                 <b>{r.tourTitle}</b><span>{money(r.price, r.currency)} · {r.seatsLeft <= 0 ? "full" : `${r.seatsLeft} left`}</span>
               </Link>
             ))}
@@ -409,18 +407,16 @@ export function CalendarPage() {
 }
 
 /* ---------------- compare ---------------- */
-interface CompareRow { code: string; title: string; slogan?: string; days: number; currency: string; summary?: string; destinationName: string; region: string; businessUnitName: string; imageUrl?: string;
+interface CompareRow { code: string; slug?: string | null; title: string; slogan?: string; days: number; currency: string; summary?: string; destinationName: string; region: string; businessUnitName: string; imageUrl?: string;
   bestTime?: string; gettingThere?: string; fromPrice?: number; nextDeparture?: string; openDepartures: number; seatsLeft?: number; nearbyCount: number; nearbyNames?: string }
 
-function CompareInner() {
-  const params = useSearchParams();
-  const router = useRouter();
+function CompareInner({ params }: { params: URLSearchParams }) {
   const tours = useAsync(() => get<TourCard[]>("/catalog/tours"), []);
   const [picked, setPicked] = useState<string[]>((params.get("codes") ?? "").split(",").filter(Boolean).slice(0, 3));
   const cmp = useAsync(() => (picked.length >= 2 ? get<CompareRow[]>("/discover/compare", { codes: picked.join(",") }) : Promise.resolve([] as CompareRow[])), [picked.join(",")]);
   const toggle = (c: string) => {
     const next = picked.includes(c) ? picked.filter((x) => x !== c) : picked.length < 3 ? [...picked, c] : picked;
-    setPicked(next); router.replace(`/compare?codes=${next.join(",")}`, { scroll: false });
+    setPicked(next); savePageParams({ codes: next.join(",") });
   };
   const rows: [string, (r: CompareRow) => React.ReactNode][] = [
     ["Destination", (r) => `${r.destinationName} · ${r.region}`], ["Length", (r) => `${r.days} days`], ["From", (r) => <b>{money(r.fromPrice, r.currency)}</b>],
@@ -436,7 +432,7 @@ function CompareInner() {
         <Async state={cmp}>{(list) => (
           <div className="table-wrap card" style={{ padding: 0 }}>
             <table className="compare" data-testid="compare-table">
-              <thead><tr><th />{list.map((r) => <th key={r.code}><div className="cmp-img" style={bg(r.imageUrl)} /><Link href={`/tours/${r.code}`}>{r.title}</Link></th>)}</tr></thead>
+              <thead><tr><th />{list.map((r) => <th key={r.code}><div className="cmp-img" style={bg(r.imageUrl)} /><Link href={`/tours/${r.slug ?? r.code}`}>{r.title}</Link></th>)}</tr></thead>
               <tbody>{rows.map(([label, f]) => <tr key={label}><th scope="row">{label}</th>{list.map((r) => <td key={r.code}>{f(r)}</td>)}</tr>)}</tbody>
             </table>
           </div>
@@ -445,7 +441,7 @@ function CompareInner() {
     </>
   );
 }
-export const ComparePage = () => <Suspense><CompareInner /></Suspense>;
+export const ComparePage = () => <CleanParams>{(p) => <CompareInner params={p} />}</CleanParams>;
 
 /* ---------------- help center ---------------- */
 interface Article { articleId: number; category: string; question: string; answer: string; helpfulYes?: number; helpfulNo?: number }

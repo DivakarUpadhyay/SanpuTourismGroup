@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { CouponField, MyServiceBookings, PaymentPanel, PaymentResultBanner, clearSavedCoupon } from "./travel";
 import {
-  ApiError, Async, Card, Checkbox, ConfirmButton, DataTable, Demo, ErrorBox, FormError, PageHeader, Pill, SelectInput, TextArea, TextInput,
+  ApiError, Async, CleanParams, Card, Checkbox, ConfirmButton, DataTable, Demo, ErrorBox, FormError, PageHeader, Pill, SelectInput, TextArea, TextInput,
   fmtDate, fmtDateTime, get, money, newKey, post, useAction, useAsync, useAuth, useContent, useSetting
 } from "@sanpu/web";
 
@@ -92,15 +91,14 @@ export function MyBookingsPage() {
   return (
     <>
       <PageHeader tagline="My trips" title="My bookings" lead="Tours wait for our team to confirm them. Hotels, flights, buses and taxis are confirmed instantly." />
-      <Suspense><PaymentResultBanner /></Suspense>
+      <CleanParams persist={false}>{(p) => <><PaymentResultBanner p={p} /><MyServiceBookingsSection highlight={p.get("pay") ?? undefined} /></>}</CleanParams>
       <h2 className="sec-title">Guided tours</h2>
       <Async state={list} empty={(r) => r.length === 0}>{(rows) => <DataTable rows={rows} rowKey={(b) => b.bookingId} onRowClick={(b) => router.push(`/my/bookings/${b.bookingId}`)} testId="my-bookings" columns={[
         { key: "bookingRef", header: "Ref", render: (b) => <>{b.bookingRef}<Demo show={b.isDemo} /></> }, { key: "tourTitle", header: "Tour" },
         { key: "departureDate", header: "Date", render: (b) => fmtDate(b.departureDate) }, { key: "pax", header: "Pax" },
         { key: "totalAmount", header: "Amount", render: (b) => money(b.totalAmount, b.currency) },
         { key: "status", header: "Status", render: (b) => <Pill value={b.status} /> }, { key: "paymentStatus", header: "Payment", render: (b) => <Pill value={b.paymentStatus} /> }]} />}</Async>
-      <h2 className="sec-title">Hotels, flights, buses &amp; taxis</h2>
-      <Suspense><MyServiceBookingsWithParams /></Suspense>
+
     </>
   );
 }
@@ -149,4 +147,4 @@ export function MyBookingDetailPage() {
   );
 }
 
-function MyServiceBookingsWithParams() { return <MyServiceBookings highlight={useSearchParams().get("pay") ?? undefined} />; }
+function MyServiceBookingsSection({ highlight }: { highlight?: string }) { return <><h2 className="sec-title">Hotels, flights, buses &amp; taxis</h2><MyServiceBookings highlight={highlight} /></>; }

@@ -10,7 +10,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Catalog_Destinations AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT d.DestinationId, d.Code, d.Name, d.Region, d.IsDemo, d.ImageUrl,
+    SELECT d.DestinationId, d.Code, d.Slug, d.Name, d.Region, d.IsDemo, d.ImageUrl,
            (SELECT COUNT(*) FROM dbo.Tours t WHERE t.DestinationId = d.DestinationId AND t.IsPublished = 1) AS TourCount
     FROM dbo.Destinations d WHERE d.IsActive = 1 ORDER BY d.Region, d.Name;
 END;
@@ -19,7 +19,7 @@ CREATE OR ALTER PROCEDURE dbo.usp_Catalog_SearchTours @DestinationCode varchar(2
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Today date = CAST(SYSUTCDATETIME() AS date);
-    SELECT t.TourId, t.Code, t.Title, t.Slogan, t.Days, t.BasePrice, t.Currency, t.Summary, t.IsDemo,
+    SELECT t.TourId, t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.BasePrice, t.Currency, t.Summary, t.IsDemo,
            d.Code AS DestinationCode, d.Name AS DestinationName, d.Region, bu.Name AS BusinessUnitName,
            COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl, x.FromPrice, x.NextDeparture, x.OpenDepartures
     FROM dbo.Tours t
@@ -37,21 +37,21 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Catalog_GetTour @Code varchar(30) AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT t.TourId, t.Code, t.Title, t.Slogan, t.Days, t.BasePrice, t.Currency, t.Summary, t.IsDemo,
+    SELECT t.TourId, t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.BasePrice, t.Currency, t.Summary, t.IsDemo,
            d.Name AS DestinationName, d.Region, bu.Name AS BusinessUnitName, COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl
     FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId JOIN dbo.BusinessUnits bu ON bu.BusinessUnitId = t.BusinessUnitId
-    WHERE t.Code = @Code AND t.IsPublished = 1;
+    WHERE (t.Code = @Code OR t.Slug = @Code) AND t.IsPublished = 1;
     SELECT dp.DepartureId, dp.DepartureDate, dp.Capacity, dp.Capacity - dp.SeatsSold - dp.SeatsHeld AS SeatsLeft, dp.Price, dp.Status
     FROM dbo.Departures dp JOIN dbo.Tours t ON t.TourId = dp.TourId
-    WHERE t.Code = @Code AND t.IsPublished = 1 AND dp.DepartureDate > CAST(SYSUTCDATETIME() AS date) AND dp.Status <> 'Cancelled'
+    WHERE (t.Code = @Code OR t.Slug = @Code) AND t.IsPublished = 1 AND dp.DepartureDate > CAST(SYSUTCDATETIME() AS date) AND dp.Status <> 'Cancelled'
     ORDER BY dp.DepartureDate;
     -- destination guide: at-a-glance facts, history timeline, nearby places
     SELECT d.Overview, d.BestTime, d.GettingThere, d.LocalTip
-    FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId WHERE t.Code = @Code AND t.IsPublished = 1;
+    FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId WHERE (t.Code = @Code OR t.Slug = @Code) AND t.IsPublished = 1;
     SELECT h.Era, h.Title, h.Detail
-    FROM dbo.Tours t JOIN dbo.DestinationHistory h ON h.DestinationId = t.DestinationId WHERE t.Code = @Code AND t.IsPublished = 1 ORDER BY h.SortOrder, h.HistoryId;
+    FROM dbo.Tours t JOIN dbo.DestinationHistory h ON h.DestinationId = t.DestinationId WHERE (t.Code = @Code OR t.Slug = @Code) AND t.IsPublished = 1 ORDER BY h.SortOrder, h.HistoryId;
     SELECT n.Name, n.Category, n.DistanceKm, n.TravelMinutes, n.Detail
-    FROM dbo.Tours t JOIN dbo.NearbyPlaces n ON n.DestinationId = t.DestinationId WHERE t.Code = @Code AND t.IsPublished = 1 AND n.IsActive = 1 ORDER BY n.SortOrder, n.NearbyPlaceId;
+    FROM dbo.Tours t JOIN dbo.NearbyPlaces n ON n.DestinationId = t.DestinationId WHERE (t.Code = @Code OR t.Slug = @Code) AND t.IsPublished = 1 AND n.IsActive = 1 ORDER BY n.SortOrder, n.NearbyPlaceId;
 END;
 GO
 CREATE OR ALTER PROCEDURE dbo.usp_Catalog_GetDeparture @DepartureId int AS
@@ -612,7 +612,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Ops_Tours_List @Search nvarchar(100) = NULL AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT t.TourId, t.Code, t.Title, t.Slogan, t.DestinationId, d.Name AS DestinationName, t.BusinessUnitId, bu.Code AS BusinessUnitCode,
+    SELECT t.TourId, t.Code, t.Slug, t.Title, t.Slogan, t.DestinationId, d.Name AS DestinationName, t.BusinessUnitId, bu.Code AS BusinessUnitCode,
            t.Days, t.BasePrice, t.Currency, t.Summary, t.IsPublished, t.IsDemo, t.RowVersion, t.ImageUrl, d.ImageUrl AS DestinationImageUrl,
            (SELECT COUNT(*) FROM dbo.Departures dp WHERE dp.TourId = t.TourId AND dp.DepartureDate > CAST(SYSUTCDATETIME() AS date)) AS UpcomingDepartures
     FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId JOIN dbo.BusinessUnits bu ON bu.BusinessUnitId = t.BusinessUnitId

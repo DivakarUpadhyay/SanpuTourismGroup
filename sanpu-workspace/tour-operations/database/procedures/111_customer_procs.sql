@@ -269,7 +269,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Tour_RecordView @TourCode varchar(30), @UserId uniqueidentifier = NULL AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @TourId int = (SELECT TourId FROM dbo.Tours WHERE Code = @TourCode AND IsPublished = 1);
+    DECLARE @TourId int = (SELECT TourId FROM dbo.Tours WHERE (Code = @TourCode OR Slug = @TourCode) AND IsPublished = 1);
     IF @TourId IS NULL RETURN;
     -- one view per user and tour per 30 minutes (anonymous views are counted for popularity only)
     IF @UserId IS NOT NULL AND EXISTS (SELECT 1 FROM dbo.TourViews WHERE UserId = @UserId AND TourId = @TourId AND ViewedAtUtc > DATEADD(MINUTE, -30, SYSUTCDATETIME())) RETURN;
@@ -283,7 +283,7 @@ CREATE OR ALTER PROCEDURE dbo.usp_Recommend_Tours @UserId uniqueidentifier = NUL
 BEGIN
     SET NOCOUNT ON;
     WITH cand AS (
-        SELECT t.TourId, t.Code, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, t.BusinessUnitId, d.Region, d.Name AS DestinationName, d.DestinationId,
+        SELECT t.TourId, t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, t.BusinessUnitId, d.Region, d.Name AS DestinationName, d.DestinationId,
                COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl, bu.Name AS BusinessUnitName,
                x.FromPrice, x.NextDeparture
         FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId JOIN dbo.BusinessUnits bu ON bu.BusinessUnitId = t.BusinessUnitId
@@ -307,7 +307,7 @@ BEGIN
             Views14 = (SELECT COUNT(*) FROM dbo.TourViews v WHERE v.TourId = c.TourId AND v.ViewedAtUtc > DATEADD(DAY, -14, SYSUTCDATETIME()))
         FROM cand c
     )
-    SELECT TOP (@Max) Code, Title, Slogan, Days, Currency, Summary, DestinationName, Region, ImageUrl, BusinessUnitName, FromPrice, NextDeparture,
+    SELECT TOP (@Max) Code, Slug, Title, Slogan, Days, Currency, Summary, DestinationName, Region, ImageUrl, BusinessUnitName, FromPrice, NextDeparture,
         CAST(ViewedSelf * 4 + LEAST(RegionHits, 3) * 3 + SameUnit * 2 + LOG(1 + SeatsSold90) + LOG(1 + Views14) * 0.5
              + CASE WHEN NextDeparture <= DATEADD(DAY, 21, CAST(SYSUTCDATETIME() AS date)) THEN 0.5 ELSE 0 END AS decimal(8,3)) AS Score,
         CASE WHEN ViewedSelf = 1 THEN N'You looked at this recently'
@@ -325,7 +325,7 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @From date = DATEFROMPARTS(YEAR(@Month), MONTH(@Month), 1);
     SELECT dp.DepartureId, dp.DepartureDate, dp.Price, dp.Capacity - dp.SeatsSold - dp.SeatsHeld AS SeatsLeft, dp.Status,
-           t.Code AS TourCode, t.Title AS TourTitle, t.Days, t.Currency, d.Name AS DestinationName
+           t.Code AS TourCode, t.Slug AS TourSlug, t.Title AS TourTitle, t.Days, t.Currency, d.Name AS DestinationName
     FROM dbo.Departures dp JOIN dbo.Tours t ON t.TourId = dp.TourId JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId
     WHERE t.IsPublished = 1 AND dp.Status <> 'Cancelled' AND dp.DepartureDate >= @From AND dp.DepartureDate < DATEADD(MONTH, 1, @From)
       AND dp.DepartureDate > CAST(SYSUTCDATETIME() AS date)
@@ -335,13 +335,13 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Catalog_Compare @CodesJson nvarchar(400) AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT t.Code, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, d.Name AS DestinationName, d.Region, bu.Name AS BusinessUnitName,
+    SELECT t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, d.Name AS DestinationName, d.Region, bu.Name AS BusinessUnitName,
            COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl, d.BestTime, d.GettingThere,
            x.FromPrice, x.NextDeparture, x.OpenDepartures, x.SeatsLeft,
            (SELECT COUNT(*) FROM dbo.NearbyPlaces n WHERE n.DestinationId = d.DestinationId AND n.IsActive = 1) AS NearbyCount,
            (SELECT STRING_AGG(CAST(n.Name AS nvarchar(max)), N', ') WITHIN GROUP (ORDER BY n.SortOrder) FROM dbo.NearbyPlaces n WHERE n.DestinationId = d.DestinationId AND n.IsActive = 1) AS NearbyNames
     FROM OPENJSON(@CodesJson) j
-    JOIN dbo.Tours t ON t.Code = j.[value] AND t.IsPublished = 1
+    JOIN dbo.Tours t ON (t.Code = j.[value] OR t.Slug = j.[value]) AND t.IsPublished = 1
     JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId JOIN dbo.BusinessUnits bu ON bu.BusinessUnitId = t.BusinessUnitId
     OUTER APPLY (SELECT MIN(dp.Price) AS FromPrice, MIN(dp.DepartureDate) AS NextDeparture, COUNT(*) AS OpenDepartures, SUM(dp.Capacity - dp.SeatsSold - dp.SeatsHeld) AS SeatsLeft
                  FROM dbo.Departures dp WHERE dp.TourId = t.TourId AND dp.Status = 'Open' AND dp.DepartureDate > CAST(SYSUTCDATETIME() AS date)) x
@@ -351,11 +351,11 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Destinations_Get @Code varchar(20) AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @Id int = (SELECT DestinationId FROM dbo.Destinations WHERE Code = @Code AND IsActive = 1);
-    SELECT DestinationId, Code, Name, Region, ImageUrl, Overview, BestTime, GettingThere, LocalTip FROM dbo.Destinations WHERE DestinationId = @Id;
+    DECLARE @Id int = (SELECT DestinationId FROM dbo.Destinations WHERE (Code = @Code OR Slug = @Code) AND IsActive = 1);
+    SELECT DestinationId, Code, Slug, Name, Region, ImageUrl, Overview, BestTime, GettingThere, LocalTip FROM dbo.Destinations WHERE DestinationId = @Id;
     SELECT Era, Title, Detail FROM dbo.DestinationHistory WHERE DestinationId = @Id ORDER BY SortOrder, HistoryId;
     SELECT Name, Category, DistanceKm, TravelMinutes, Detail FROM dbo.NearbyPlaces WHERE DestinationId = @Id AND IsActive = 1 ORDER BY SortOrder, NearbyPlaceId;
-    SELECT t.Code, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl, d.Name AS DestinationName, bu.Name AS BusinessUnitName,
+    SELECT t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.Currency, t.Summary, COALESCE(t.ImageUrl, d.ImageUrl) AS ImageUrl, d.Name AS DestinationName, bu.Name AS BusinessUnitName,
            x.FromPrice, x.NextDeparture, ISNULL(x.OpenDepartures, 0) AS OpenDepartures
     FROM dbo.Tours t JOIN dbo.Destinations d ON d.DestinationId = t.DestinationId JOIN dbo.BusinessUnits bu ON bu.BusinessUnitId = t.BusinessUnitId
     OUTER APPLY (SELECT MIN(dp.Price) AS FromPrice, MIN(dp.DepartureDate) AS NextDeparture, COUNT(*) AS OpenDepartures FROM dbo.Departures dp
@@ -382,7 +382,7 @@ BEGIN
     IF @Date <= CAST(SYSUTCDATETIME() AS date) OR (@Kind = 'Hotel' AND (@EndDate IS NULL OR @EndDate <= @Date OR DATEDIFF(DAY, @Date, @EndDate) > 30)) THROW 50065, 'invalid_dates', 1;
     DECLARE @Nights int = CASE WHEN @Kind = 'Hotel' THEN DATEDIFF(DAY, @Date, @EndDate) ELSE 1 END;
     DECLARE @Last date = CASE WHEN @Kind = 'Hotel' THEN DATEADD(DAY, -1, @EndDate) ELSE @Date END;
-    SELECT s.ServiceId, s.Code, s.Kind, s.Name, s.Features, s.CancellationPolicy, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.PeoplePerUnit, s.MaxPerBooking, s.Currency,
+    SELECT s.ServiceId, s.Code, s.Slug, s.Kind, s.Name, s.Features, s.CancellationPolicy, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.PeoplePerUnit, s.MaxPerBooking, s.Currency,
            sp.Name AS ProviderName, f.Code AS FromCode, f.Name AS FromName, f.City AS FromCity, tp.Code AS ToCode, tp.Name AS ToName, tp.City AS ToCity,
            a.Available, a.TotalPrice, a.TotalPrice / @Nights AS NightlyPrice, @Nights AS Nights
     FROM dbo.TravelServices s
@@ -480,7 +480,7 @@ GO
 CREATE OR ALTER PROCEDURE dbo.usp_Ops_Services_List @Kind varchar(10) = NULL, @Search nvarchar(100) = NULL AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT s.ServiceId, s.Code, s.Kind, s.Name, s.SupplierId, sp.Name AS ProviderName, s.FromPlaceId, f.Name AS FromName, s.ToPlaceId, tp.Name AS ToName,
+    SELECT s.ServiceId, s.Code, s.Slug, s.Kind, s.Name, s.SupplierId, sp.Name AS ProviderName, s.FromPlaceId, f.Name AS FromName, s.ToPlaceId, tp.Name AS ToName,
            s.DepartTime, s.DurationMin, s.Capacity, s.MaxPerBooking, s.PeoplePerUnit, s.BasePrice, s.Currency, s.Rating, s.Features, s.CancellationPolicy, s.ImageUrl,
            s.IsActive, s.IsDemo, s.RowVersion,
            (SELECT COUNT(*) FROM dbo.ServiceInventory i WHERE i.ServiceId = s.ServiceId AND i.ServiceDate > CAST(SYSUTCDATETIME() AS date) AND i.Status = 'Open') AS OpenDates,
@@ -567,17 +567,17 @@ CREATE OR ALTER PROCEDURE dbo.usp_Services_Get @Code varchar(30), @From date AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Sid int, @Kind varchar(10), @FromPlace int, @ToPlace int;
-    SELECT @Sid = ServiceId, @Kind = Kind, @FromPlace = FromPlaceId, @ToPlace = ToPlaceId FROM dbo.TravelServices WHERE Code = @Code AND IsActive = 1;
+    SELECT @Sid = ServiceId, @Kind = Kind, @FromPlace = FromPlaceId, @ToPlace = ToPlaceId FROM dbo.TravelServices WHERE (Code = @Code OR Slug = @Code) AND IsActive = 1;
     IF @Sid IS NULL THROW 50001, 'not_found', 1;
     IF @From <= CAST(SYSUTCDATETIME() AS date) SET @From = DATEADD(DAY, 1, CAST(SYSUTCDATETIME() AS date));
-    SELECT s.ServiceId, s.Code, s.Kind, s.Name, s.Description, s.Address, s.Highlights, s.FactsJson, s.Gallery, s.Latitude, s.Longitude, s.Features, s.CancellationPolicy,
+    SELECT s.ServiceId, s.Code, s.Slug, s.Kind, s.Name, s.Description, s.Address, s.Highlights, s.FactsJson, s.Gallery, s.Latitude, s.Longitude, s.Features, s.CancellationPolicy,
            s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.PeoplePerUnit, s.MaxPerBooking, s.BasePrice, s.Currency, sp.Name AS ProviderName,
            f.Code AS FromCode, f.Name AS FromName, f.City AS FromCity, tp.Code AS ToCode, tp.Name AS ToName, tp.City AS ToCity
     FROM dbo.TravelServices s JOIN dbo.Places f ON f.PlaceId = s.FromPlaceId LEFT JOIN dbo.Places tp ON tp.PlaceId = s.ToPlaceId LEFT JOIN dbo.Suppliers sp ON sp.SupplierId = s.SupplierId
     WHERE s.ServiceId = @Sid;
     SELECT ServiceDate, Price, Capacity - Sold - Held AS Available, Status
     FROM dbo.ServiceInventory WHERE ServiceId = @Sid AND ServiceDate >= @From AND ServiceDate < DATEADD(DAY, 45, @From) ORDER BY ServiceDate;
-    SELECT TOP 4 s.Code, s.Kind, s.Name, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.BasePrice, s.Currency, f.Name AS FromName, tp.Name AS ToName, f.City AS FromCity
+    SELECT TOP 4 s.Code, s.Slug, s.Kind, s.Name, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.BasePrice, s.Currency, f.Name AS FromName, tp.Name AS ToName, f.City AS FromCity
     FROM dbo.TravelServices s JOIN dbo.Places f ON f.PlaceId = s.FromPlaceId LEFT JOIN dbo.Places tp ON tp.PlaceId = s.ToPlaceId
     WHERE s.IsActive = 1 AND s.Kind = @Kind AND s.ServiceId <> @Sid
     ORDER BY CASE WHEN f.City = (SELECT City FROM dbo.Places WHERE PlaceId = @FromPlace) THEN 0                       -- same city / origin first

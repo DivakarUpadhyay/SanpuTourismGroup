@@ -1,9 +1,10 @@
 namespace Divakar.Sanpu.Erp.Application;
 
 // ---------- catalog (customer) ----------
-public sealed record DestinationRow { public int DestinationId { get; init; } public string Code { get; init; } = ""; public string Name { get; init; } = ""; public string Region { get; init; } = ""; public bool IsDemo { get; init; } public string? ImageUrl { get; init; } public int TourCount { get; init; } }
+public sealed record DestinationRow { public int DestinationId { get; init; } public string Code { get; init; } = ""; public string? Slug { get; init; } public string Name { get; init; } = ""; public string Region { get; init; } = ""; public bool IsDemo { get; init; } public string? ImageUrl { get; init; } public int TourCount { get; init; } }
 public sealed record TourCardRow
 {
+    public string? Slug { get; init; }
     public int TourId { get; init; } public string Code { get; init; } = ""; public string Title { get; init; } = ""; public string? Slogan { get; init; }
     public int Days { get; init; } public decimal BasePrice { get; init; } public string Currency { get; init; } = ""; public string? Summary { get; init; } public bool IsDemo { get; init; }
     public string DestinationCode { get; init; } = ""; public string DestinationName { get; init; } = ""; public string Region { get; init; } = ""; public string BusinessUnitName { get; init; } = "";
@@ -11,6 +12,7 @@ public sealed record TourCardRow
 }
 public sealed record TourDetailRow
 {
+    public string? Slug { get; init; }
     public int TourId { get; init; } public string Code { get; init; } = ""; public string Title { get; init; } = ""; public string? Slogan { get; init; } public int Days { get; init; }
     public decimal BasePrice { get; init; } public string Currency { get; init; } = ""; public string? Summary { get; init; } public bool IsDemo { get; init; }
     public string DestinationName { get; init; } = ""; public string Region { get; init; } = ""; public string BusinessUnitName { get; init; } = ""; public string? ImageUrl { get; init; }

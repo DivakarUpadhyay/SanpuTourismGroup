@@ -10,3 +10,4 @@ export * from "./legal";
 export * from "./credits";
 export * from "./logo";
 export * from "./datepicker";
+export * from "./params";

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { Async, DatePickerInput, Icon, get, money, useAsync } from "@sanpu/web";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { Async, CleanParams, DatePickerInput, Icon, get, money, savePageParams, useAsync } from "@sanpu/web";
 
 type Kind = "Hotel" | "Flight" | "Bus" | "Taxi";
 interface Service {
@@ -12,7 +12,7 @@ interface Service {
   basePrice: number; currency: string; providerName?: string; fromCode: string; fromName: string; fromCity: string; toCode?: string; toName?: string; toCity?: string;
 }
 interface Day { serviceDate: string; price: number; available: number; status: string }
-interface Similar { code: string; kind: Kind; name: string; imageUrl?: string; rating?: number; departTime?: string; durationMin?: number; basePrice: number; currency: string; fromName: string; toName?: string; fromCity: string }
+interface Similar { code: string; slug?: string | null; kind: Kind; name: string; imageUrl?: string; rating?: number; departTime?: string; durationMin?: number; basePrice: number; currency: string; fromName: string; toName?: string; fromCity: string }
 interface Detail { service: Service; calendar: Day[]; similar: Similar[] }
 
 const LIST: Record<Kind, { href: string; label: string; unit: string; units: string; icon: string }> = {
@@ -31,9 +31,8 @@ const nice = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en
 const factIcon = (label: string) => /check|time|journey|closes|waiting/i.test(label) ? "calendar" : /bag|luggage|carry/i.test(label) ? "briefcase" : /bed|room|suite|seat|sleeps/i.test(label) ? "building"
   : /aircraft|vehicle|cabin/i.test(label) ? "plane" : /stop|airport|boarding|altitude/i.test(label) ? "map" : /breakfast|wi-fi|parking/i.test(label) ? "check" : /child|passengers|assist/i.test(label) ? "users" : "file";
 
-function DetailInner() {
+function DetailInner({ p }: { p: URLSearchParams }) {
   const { code } = useParams<{ code: string }>();
-  const p = useSearchParams();
   const router = useRouter();
   const tomorrow = addDays(new Date().toISOString().slice(0, 10), 1);
   const [date, setDate] = useState(p.get("date") ?? addDays(tomorrow, 13));
@@ -195,9 +194,9 @@ function DetailInner() {
                       {x.rating && <span className="chip"><Icon name="star" size={14} />{x.rating.toFixed(1)}</span>}</div>
                     <div className="content">
                       <span className="slogan">{x.kind === "Hotel" ? x.fromCity : `${x.fromName} → ${x.toName}`}</span>
-                      <h3><Link href={`/services/${x.code}?${new URLSearchParams({ date, ...(isHotel ? { endDate } : {}), travelers: String(travelers), units: String(units) })}`}>{x.name}</Link></h3>
+                      <h3><Link href={`/services/${x.slug ?? x.code}`} onClick={() => savePageParams({ date, endDate: isHotel ? endDate : undefined, travelers, units }, `/services/${x.slug ?? x.code}`)}>{x.name}</Link></h3>
                       <div className="foot"><span className="price"><small>From</small><b>{money(x.basePrice, x.currency)}</b></span>
-                        <Link className="go-btn" href={`/services/${x.code}?date=${date}${isHotel ? `&endDate=${endDate}` : ""}`}>View details<Icon name="arrow" size={15} /></Link></div>
+                        <Link className="go-btn" href={`/services/${x.slug ?? x.code}`} onClick={() => savePageParams({ date, endDate: isHotel ? endDate : undefined, travelers, units }, `/services/${x.slug ?? x.code}`)}>View details<Icon name="arrow" size={15} /></Link></div>
                     </div>
                   </article>
                 ))}
@@ -210,4 +209,4 @@ function DetailInner() {
   );
 }
 
-export const ServiceDetailPage = () => <Suspense><DetailInner /></Suspense>;
+export const ServiceDetailPage = () => <CleanParams>{(p) => <DetailInner p={p} />}</CleanParams>;

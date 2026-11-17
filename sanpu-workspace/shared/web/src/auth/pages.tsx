@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 import { ApiError, get, post, put } from "../api";
 import { useAuth } from "../auth";
 import { useSetting } from "../shell";
+import { CleanParams } from "../params";
 import { Icon } from "../icons";
 import { BrandMark } from "../logo";
 import { Card, ConfirmButton, DataTable, ErrorBox, FormError, PageHeader, SelectInput, TextInput, fmtDateTime, useAction, useAsync, useToast } from "../ui";
@@ -33,10 +34,9 @@ function AuthBox({ tagline, title, children, footer }: { tagline: string; title:
 
 const safeNext = (next: string | null) => (next && next.startsWith("/") && !next.startsWith("//") ? next : null);
 
-function LoginInner() {
+function LoginInner({ params }: { params: URLSearchParams }) {
   const { login } = useAuth();
   const router = useRouter();
-  const params = useSearchParams();
   const signup = useSetting("Feature.CustomerSignup", "false") === "true";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +59,7 @@ function LoginInner() {
     </AuthBox>
   );
 }
-export const LoginPage = () => <Suspense><LoginInner /></Suspense>;
+export const LoginPage = () => <CleanParams>{(p) => <LoginInner params={p} />}</CleanParams>;
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -126,8 +126,8 @@ export function ForgotPasswordPage() {
   );
 }
 
-function ResetInner() {
-  const token = useSearchParams().get("token") ?? "";
+function ResetInner({ params }: { params: URLSearchParams }) {
+  const token = params.get("token") ?? "";
   const router = useRouter();
   const [p, setP] = useState({ password: "", confirm: "" });
   const [mismatch, setMismatch] = useState(false);
@@ -150,10 +150,10 @@ function ResetInner() {
     </AuthBox>
   );
 }
-export const ResetPasswordPage = () => <Suspense><ResetInner /></Suspense>;
+export const ResetPasswordPage = () => <CleanParams>{(p) => <ResetInner params={p} />}</CleanParams>;
 
-function AcceptInner() {
-  const token = useSearchParams().get("token") ?? "";
+function AcceptInner({ params }: { params: URLSearchParams }) {
+  const token = params.get("token") ?? "";
   const router = useRouter();
   const invite = useAsync(() => (token ? get<{ email: string; displayName: string; expiresAtUtc: string }>("/auth/invitation", { token }) : Promise.reject(new ApiError(400, "token_invalid", "This link is missing its token."))), [token]);
   const [f, setF] = useState<{ name: string | null; password: string; confirm: string }>({ name: null, password: "", confirm: "" });
@@ -180,7 +180,7 @@ function AcceptInner() {
     </AuthBox>
   );
 }
-export const AcceptInvitationPage = () => <Suspense><AcceptInner /></Suspense>;
+export const AcceptInvitationPage = () => <CleanParams>{(p) => <AcceptInner params={p} />}</CleanParams>;
 
 interface Session { tokenId: string; createdAtUtc: string; expiresAtUtc: string; userAgent?: string; ipAddress?: string }
 
