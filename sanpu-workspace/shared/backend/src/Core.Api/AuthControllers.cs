@@ -187,7 +187,7 @@ public sealed class PublicController(IAdminRepository repo) : ControllerBase
 
     [HttpGet("content")]
     public async Task<IEnumerable<object>> Content([FromQuery] string? locale, CancellationToken ct) =>
-        (await repo.ListContentAsync(true, locale, ct)).Select(c => new { c.TemplateKey, c.Locale, c.Subject, c.Body });
+        (await repo.ListContentAsync(true, locale, ct)).Select(c => new { c.TemplateKey, c.Locale, c.Subject, c.Body, c.UpdatedAtUtc });
 
     /// <summary>Newsletter sign-up with recorded consent. The reply is identical for new and existing addresses.</summary>
     [HttpPost("newsletter"), EnableRateLimiting("auth")]

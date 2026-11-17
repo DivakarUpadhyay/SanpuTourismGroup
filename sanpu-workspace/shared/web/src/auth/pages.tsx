@@ -194,6 +194,7 @@ export function AccountPage() {
   const save = useAction();
   const change = useAction();
   const other = useAction();
+  const exp = useAction();
   useEffect(() => { if (status === "anonymous") router.replace("/login?next=/account"); }, [status, router]);   // redirect after render, never during it
   if (status === "loading" || !me) return null;
   const p = profile ?? { displayName: me.user.displayName, phone: "", preferredLanguage: me.preferredLanguage };
@@ -221,6 +222,15 @@ export function AccountPage() {
           </form>
         </Card>
       </div>
+      <Card title="Your data" actions={<button className="btn" data-testid="export-data" disabled={exp.busy} onClick={async () => {
+        const data = await exp.run(() => get<unknown>("/account/export"), "Your data is ready");
+        if (data === undefined) return;
+        const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+        const link = Object.assign(document.createElement("a"), { href: url, download: `my-data-${new Date().toISOString().slice(0, 10)}.json` });
+        link.click(); URL.revokeObjectURL(url);
+      }}>{exp.busy ? "Preparing…" : "Download my data"}</button>}>
+        <p className="small muted" style={{ margin: 0 }}>Download a copy of the personal data we hold about you (JSON). To correct or delete it, contact us; see the <a href="/legal/privacy.notice#your-rights">privacy notice</a>.</p>
+      </Card>
       <Card title="Active sessions" actions={<ConfirmButton confirm="Sign out on every device, including this one?" onConfirm={async () => { if (await other.run(() => post("/auth/logout-all")) !== undefined) { await logout(); router.push("/login"); } }} testId="logout-all">Sign out everywhere</ConfirmButton>}>
         <DataTable rows={sessions.data ?? []} rowKey={(s) => s.tokenId} columns={[
           { key: "createdAtUtc", header: "Signed in", render: (s) => fmtDateTime(s.createdAtUtc) },
