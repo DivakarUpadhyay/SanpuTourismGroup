@@ -35,3 +35,14 @@ Demo sign-ins are created locally with random passwords (`provision-demo-users`)
 ## Notes
 - Payments use the ECPay (綠界) staging sandbox when configured, otherwise a simulated provider. No real money is involved.
 - Photos are from Wikimedia Commons under their licenses; see `/credits` in the apps.
+
+## Online version (Vercel, no server needed)
+- Live: **https://sanpu-travel.vercel.app** (admin: `/admin`) and **https://sanpu-trip-copilot.vercel.app** (admin: `/admin`).
+- The Vercel projects build with `NEXT_PUBLIC_STANDALONE=1`: the sites answer every API call from a snapshot bundled in
+  `*/frontend/public/snapshot/*.json`, so they work 24/7 without the APIs or the database. All photos are local files in
+  `*/frontend/public/images`.
+- Dates in the snapshot move forward automatically, so calendars and departures stay current. The sign-in page lists
+  ready accounts for every role. Coupon checks, the contact form, newsletter and help feedback respond; actions that
+  would change shared data (bookings, payments, admin edits) explain that the online version does not save changes.
+- Refresh the snapshot after data changes (local stack running): `node tools/snapshot.mjs erp` and
+  `node tools/snapshot.mjs ai`, then commit and push; Vercel redeploys from GitHub (`main`) automatically.

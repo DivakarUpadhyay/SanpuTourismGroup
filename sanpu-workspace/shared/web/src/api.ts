@@ -1,5 +1,7 @@
 "use client";
 
+import { STANDALONE, standaloneApi, standaloneRefresh } from "./standalone";
+
 /** Error shape of every API failure (RFC 7807 ProblemDetails + code + correlationId). */
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public errors?: Record<string, string[]>, public correlationId?: string) {
@@ -51,6 +53,7 @@ async function toError(res: Response): Promise<ApiError> {
 
 /** Rotates the refresh cookie and stores a fresh access token. Concurrent callers share one request. */
 export function refreshSession(): Promise<boolean> {
+  if (STANDALONE) { accessToken = standaloneRefresh() ? "standalone" : null; return Promise.resolve(!!accessToken); }
   if (!csrfToken()) return Promise.resolve(false);   // never signed in on this browser: nothing to refresh
   if (!refreshing) {
     refreshing = (async () => {
@@ -70,6 +73,11 @@ export function refreshSession(): Promise<boolean> {
 export interface RequestOptions { method?: string; body?: unknown; query?: Query; form?: FormData; signal?: AbortSignal; retry?: boolean }
 
 export async function api<T = unknown>(path: string, opts: RequestOptions = {}): Promise<T> {
+  if (STANDALONE) {   // no API server: answer from the bundled snapshot
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(opts.query ?? {})) if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
+    return standaloneApi<T>(opts.method ?? (opts.body !== undefined || opts.form ? "POST" : "GET"), path, qs, opts.body);
+  }
   // After a reload, pages can ask for data before the session is restored (child effects run before the provider's).
   // Wait for the shared refresh instead of sending a request that is sure to get 401.
   if (!accessToken && !refreshFailed && !path.startsWith("/auth/") && csrfToken()) await refreshSession();

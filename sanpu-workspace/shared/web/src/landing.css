@@ -995,3 +995,15 @@ svg.brand-mark { background: none; box-shadow: none; border-radius: 0; flex: non
 @media (max-width: 640px) { .hc-topics, .hc-popular > div, .hc-still ul { grid-template-columns: 1fr; } .hc-search { height: 56px; } .hc-a { padding-right: 4px; } }
 .hc-search input, .hc-search input:focus { box-shadow: none !important; border: 0 !important; outline: none; }
 .hc-search:focus-within { box-shadow: 0 24px 60px rgba(0, 0, 0, .3), 0 0 0 4px rgba(245, 184, 46, .55); }
+
+/* standalone: one-click accounts on the sign-in page */
+.quick-acc { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--stroke); }
+.quick-acc p { display: grid; gap: 2px; margin: 0 0 12px; text-align: center; }
+.quick-acc p span { color: var(--muted); font-size: 13px; }
+.quick-acc > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-acc button { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--stroke-strong); background: var(--card); font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, transform .15s; }
+.quick-acc button:hover { border-color: var(--accent); transform: translateY(-1px); }
+.quick-acc .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(140deg, var(--accent), var(--navy)); color: #fff; font-size: 12px; font-weight: 700; flex: none; }
+.quick-acc .t { display: grid; min-width: 0; }
+.quick-acc .t b { font-size: 13px; }
+.quick-acc .t small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

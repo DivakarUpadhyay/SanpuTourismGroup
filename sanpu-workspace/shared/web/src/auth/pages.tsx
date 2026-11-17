@@ -7,6 +7,7 @@ import { ApiError, get, post, put } from "../api";
 import { useAuth } from "../auth";
 import { useSetting } from "../shell";
 import { CleanParams } from "../params";
+import { STANDALONE, standaloneUsers } from "../standalone";
 import { Icon } from "../icons";
 import { BrandMark } from "../logo";
 import { Card, ConfirmButton, DataTable, ErrorBox, FormError, PageHeader, SelectInput, TextInput, fmtDateTime, useAction, useAsync, useToast } from "../ui";
@@ -55,6 +56,7 @@ function LoginInner({ params }: { params: URLSearchParams }) {
         <TextInput label="Password" type="password" autoComplete="current-password" value={password} onChange={setPassword} error={a.fieldError("password")} data-testid="login-password" required />
         <div className="auth-row"><span /><Link href="/forgot-password">Forgot password?</Link></div>
         <button className="btn primary lg block" type="submit" disabled={a.busy} data-testid="login-submit">{a.busy ? "Signing in…" : "Sign in"}</button>
+        {STANDALONE && <QuickAccounts onPick={async (email) => { const me = await a.run(() => login(email, "standalone")); if (me) router.push(me.user.userType === "Staff" ? "/admin" : "/"); }} />}
       </form>
     </AuthBox>
   );
@@ -247,5 +249,23 @@ export function AccountPage() {
         }, "Export ready")}>Download my data</button>
       </Card>
     </>
+  );
+}
+
+/** Online version without a server: one-click sign-in for each account in the snapshot. */
+function QuickAccounts({ onPick }: { onPick: (email: string) => void }) {
+  const [users, setUsers] = useState<{ email: string; displayName: string; userType: string; roles: string[] }[]>([]);
+  useEffect(() => { standaloneUsers().then(setUsers).catch(() => setUsers([])); }, []);
+  if (!users.length) return null;
+  const label = (r: string) => r.replace(/_/g, " ").replace(/w/g, (c) => c.toUpperCase());
+  return (
+    <div className="quick-acc">
+      <p><b>Explore with a ready account</b><span>Pick a role to sign in instantly.</span></p>
+      <div>{users.map((u) => (
+        <button type="button" key={u.email} onClick={() => onPick(u.email)} data-testid={`quick-${u.email}`}>
+          <span className="av">{u.displayName.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>
+          <span className="t"><b>{label(u.roles[0] ?? u.userType)}</b><small>{u.displayName}</small></span>
+        </button>))}</div>
+    </div>
   );
 }
