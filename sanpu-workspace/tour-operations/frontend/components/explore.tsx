@@ -447,41 +447,130 @@ function CompareInner() {
 }
 export const ComparePage = () => <Suspense><CompareInner /></Suspense>;
 
-/* ---------------- help center & contact ---------------- */
-interface Article { articleId: number; category: string; question: string; answer: string }
+/* ---------------- help center ---------------- */
+interface Article { articleId: number; category: string; question: string; answer: string; helpfulYes?: number; helpfulNo?: number }
+const TOPIC_ICON: Record<string, string> = { "Booking": "ticket", "Payments": "tag", "Changes & cancellations": "calendar", "Coupons & deals": "sparkle", "Hotels & transport": "building", "Account & privacy": "lock" };
+const TOPIC_TEXT: Record<string, string> = { "Booking": "How booking works and when it is confirmed", "Payments": "When and how to pay, deposits and currency",
+  "Changes & cancellations": "Cancelling, refunds and weather changes", "Coupons & deals": "Using codes and why one may not work",
+  "Hotels & transport": "Rooms, flights, buses and airport taxis", "Account & privacy": "Passwords, your data and your rights" };
+const topicId = (c: string) => "topic-" + c.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+/** Wraps search matches in <mark>. */
+function Hl({ text, q }: { text: string; q: string }) {
+  if (!q) return <>{text}</>;
+  const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig"));
+  return <>{parts.map((p, i) => (p.toLowerCase() === q.toLowerCase() ? <mark key={i}>{p}</mark> : p))}</>;
+}
 
 export function HelpPage() {
-  const [search, setSearch] = useState("");
-  const [term, setTerm] = useState("");
-  const list = useAsync(() => get<Article[]>("/help", { search: term }), [term]);
+  const all = useAsync(() => get<Article[]>("/help"), []);
+  const support = useSetting("Ui.SupportEmail", "");
+  const hours = useSetting("Ui.SupportHours", "Mon to Fri, 09:00 to 18:00 (Taiwan time)");
+  const [q, setQ] = useState("");
   const [open, setOpen] = useState<number | null>(null);
   const [voted, setVoted] = useState<Record<number, boolean>>({});
-  useEffect(() => { const t = setTimeout(() => setTerm(search.trim()), 250); return () => clearTimeout(t); }, [search]);
-  const groups = useMemo(() => { const g: Record<string, Article[]> = {}; (list.data ?? []).forEach((a) => (g[a.category] ??= []).push(a)); return g; }, [list.data]);
+  const [active, setActive] = useState("");
+  const term = q.trim();
+  const list = useMemo(() => (all.data ?? []).filter((a) => !term || `${a.question} ${a.answer} ${a.category}`.toLowerCase().includes(term.toLowerCase())), [all.data, term]);
+  const groups = useMemo(() => { const g: [string, Article[]][] = []; list.forEach((a) => { const x = g.find(([c]) => c === a.category); if (x) x[1].push(a); else g.push([a.category, [a]]); }); return g; }, [list]);
+  const counts = useMemo(() => { const m: Record<string, number> = {}; (all.data ?? []).forEach((a) => (m[a.category] = (m[a.category] ?? 0) + 1)); return m; }, [all.data]);
+  const popular = useMemo(() => [...(all.data ?? [])].sort((a, b) => (b.helpfulYes ?? 0) - (a.helpfulYes ?? 0)).slice(0, 4), [all.data]);
+  // open a question from the address (#q-12) once the list has loaded
+  useEffect(() => { const m = /^#q-(\d+)$/.exec(location.hash); if (all.data && m) { setOpen(Number(m[1])); setTimeout(() => document.getElementById(`q-${m[1]}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 100); } }, [all.data]);
+  useEffect(() => {
+    const obs = new IntersectionObserver((es) => { const v = es.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]; if (v) setActive(v.target.id); }, { rootMargin: "-120px 0px -60% 0px" });
+    groups.forEach(([c]) => { const el = document.getElementById(topicId(c)); if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, [groups]);
+  const toggle = (id: number) => { const next = open === id ? null : id; setOpen(next); history.replaceState(null, "", next ? `#q-${id}` : location.pathname); };
+  const vote = (id: number, helpful: boolean) => { setVoted({ ...voted, [id]: helpful }); post(`/help/${id}/feedback`, { helpful }).catch(() => {}); };
+  const goTopic = (c: string) => { setQ(""); setTimeout(() => document.getElementById(topicId(c))?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); };
   return (
-    <>
-      <PageHeader tagline="Help center" title="How can we help?" lead={<>Quick answers to common questions. Still stuck? <Link href="/contact">Contact us</Link>.</>} />
-      <div className="help-search"><Icon name="search" /><input aria-label="Search help" placeholder="Search: refund, coupon, taxi…" value={search} onChange={(e) => setSearch(e.target.value)} data-testid="help-search" /></div>
-      <div className={list.loading && list.data ? "refreshing" : undefined}>
-        <Async state={list} empty={(a) => a.length === 0}>{() => (
-          <div className="help-groups" data-testid="help-articles">
-            {Object.entries(groups).map(([cat, items]) => (
-              <section key={cat} className="help-group"><h2>{cat}</h2>
-                {items.map((a) => (
-                  <div key={a.articleId} className={`faq${open === a.articleId ? " open" : ""}`}>
-                    <button type="button" aria-expanded={open === a.articleId} onClick={() => setOpen(open === a.articleId ? null : a.articleId)}>{a.question}<span aria-hidden="true">{open === a.articleId ? "−" : "+"}</span></button>
-                    {open === a.articleId && <div className="faq-a"><p>{a.answer}</p>
-                      {voted[a.articleId] === undefined ? <span className="small muted">Was this helpful? <button className="btn small subtle" onClick={() => { setVoted({ ...voted, [a.articleId]: true }); post(`/help/${a.articleId}/feedback`, { helpful: true }).catch(() => {}); }}>Yes</button>
-                        <button className="btn small subtle" onClick={() => { setVoted({ ...voted, [a.articleId]: false }); post(`/help/${a.articleId}/feedback`, { helpful: false }).catch(() => {}); }}>No</button></span>
-                        : <span className="small muted">Thanks for the feedback.</span>}</div>}
-                  </div>
-                ))}
-              </section>
-            ))}
+    <div className="hc">
+      <section className="hc-hero">
+        <div className="wrap hc-hero-in">
+          <p className="lp-eyebrow"><Icon name="help" size={14} />Help center</p>
+          <h1>How can we help?</h1>
+          <p className="lp-lead">Answers about booking, payments, changes and your account.</p>
+          <div className="hc-search" role="search">
+            <Icon name="search" size={20} />
+            <input type="search" aria-label="Search help" placeholder="Search: refund, deposit, coupon, taxi…" value={q} onChange={(e) => { setQ(e.target.value); setOpen(null); }} data-testid="help-search" autoComplete="off" />
+            {q && <button type="button" className="hc-clear" onClick={() => setQ("")} aria-label="Clear search">✕</button>}
           </div>
-        )}</Async>
+          <div className="hc-suggest">Popular: {["refund", "deposit", "coupon", "cancel", "password"].map((w) => <button type="button" key={w} onClick={() => setQ(w)}>{w}</button>)}</div>
+        </div>
+      </section>
+
+      <div className="wrap">
+        {!term && (
+          <>
+            <section className="hc-topics" aria-label="Topics">
+              {Object.keys(counts).map((c) => (
+                <button type="button" key={c} className="hc-topic" onClick={() => goTopic(c)}>
+                  <span className="ico"><Icon name={TOPIC_ICON[c] ?? "help"} size={22} /></span>
+                  <b>{c}</b><span>{TOPIC_TEXT[c] ?? "Questions and answers"}</span>
+                  <small>{counts[c]} {counts[c] === 1 ? "article" : "articles"} <Icon name="arrow" size={13} /></small>
+                </button>
+              ))}
+            </section>
+            {popular.length > 0 && (
+              <section className="hc-popular" aria-labelledby="pop-h">
+                <h2 id="pop-h">Popular answers</h2>
+                <div>{popular.map((a, i) => <button type="button" key={a.articleId} onClick={() => { setOpen(a.articleId); setTimeout(() => document.getElementById(`q-${a.articleId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 50); }}>
+                  <span className="n">{String(i + 1).padStart(2, "0")}</span><span>{a.question}</span><Icon name="arrow" size={15} /></button>)}</div>
+              </section>
+            )}
+          </>
+        )}
+
+        <div className="hc-body">
+          <nav className="hc-nav" aria-label="Topics">
+            <b>Topics</b>
+            {groups.map(([c, items]) => <a key={c} href={`#${topicId(c)}`} className={active === topicId(c) ? "on" : undefined}><Icon name={TOPIC_ICON[c] ?? "help"} size={16} /><span>{c}</span><small>{items.length}</small></a>)}
+          </nav>
+          <div className="hc-list" aria-live="polite">
+            {term && <p className="hc-result">{list.length} {list.length === 1 ? "answer" : "answers"} for “{term}”</p>}
+            <Async state={all}>{() => groups.length === 0 ? (
+              <div className="hc-empty"><Icon name="search" size={28} /><b>No answers for “{term}”</b><span>Try another word, or ask our team directly.</span><Link className="btn primary" href="/contact">Contact us</Link></div>
+            ) : (
+              <div data-testid="help-articles">
+                {groups.map(([c, items]) => (
+                  <section key={c} id={topicId(c)} className="hc-group">
+                    <h2><span className="ico"><Icon name={TOPIC_ICON[c] ?? "help"} size={18} /></span>{c}</h2>
+                    {items.map((a) => {
+                      const isOpen = open === a.articleId || (!!term && list.length <= 3);
+                      return (
+                        <div key={a.articleId} id={`q-${a.articleId}`} className={`hc-q${isOpen ? " open" : ""}`}>
+                          <button type="button" aria-expanded={isOpen} onClick={() => toggle(a.articleId)}><span><Hl text={a.question} q={term} /></span><span className="chev" aria-hidden="true" /></button>
+                          <div className="hc-a" hidden={!isOpen}>
+                            <p><Hl text={a.answer} q={term} /></p>
+                            <div className="hc-vote">{voted[a.articleId] === undefined ? <>
+                              <span>Was this helpful?</span>
+                              <button type="button" onClick={() => vote(a.articleId, true)}><Icon name="check" size={14} />Yes</button>
+                              <button type="button" onClick={() => vote(a.articleId, false)}>No</button></>
+                              : voted[a.articleId] ? <span className="ok">Thanks for letting us know.</span>
+                              : <span>Sorry about that. <Link href="/contact">Ask our team</Link> and we will help.</span>}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                ))}
+              </div>
+            )}</Async>
+          </div>
+        </div>
+
+        <section className="hc-still">
+          <div><p className="kicker">Still need help?</p><h2>Talk to our team</h2><p>Real people in Taiwan, replying within one working day.</p></div>
+          <ul>
+            <li><Icon name="phone" size={18} /><div><b>Send a message</b><Link href="/contact">Open the contact form</Link></div></li>
+            {support && <li><Icon name="file" size={18} /><div><b>Email</b><a href={`mailto:${support}`}>{support}</a></div></li>}
+            <li><Icon name="calendar" size={18} /><div><b>Office hours</b><span>{hours}</span></div></li>
+          </ul>
+        </section>
       </div>
-    </>
+    </div>
   );
 }
 
