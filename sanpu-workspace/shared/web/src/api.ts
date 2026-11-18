@@ -22,9 +22,12 @@ interface RealmState { token: string | null; refreshing: Promise<boolean> | null
 const realms: Record<Realm, RealmState> = { admin: { token: null, refreshing: null, failed: false }, site: { token: null, refreshing: null, failed: false } };
 const listeners = new Set<() => void>();
 
+/** Pages already opened in this tab: shown at once and refreshed quietly. Emptied on sign-in, sign-out and after any change. */
+export const pageCache = new Map<string, { data: unknown; at: number }>();
+
 export const session = {
   get token() { return realms[currentRealm()].token; },
-  set(token: string | null, realm: Realm = currentRealm()) { realms[realm].token = token; if (token) realms[realm].failed = false; },
+  set(token: string | null, realm: Realm = currentRealm()) { pageCache.clear(); realms[realm].token = token; if (token) realms[realm].failed = false; },
   onExpired(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; }
 };
 
@@ -116,9 +119,11 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
   goOnline();
   if (res.status === 401 && opts.retry !== false && !path.startsWith("/auth/")) {
     if (await refreshSession(realm)) return api<T>(path, { ...opts, retry: false });
+    pageCache.clear();
     listeners.forEach((l) => l());
   }
   if (!res.ok) throw await toError(res);
+  if (verb !== "GET" && !/\/(assistant\/chat|track|view)$/.test(path)) pageCache.clear();   // something changed: never show older data
   return (await parse(res)) as T;
 }
 

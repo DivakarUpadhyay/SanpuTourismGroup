@@ -2,20 +2,38 @@
 
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ApiError } from "./api";
+import { ApiError, currentRealm, pageCache } from "./api";
 import { DatePickerInput } from "./datepicker";
 
 // ---------------- data loading ----------------
+const CACHE_MS = 5 * 60_000;
+/** One entry per page, query and signed-in area. Nothing is cached on the server. */
+function cacheKey(fn: () => unknown, deps: unknown[]) {
+  if (typeof window === "undefined") return null;
+  try { return `${currentRealm()}|${window.location.pathname}|${fn}|${JSON.stringify(deps)}`; } catch { return null; }
+}
+function cached<T>(key: string | null) {
+  const hit = key ? pageCache.get(key) : undefined;
+  return hit && Date.now() - hit.at < CACHE_MS ? (hit.data as T) : null;
+}
+
+/** Loads page data. A page opened before appears at once from memory while fresh data loads quietly behind it. */
 export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<T | null>(() => cached<T>(cacheKey(fn, deps)));
   const [error, setError] = useState<unknown>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => cached<T>(cacheKey(fn, deps)) === null);
   const seq = useRef(0);
   const run = useCallback(async () => {
     const id = ++seq.current;
+    const key = cacheKey(fn, deps), hit = cached<T>(key);
+    if (hit !== null) setData(hit);
     setLoading(true); setError(null);
-    try { const d = await fn(); if (id === seq.current) setData(d); }
-    catch (e) { if (id === seq.current) setError(e); }
+    try {
+      const d = await fn();
+      if (key) pageCache.set(key, { data: d, at: Date.now() });
+      if (id === seq.current && (hit === null || JSON.stringify(hit) !== JSON.stringify(d))) setData(d);   // unchanged data causes no repaint
+    }
+    catch (e) { if (id === seq.current && hit === null) setError(e); }
     finally { if (id === seq.current) setLoading(false); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -127,7 +145,7 @@ export function ErrorBox({ error, retry }: { error: unknown; retry?: () => void 
 }
 
 export function Loading({ lines = 3 }: { lines?: number }) {
-  return <div aria-busy="true" aria-label="Loading">{Array.from({ length: lines }, (_, i) => <div key={i} className="skeleton" style={{ width: `${90 - i * 12}%` }} />)}</div>;
+  return <div className="wait" aria-busy="true" aria-label="Loading">{Array.from({ length: lines }, (_, i) => <div key={i} className="skeleton" style={{ width: `${90 - i * 12}%` }} />)}</div>;
 }
 
 export function Empty({ children = "Nothing here yet." }: { children?: ReactNode }) {
