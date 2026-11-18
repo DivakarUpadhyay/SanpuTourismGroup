@@ -1,17 +1,17 @@
 {
-  "at": "2026-11-18T03:39:14.698Z",
+  "at": "2026-11-18T03:50:14.932Z",
   "erp": "https://sanpu-travel.vercel.app",
   "ai": "https://sanpu-trip-copilot.vercel.app",
   "results": [
     {
       "name": "ERP: customer signs up with own email and password",
       "ok": true,
-      "info": "guest103176@example.com"
+      "info": "guest750422@example.com"
     },
     {
       "name": "ERP: tour booking (hold seats, traveler details, confirm)",
       "ok": true,
-      "info": "/my/bookings/19"
+      "info": "/my/bookings/20"
     },
     {
       "name": "ERP: payment summary on the booking",
@@ -26,12 +26,12 @@
     {
       "name": "ERP: hotel booking (search, detail, book)",
       "ok": true,
-      "info": "SB-000039 · Hotel | Confirmed"
+      "info": "SB-000040 · Hotel | Confirmed"
     },
     {
       "name": "ERP admin: sign in (separate session) and open Payments & transactions",
       "ok": true,
-      "info": "18 Nov 2026, 11:38 BK-000019 East Rift Valley 3D2N Guest Traveler guest103176@example.com Deposit TWD 3,840 Pending ECPay SP2611180338347293"
+      "info": "18 Nov 2026, 11:49 BK-000020 East Rift Valley 3D2N Guest Traveler guest750422@example.com Deposit TWD 3,840 Pending ECPay SP2611180349224630"
     },
     {
       "name": "ERP admin: customer session still signed in (no mixing)",
@@ -56,12 +56,12 @@
     {
       "name": "AI: customer signs up",
       "ok": true,
-      "info": "guest103176@example.com"
+      "info": "guest750422@example.com"
     },
     {
       "name": "AI: assistant finds hotels and Book this prepares a booking",
       "ok": true,
-      "info": "Juguang Tower Hotel Â· Deluxe Twin"
+      "info": "Juguang Tower Hotel · Deluxe Twin"
     },
     {
       "name": "AI: pay deposit then balance (sandbox) → Confirmed",
@@ -71,7 +71,7 @@
     {
       "name": "AI admin: booking shows in Assistant bookings",
       "ok": true,
-      "info": "AI-000008 Guest Traveler guest103176@example.com Juguang Tower Hotel Â· Deluxe Twin Wed 2 Dec – Fri 4 Dec · 2 pax TWD 5,"
+      "info": "AI-000009 Guest Traveler guest750422@example.com Juguang Tower Hotel · Deluxe Twin Thu 19 Nov – Fri 20 Nov · 2 pax TWD 2"
     }
   ],
   "pageErrors": []

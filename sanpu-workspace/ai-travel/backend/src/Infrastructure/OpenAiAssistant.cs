@@ -10,10 +10,10 @@ namespace Divakar.Sanpu.AiOps.Infrastructure;
 /// <summary>OpenAI (ChatGPT) chat completions with function calling, the same tools and rules as the Claude assistant.
 /// Works with any OpenAI-compatible service: OPENAI_BASE_URL (default OpenAI; e.g. Google Gemini
 /// https://generativelanguage.googleapis.com/v1beta/openai or Groq https://api.groq.com/openai/v1), OPENAI_API_KEY, OPENAI_MODEL.</summary>
-public record OpenAiCompatibleProfile(string Name, string SecretPrefix, string DefaultBaseUrl, string DefaultModel)
+public record OpenAiCompatibleProfile(string Name, string SecretPrefix, string DefaultBaseUrl, string DefaultModel, string FallbackModels = "")
 {
     public static readonly OpenAiCompatibleProfile OpenAI = new("OpenAI", "OPENAI", "https://api.openai.com/v1", "gpt-4o-mini");
-    public static readonly OpenAiCompatibleProfile Gemini = new("Gemini", "GEMINI", "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-2.5-flash");
+    public static readonly OpenAiCompatibleProfile Gemini = new("Gemini", "GEMINI", "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-flash-lite-latest", "gemini-3.1-flash-lite,gemini-3-flash-preview,gemini-flash-latest");
 }
 
 /// <summary>ChatGPT (OpenAI). One constructor so the typed HttpClient factory can create it.</summary>
@@ -25,6 +25,8 @@ public abstract class OpenAiCompatibleModel(HttpClient http, ISecretStore secret
     private readonly string _model = secrets.Get(profile.SecretPrefix + "_MODEL") is { Length: > 0 } m ? m : profile.DefaultModel;
     private readonly string _base = (secrets.Get(profile.SecretPrefix + "_BASE_URL") is { Length: > 0 } b ? b : profile.DefaultBaseUrl).TrimEnd('/');
     public string Name => profile.Name;
+    /// <summary>The chosen model first, then the other free models (GEMINI_FALLBACK_MODELS, comma separated).</summary>
+    private string[] Candidates() => [.. new[] { _model }.Concat((secrets.Get(profile.SecretPrefix + "_FALLBACK_MODELS") ?? profile.FallbackModels).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)).Distinct()];
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_key) && _key!.Length > 20;
 
     public async Task<AssistantRun> RunAsync(string model, string system, IReadOnlyList<ChatTurn> history, IReadOnlyList<AssistantToolDef> tools,
@@ -45,15 +47,31 @@ public abstract class OpenAiCompatibleModel(HttpClient http, ISecretStore secret
             }
         })]);
         int inTok = 0, outTok = 0, calls = 0;
+        var active = _model;
         try
         {
             for (var round = 0; round <= maxRounds; round++)
             {
-                var body = new JsonObject { ["model"] = _model, ["messages"] = messages.DeepClone(), ["max_completion_tokens"] = 3000 };
-                if (round < maxRounds) body["tools"] = toolDefs.DeepClone();
-                using var req = new HttpRequestMessage(HttpMethod.Post, _base + "/chat/completions") { Content = JsonContent.Create(body) };
-                req.Headers.Authorization = new("Bearer", _key);
-                using var res = await http.SendAsync(req, cts.Token);
+                HttpResponseMessage? sent = null;
+                // before any tool has run, a busy model can hand over to the next one; afterwards the same model must finish
+                var tries = round == 0 ? Candidates() : [active];
+                foreach (var candidate in tries)
+                {
+                    for (var attempt = 0; attempt < 2; attempt++)
+                    {
+                        var body = new JsonObject { ["model"] = candidate, ["messages"] = messages.DeepClone(), ["max_completion_tokens"] = 3000 };
+                        if (round < maxRounds) body["tools"] = toolDefs.DeepClone();
+                        using var req = new HttpRequestMessage(HttpMethod.Post, _base + "/chat/completions") { Content = JsonContent.Create(body) };
+                        req.Headers.Authorization = new("Bearer", _key);
+                        sent?.Dispose();
+                        sent = await http.SendAsync(req, cts.Token);
+                        active = candidate;
+                        if ((int)sent.StatusCode is not (429 or 500 or 503)) break;
+                        if (attempt == 0) await Task.Delay(700, cts.Token);
+                    }
+                    if ((int)sent!.StatusCode is not (404 or 429 or 500 or 503)) break;
+                }
+                using var res = sent!;
                 if (res.StatusCode == HttpStatusCode.Unauthorized) throw new AiUnavailableException("auth_failed", $"{profile.Name} rejected the API key.");
                 if (res.StatusCode == HttpStatusCode.TooManyRequests) throw new AiUnavailableException("rate_limited", $"{profile.Name} is rate limiting or out of credit.");
                 if (!res.IsSuccessStatusCode) throw new AiUnavailableException("provider_error", $"{profile.Name} returned {(int)res.StatusCode}.");
@@ -64,7 +82,7 @@ public abstract class OpenAiCompatibleModel(HttpClient http, ISecretStore secret
                 var msg = choice["message"]!.AsObject();
                 var toolCalls = msg["tool_calls"]?.AsArray();
                 if (toolCalls is null || toolCalls.Count == 0)
-                    return new AssistantRun(msg["content"]?.ToString() ?? "", inTok, outTok, _model, choice["finish_reason"]?.ToString() ?? "", calls);
+                    return new AssistantRun(msg["content"]?.ToString() ?? "", inTok, outTok, active, choice["finish_reason"]?.ToString() ?? "", calls);
                 messages.Add(msg.DeepClone());
                 foreach (var call in toolCalls)
                 {

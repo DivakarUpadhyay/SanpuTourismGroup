@@ -115,6 +115,7 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         var history = Clean(request.Messages);
         var cards = new List<ChatCard>();
         _asked = TripQueryParser.Parse(history[^1].Content, clock.UtcNow.AddHours(8).Date);
+        _earlier = history.LastOrDefault(m => m.Role == "user" && !ReferenceEquals(m, history[^1]))?.Content ?? "";
         if (_asked.PastDate || _asked.UnknownPlace is not null) return await FallbackAsync(history[^1].Content, cards, null, ct);   // clear, fixed answers
         var status = await gateway.StatusAsync(ct);
         var aiOn = model.IsConfigured && status.Provider != "Disabled" && status.MonthCostUsd < status.MonthlyBudgetUsd;
@@ -417,7 +418,11 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
     }
 
     // ---------------- without a model: understand the request and answer exactly that from live data ----------------
-    private const string Help = "I can find tours, hotels, flights, buses and taxis across Taiwan. Try \"hotel in Tainan for 2 nights from Friday\", \"flights from Taipei to Kinmen tomorrow for 2\" or \"3 day tours in Hualien under TWD 15000\".";
+    private const string Examples = "\"hotel in Tainan for 2 nights from Friday\" or \"flights from Taipei to Kinmen tomorrow for 2\".";
+    private const string Help = "I can find tours, hotels, flights, buses and taxis across Taiwan. Try " + Examples;
+    private string _earlier = "";
+    private static bool Refines(TripQuery q) => q.Date is not null || q.Travelers is not null || q.Budget is not null || q.Nights is not null || q.Days is not null || q.Interests.Count > 0;
+    private static bool WantsToBook(string m) => System.Text.RegularExpressions.Regex.IsMatch(m, @"\b(book|reserve|buy|pay|yes|confirm|cheapest|that one|first one)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     private static string Day(DateTime d) => d.ToString("ddd d MMM", CultureInfo.InvariantCulture);
     private static string Twd(decimal v) => "TWD " + v.ToString("#,0", CultureInfo.InvariantCulture);
 
@@ -425,6 +430,12 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
     {
         var today = clock.UtcNow.AddHours(8).Date;
         var q = TripQueryParser.Parse(message, today);
+        // a short follow-up ("for 4 people", "next week") continues the previous request
+        if (q.Intent == "unknown" && q.UnknownPlace is null && _earlier is { Length: > 0 })
+        {
+            var joined = TripQueryParser.Parse(message + ". " + _earlier, today);
+            if (joined.Intent != "unknown" && Refines(q)) q = joined;
+        }
         string reply;
         try
         {
@@ -438,7 +449,8 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
                 { Intent: "hotel" or "flight" or "bus" or "taxi" } => await TravelReplyAsync(q, today, cards, ct),
                 { Intent: "compare" } => await CompareReplyAsync(q, cards, ct),
                 { Intent: "tours" or "plan" } => await ToursReplyAsync(q, cards, ct),
-                _ => "I didn't catch that. " + Help,
+                _ when WantsToBook(message) => "Press **Book this** on the option you like and I'll prepare it at the live price. You confirm the payment yourself.",
+                _ => "Tell me where you'd like to go and when, and I'll find the options. For example: " + Examples,
             };
         }
         catch (AppException ex) { reply = ex.Message; }
