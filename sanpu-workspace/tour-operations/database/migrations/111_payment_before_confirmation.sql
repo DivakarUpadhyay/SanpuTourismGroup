@@ -22,3 +22,12 @@ OUTPUT inserted.BookingId, inserted.Pax, inserted.DepartureId INTO @T WHERE Stat
 UPDATE d SET SeatsSold = d.SeatsSold - t.Pax FROM dbo.Departures d JOIN @T t ON t.DepartureId = d.DepartureId;
 INSERT dbo.BookingStatusHistory(BookingId, FromStatus, ToStatus, ActorUserId, Comment) SELECT BookingId, 'Confirmed', 'Cancelled', NULL, N'Closed: confirmed without a successful payment' FROM @T;
 IF NOT EXISTS (SELECT 1 FROM dbo.SchemaVersions WHERE ScriptName = '111_payment_before_confirmation.sql') INSERT dbo.SchemaVersions(ScriptName) VALUES ('111_payment_before_confirmation.sql');
+GO
+-- gateway card payments are recorded with the method 'Card'
+IF EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_Payments_Method' AND definition NOT LIKE '%''Card''%')
+BEGIN
+    DECLARE @def nvarchar(max) = (SELECT definition FROM sys.check_constraints WHERE name = 'CK_Payments_Method');
+    ALTER TABLE dbo.Payments DROP CONSTRAINT CK_Payments_Method;
+    DECLARE @sql nvarchar(max) = N'ALTER TABLE dbo.Payments ADD CONSTRAINT CK_Payments_Method CHECK (' + @def + N' OR [Method]=''Card'')';
+    EXEC (@sql);
+END
