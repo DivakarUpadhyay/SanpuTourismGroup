@@ -17,12 +17,12 @@ if (MODE === "auto" && typeof window !== "undefined") { try { offline = Number(s
 /** True while answers come from the bundled preview. */
 export const isStandalone = () => offline;
 export const STANDALONE_POSSIBLE = MODE === "1" || MODE === "auto";
-/** Called when the live API cannot be reached: switch this tab to the preview for 2 minutes, then try live again. */
+/** Called when the live API cannot be reached: switch this tab to the preview for 30 seconds, then try live again. */
 export function goOffline() {
   if (MODE !== "auto") return false;
   offline = true;
-  try { sessionStorage.setItem(OFFLINE_KEY, String(Date.now() + 120_000)); } catch { /* ignore */ }
-  setTimeout(() => { offline = false; }, 120_000);
+  try { sessionStorage.setItem(OFFLINE_KEY, String(Date.now() + 30_000)); } catch { /* ignore */ }
+  setTimeout(() => { offline = false; }, 30_000);
   return true;
 }
 const APP = process.env.NEXT_PUBLIC_COOKIE_PREFIX ?? "app";

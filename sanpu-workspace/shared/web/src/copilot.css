@@ -256,3 +256,6 @@ main.page.wide:has(.cp-home), main.page.wide:has(.st-page), main.page.wide:has(.
 .as-guest { width: min(860px, 100% - 32px); margin: 0 auto 6px; font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
 main.page.wide:has(.as-page) { padding-bottom: 0 !important; }
 .site:has(.as-page) .site-footer { margin-top: 0; }
+
+/* notes and errors on pages whose header floats over a photo */
+main.under-header > .alert, main.under-header > [data-testid=offline-note], main.under-header > [data-testid=error-box] { margin: 92px auto 32px; width: min(1180px, 100% - 32px); }

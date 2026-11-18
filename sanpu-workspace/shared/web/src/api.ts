@@ -1,6 +1,6 @@
 "use client";
 
-import { goOffline, isStandalone, standaloneApi, standaloneRefresh } from "./standalone";
+import { STANDALONE_POSSIBLE, goOffline, isStandalone, standaloneApi, standaloneRefresh } from "./standalone";
 
 /** Error shape of every API failure (RFC 7807 ProblemDetails + code + correlationId). */
 export class ApiError extends Error {
@@ -102,16 +102,30 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
     });
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    if (goOffline()) return api<T>(path, opts);   // live service unreachable: answer from the preview
+    if (opts.retry !== false && STANDALONE_POSSIBLE) { await pause(900); return api<T>(path, { ...opts, retry: false }); }   // one quiet retry first
+    if (!(await liveHealthy()) && goOffline()) return api<T>(path, opts);   // live service really down: answer from the preview
     throw new ApiError(0, "network_error", "Cannot reach the server. Check your connection and try again.");
   }
-  if (unreachable(res) && goOffline()) return api<T>(path, opts);
+  if (unreachable(res) && STANDALONE_POSSIBLE) {
+    if (opts.retry !== false) { await pause(900); return api<T>(path, { ...opts, retry: false }); }
+    if (!(await liveHealthy()) && goOffline()) return api<T>(path, opts);
+  }
   if (res.status === 401 && opts.retry !== false && !path.startsWith("/auth/")) {
     if (await refreshSession(realm)) return api<T>(path, { ...opts, retry: false });
     listeners.forEach((l) => l());
   }
   if (!res.ok) throw await toError(res);
   return (await parse(res)) as T;
+}
+
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Two quick health checks; a single blip on the tunnel must not switch the site to the preview. */
+async function liveHealthy() {
+  for (let i = 0; i < 2; i++) {
+    try { const r = await fetch(url("/public/settings"), { cache: "no-store" }); if (r.ok && (r.headers.get("content-type") ?? "").includes("json")) return true; } catch { /* try again */ }
+    await pause(1200);
+  }
+  return false;
 }
 
 /** The live service is down (tunnel closed, computer asleep): gateway errors or a non-API page instead of JSON. */
