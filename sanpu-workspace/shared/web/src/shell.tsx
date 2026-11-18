@@ -134,11 +134,12 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
   const newsletter = useSetting("Feature.Newsletter", "false") === "true";
   const { status } = useAuth();
   // landing and detail pages run edge to edge (full-width hero); every other page keeps the reading width
-  const bleed = path === "/" || /^\/(login|register|assistant|tours|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))(\/|$)?/.test(path);
+  const authPage = /^\/(login|register)$/.test(path);   // sign-in screens fill the window: no footer, no scrolling
+  const bleed = path === "/" || /^\/(news|blog|login|register|assistant|tours|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))(\/|$)?/.test(path);
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
   // on pages that start with a photo hero the header floats over it, then turns solid once the page scrolls
-  const overHero = path === "/" || /^\/(tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))/.test(path);
+  const overHero = path === "/" || /^\/((news|blog)\/[^/]+|tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))/.test(path);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -164,8 +165,8 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
           <UserMenu adminLink />
         </div>
       </header>
-      <main id="content" className={`${bleed ? "page wide" : "page"}${overHero ? " under-header" : ""}`}>{children}</main>
-      <footer className="site-footer">
+      <main id="content" className={`${bleed ? "page wide" : "page"}${overHero ? " under-header" : ""}${authPage ? " auth-main" : ""}`}>{children}</main>
+      {!authPage && <footer className="site-footer">
         {newsletter && <NewsletterBand />}
         <div className="wrap cols">
           <div className="about">
@@ -192,7 +193,7 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
             {legalNotice && <span className="notice">{legalNotice}</span>}
           </div>
         </div>
-      </footer>
+      </footer>}
     </div>
   );
 }

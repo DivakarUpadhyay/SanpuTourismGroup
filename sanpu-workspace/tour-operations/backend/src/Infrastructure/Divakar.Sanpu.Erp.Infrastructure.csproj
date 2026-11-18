@@ -3,4 +3,5 @@
     <ProjectReference Include="..\Application\Divakar.Sanpu.Erp.Application.csproj" />
     <ProjectReference Include="..\..\..\..\shared\backend\src\Core.Infrastructure\Divakar.Sanpu.Core.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup><PackageReference Include="Anthropic" Version="13.9.0" /></ItemGroup>
 </Project>

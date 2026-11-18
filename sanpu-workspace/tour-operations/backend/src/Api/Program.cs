@@ -23,6 +23,11 @@ builder.Services.AddScoped<PaymentService>();
 // uploaded images: a local folder outside the web root (Media:Root), served by MediaController
 builder.Services.AddSingleton<IMediaStore>(new LocalMediaStore(builder.Configuration["Media:Root"] ?? Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "..", "storage", "media")));
 builder.Services.AddScoped<MediaService>();
+// news & blog with the AI writer bot (Gemini, ChatGPT or Claude; real photos from the library)
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddHttpClient<IArticleWriter, AiArticleWriter>(c => c.Timeout = TimeSpan.FromSeconds(120));
+builder.Services.AddScoped<ArticleService>();
+builder.Services.AddHostedService<ContentBot>();
 builder.Services.AddScoped<CustomerBookingService>();
 builder.Services.AddScoped<BookingOpsService>();
 builder.Services.AddScoped<ApprovalService>();

@@ -56,7 +56,7 @@ async function startTunnel(port) {
   for (let i = 0; i < 60; i++) {
     const m = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/.exec(fs.readFileSync(file, "utf8"));
     if (m) {
-      for (let j = 0; j < 30; j++) {   // the name needs a moment to resolve
+      for (let j = 0; j < 90; j++) {   // the name needs a moment to resolve (up to 3 minutes)
         try { const r = await fetch(`${m[0]}/api/v1/public/settings`); if (r.ok) return m[0]; } catch { /* not yet */ }
         await sleep(2000);
       }
@@ -75,7 +75,7 @@ if (mode === "on") {
   stopTunnels();
   const urls = {};
   for (const s of SITES) { urls[s.name] = await startTunnel(s.port); log(`tunnel ${s.port} -> ${urls[s.name]}`); }
-  for (const s of SITES) { const id = cfg.projects[s.name]; await setEnv(id, "API_URL", urls[s.name]); await setEnv(id, "NEXT_PUBLIC_STANDALONE", "auto");   // live, with the preview as automatic fallback }
+  for (const s of SITES) { const id = cfg.projects[s.name]; await setEnv(id, "API_URL", urls[s.name]); await setEnv(id, "NEXT_PUBLIC_STANDALONE", "auto"); }   // live, with the preview as automatic fallback
   log("redeploying both sites in LIVE mode…");
   await waitReady(await Promise.all(SITES.map(deploy)));
   for (const s of SITES) { const r = await fetch(`${s.url}/api/v1/public/settings`); log(`${s.url} live: ${r.status === 200 ? "OK" : r.status}`); }

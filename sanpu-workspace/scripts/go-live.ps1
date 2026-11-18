@@ -2,7 +2,7 @@
     (real bookings, payments, sign-up, approvals and AI). Takes about 3 minutes.
     Usage:  ./scripts/go-live.ps1          then present on https://sanpu-travel.vercel.app and https://sanpu-trip-copilot.vercel.app
             ./scripts/go-live.ps1 -Off     afterwards: back to the offline preview (computer can be switched off) #>
-param([switch]$Off)
+param([switch]$Off, [switch]$ApisOnly)   # -ApisOnly: rebuild + restart the APIs with live settings, keep tunnels and sites
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if ($Off) { node tools/live.mjs off; exit $LASTEXITCODE }
@@ -26,4 +26,5 @@ foreach ($p in 5101, 5102) {
 }
 # keep the computer awake while live (restored by go-live -Off or a restart)
 powercfg /change standby-timeout-ac 0 | Out-Null
+if ($ApisOnly) { Write-Host "APIs restarted; tunnels and sites unchanged."; exit 0 }
 node tools/live.mjs on

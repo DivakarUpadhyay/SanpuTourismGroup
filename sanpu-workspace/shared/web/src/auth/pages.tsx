@@ -121,8 +121,11 @@ export function RegisterPage() {
         <FormError error={a.error} />
         <TextInput label="Name" value={f.displayName} onChange={(v) => setF({ ...f, displayName: v })} error={a.fieldError("displayName")} data-testid="reg-name" />
         <TextInput label="Email" type="email" value={f.email} onChange={(v) => setF({ ...f, email: v })} error={a.fieldError("email")} data-testid="reg-email" />
-        <TextInput label="Password" type="password" autoComplete="new-password" value={f.password} onChange={(v) => setF({ ...f, password: v })} error={a.fieldError("password")} hint={PASSWORD_HINT} data-testid="reg-password" />
-        <TextInput label="Confirm password" type="password" autoComplete="new-password" value={f.confirm} onChange={(v) => setF({ ...f, confirm: v })} error={mismatch ? "Passwords do not match." : undefined} data-testid="reg-confirm" />
+        <div className="pair">
+          <TextInput label="Password" type="password" autoComplete="new-password" value={f.password} onChange={(v) => setF({ ...f, password: v })} error={a.fieldError("password")} data-testid="reg-password" />
+          <TextInput label="Confirm password" type="password" autoComplete="new-password" value={f.confirm} onChange={(v) => setF({ ...f, confirm: v })} error={mismatch ? "Passwords do not match." : undefined} data-testid="reg-confirm" />
+        </div>
+        <small className="muted pw-hint">{PASSWORD_HINT}</small>
         <button className="btn primary lg block" disabled={a.busy} data-testid="reg-submit">{a.busy ? "Creating account…" : "Create account"}</button>
       </form>
     </AuthBox>
@@ -329,13 +332,18 @@ export function StaffRegisterPage() {
       ) : (
         <form className="form" onSubmit={submit} noValidate data-testid="staff-request-form">
           <FormError error={a.error} />
-          <TextInput label="Full name" autoComplete="name" value={f.displayName} onChange={set("displayName")} error={a.fieldError("displayName")} data-testid="sr-name" />
-          <TextInput label="Work email" type="email" autoComplete="email" value={f.email} onChange={set("email")} error={a.fieldError("email")} data-testid="sr-email" />
+          <div className="pair">
+            <TextInput label="Full name" autoComplete="name" value={f.displayName} onChange={set("displayName")} error={a.fieldError("displayName")} data-testid="sr-name" />
+            <TextInput label="Work email" type="email" autoComplete="email" value={f.email} onChange={set("email")} error={a.fieldError("email")} data-testid="sr-email" />
+          </div>
           <SelectInput label="Role you need" value={f.roleKey} onChange={set("roleKey")} placeholder={roles.loading ? "Loading roles…" : "Choose a role"}
-            options={(roles.data ?? []).map((r) => ({ value: r.roleKey, label: r.roleName }))} error={a.fieldError("roleKey")} hint={role?.description ?? "An administrator confirms the role before you can sign in."} testId="sr-role" />
+            options={(roles.data ?? []).map((r) => ({ value: r.roleKey, label: r.roleName }))} error={a.fieldError("roleKey")} testId="sr-role" />
           <TextInput label="Note for the administrator (optional)" value={f.note} onChange={set("note")} placeholder="Team, manager or reason" error={a.fieldError("note")} data-testid="sr-note" />
-          <TextInput label="Password" type="password" autoComplete="new-password" value={f.password} onChange={set("password")} error={a.fieldError("password")} hint={PASSWORD_HINT} data-testid="sr-password" />
-          <TextInput label="Confirm password" type="password" autoComplete="new-password" value={f.confirm} onChange={set("confirm")} error={mismatch ? "Passwords do not match." : undefined} data-testid="sr-confirm" />
+          <div className="pair">
+            <TextInput label="Password" type="password" autoComplete="new-password" value={f.password} onChange={set("password")} error={a.fieldError("password")} data-testid="sr-password" />
+            <TextInput label="Confirm password" type="password" autoComplete="new-password" value={f.confirm} onChange={set("confirm")} error={mismatch ? "Passwords do not match." : undefined} data-testid="sr-confirm" />
+          </div>
+          <small className="muted pw-hint">{PASSWORD_HINT}</small>
           <button className="btn primary lg block" disabled={a.busy} data-testid="sr-submit">{a.busy ? "Sending…" : "Send request"}</button>
         </form>
       )}
