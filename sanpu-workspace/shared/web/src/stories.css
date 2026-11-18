@@ -80,3 +80,13 @@
 .site > main > *, .admin .main > * { animation: page-in .16s ease-out both; }
 @keyframes page-in { from { opacity: .001; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .site > main > *, .admin .main > * { animation: none; } }
+
+/* header: menu, search and account never overlap; the search gives way first */
+.site .topbar-in { max-width: 1560px; gap: 12px; }
+.site .topbar-in .brand { flex: none; }
+.site .topbar-in .brand-name { white-space: nowrap; overflow: visible; max-width: none; text-overflow: clip; }
+.site .topnav { flex: none; gap: 0; }
+.site .user-menu { flex: none; }
+.header-search { flex: 1 1 170px; min-width: 170px; max-width: 340px; }
+@media (max-width: 1500px) { .header-search { display: none; } }
+@media (max-width: 1240px) { .site .user-chip, .site .user-menu .hide-sm { display: none; } }
