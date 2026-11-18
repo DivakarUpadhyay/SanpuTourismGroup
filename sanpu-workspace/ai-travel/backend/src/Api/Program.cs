@@ -29,6 +29,15 @@ builder.Services.AddHttpClient<ITravelCatalog, HttpTravelCatalog>(c =>
 });
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<AssistantService>();
+// payments: ECPay when its keys are configured (Payments:Provider=ECPay), otherwise the simulated provider
+var paymentOptions = builder.Configuration.GetSection("Payments").Get<PaymentOptions>() ?? new PaymentOptions();
+builder.Services.AddSingleton(paymentOptions);
+if (paymentOptions.Provider.Equals("ECPay", StringComparison.OrdinalIgnoreCase) && paymentOptions.Ecpay.IsConfigured)
+    builder.Services.AddHttpClient<IPaymentGateway, EcpayPaymentGateway>(c => c.Timeout = TimeSpan.FromSeconds(20));
+else
+    builder.Services.AddSingleton<IPaymentGateway, SimulatedPaymentGateway>();
+builder.Services.AddScoped<IReservationPaymentRepository, ReservationPaymentRepository>();
+builder.Services.AddScoped<ReservationPaymentService>();
 
 var app = builder.Build();
 if (await SanpuCli.TryRunAsync(app, args)) return;

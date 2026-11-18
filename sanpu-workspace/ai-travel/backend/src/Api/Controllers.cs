@@ -149,10 +149,6 @@ public sealed class AssistantController(AssistantService assistant) : Controller
     [HttpGet("my/bookings"), HasPermission("Reservation.ViewOwn")]
     public Task<IReadOnlyList<ReservationRow>> MyBookings(CancellationToken ct) => assistant.MineAsync(ct);
 
-    /// <summary>The traveler pays (sandbox): Deposit, Full or Balance. Confirms the booking when fully paid.</summary>
-    [HttpPost("my/bookings/{id:int}/pay"), HasPermission("Reservation.ViewOwn")]
-    public Task<ReservationRow> Pay(int id, PayRequest r, CancellationToken ct) => assistant.PayAsync(id, r, ct);
-
     [HttpPost("my/bookings/{id:int}/cancel"), HasPermission("Reservation.ViewOwn")]
     public Task<ReservationRow> Cancel(int id, CancellationToken ct) => assistant.CancelAsync(id, ct);
 

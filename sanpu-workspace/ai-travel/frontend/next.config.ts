@@ -12,7 +12,7 @@ const csp = [
   "img-src 'self' data:",
   `connect-src 'self'${dev ? " ws:" : ""}`,
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  "form-action 'self' https://payment-stage.ecpay.com.tw https://payment.ecpay.com.tw",   // hosted checkout (ECPay)
   "base-uri 'self'"
 ].join("; ");
 

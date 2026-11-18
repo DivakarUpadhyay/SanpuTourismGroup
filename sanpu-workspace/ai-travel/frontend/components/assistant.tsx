@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, Fragment, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError, Async, DataTable, ErrorBox, Icon, PageHeader, SelectInput, get, money, post, useAction, useAsync, useAuth, useSetting, useToast } from "@sanpu/web";
+import { PaymentResultBanner, openGateway, type Checkout } from "./payments";
 
 /* ============================================================================================================
    Sanpu AI Travel: an AI travel assistant. Travelers plan, compare and book in one conversation; every price
@@ -148,7 +149,13 @@ export function BookingCard({ initial, onChange }: { initial: Reservation; onCha
   const [left, setLeft] = useState(() => Math.max(0, utc(r.expiresAtUtc) - Date.now()));
   useEffect(() => { if (r.status !== "AwaitingConfirmation") return; const t = setInterval(() => setLeft(Math.max(0, utc(r.expiresAtUtc) - Date.now())), 1000); return () => clearInterval(t); }, [r.status, r.expiresAtUtc]);
   const act = async (fn: () => Promise<Reservation>, msg: string) => { const x = await a.run(fn, msg); if (x) { const next = { ...x, depositPercent: pct }; setR(next); onChange?.(next); } };
-  const pay = (mode: string) => act(() => post<Reservation>(`/my/bookings/${r.reservationId}/pay`, { mode }), mode === "Deposit" ? "Deposit paid" : "Paid in full");
+  const pay = async (mode: string) => {
+    const c = await a.run(() => post<Checkout>(`/my/bookings/${r.reservationId}/checkout`, { mode }));
+    if (!c) return;
+    if (c.action && c.fields) { openGateway(c.action, c.fields); return; }   // the booking is confirmed only after the gateway reports success
+    const x = (await get<Reservation[]>("/my/bookings")).find((b) => b.reservationId === r.reservationId);
+    if (x) { const next = { ...x, depositPercent: pct }; setR(next); onChange?.(next); }
+  };
   const expired = r.status === "AwaitingConfirmation" && left <= 0;
   return (
     <div className={`as-booking s-${r.status}`} data-testid={`booking-${r.ref}`}>
@@ -170,7 +177,7 @@ export function BookingCard({ initial, onChange }: { initial: Reservation; onCha
               <button className="btn" disabled={a.busy} onClick={() => pay("Deposit")} data-testid="pay-deposit">Pay {pct}% deposit · {money(deposit, r.currency)}</button>
               <button className="btn subtle" disabled={a.busy} onClick={() => act(() => post<Reservation>(`/my/bookings/${r.reservationId}/cancel`), "Booking released")}>Not now</button>
             </div>
-            <small className="muted"><Icon name="lock" size={12} /> Price held for {Math.floor(left / 60000)}:{String(Math.floor((left % 60000) / 1000)).padStart(2, "0")} · test payment, no real charge</small>
+            <small className="muted"><Icon name="lock" size={12} /> Price held for {Math.floor(left / 60000)}:{String(Math.floor((left % 60000) / 1000)).padStart(2, "0")} · secure card payment by ECPay (sandbox, no real charge)</small>
           </>
         )}
         {expired && <small className="muted">The held price expired. Ask the assistant for a fresh quote.</small>}
@@ -377,6 +384,7 @@ export function MyBookingsPage() {
     <>
       <PageHeader tagline="Your travel" title="My bookings" lead="Everything you booked with the assistant. Pay a balance, see references, or release a booking you no longer need."
         actions={<Link className="btn primary" href="/assistant"><Icon name="sparkle" size={16} /> Ask the assistant</Link>} />
+      <PaymentResultBanner onChange={() => list.reload()} />
       <div className="seg" role="tablist">{(["open", "all"] as const).map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t === "open" ? "Upcoming" : "All bookings"}</button>)}</div>
       <Async state={list}>{(rows) => {
         const shown = rows.filter((r) => tab === "all" || (r.status !== "Cancelled" && new Date(r.startDate) >= new Date(new Date().toDateString())));
