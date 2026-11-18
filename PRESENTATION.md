@@ -67,6 +67,8 @@ npm install
 | Sanpu AI Travel: customer site | https://sanpu-trip-copilot.vercel.app |
 | Sanpu AI Travel: assistant | https://sanpu-trip-copilot.vercel.app/assistant |
 | Sanpu AI Travel: admin | https://sanpu-trip-copilot.vercel.app/admin/login |
+| Tour Operations API | https://sanpu-travel.vercel.app/api/v1 |
+| AI Travel API | https://sanpu-trip-copilot.vercel.app/api/v1 |
 | Tour Operations API: Swagger | https://slide-genuine-tiffany-borough.trycloudflare.com/swagger/index.html |
 | AI Travel API: Swagger | https://guy-representing-airfare-amendment.trycloudflare.com/swagger/index.html |
 
@@ -117,7 +119,7 @@ Before you start, open these tabs and sign in: Sanpu Travel customer, Sanpu Trav
 | 5:00–6:30 | Admin operations | Dashboard, Bookings, Payments & transactions | "Every dashboard number opens its detail. Staff see each customer transaction, paid, pending or failed." |
 | 6:30–8:30 | AI assistant | /assistant | Type: **Find a hotel in Kinmen for 2 nights next Friday**. Press **Book this**, then **Pay**. "Prices are live. The AI can prepare a booking, but only the traveler can pay." |
 | 8:30–9:30 | AI admin | Assistant bookings, Payments | "Staff see every assistant booking and every payment attempt." |
-| 9:30–10:00 | Architecture and close | Swagger, or section 8 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
+| 9:30–10:00 | Architecture and close | Swagger, or section 9 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
 
 ### ECPay in the demo
 
@@ -349,7 +351,119 @@ Swagger lists 151 Tour Operations routes and 92 AI Travel routes. These are the 
 | AI Travel | DisruptionScenarios, Simulations, RecoveryProposals | Disruption testing and staff-approved plan changes |
 | AI Travel | AiUsageLogs, EvalCases, EvalRuns, EvalResults | AI usage and accuracy |
 
-## 8. Architecture answers
+## 8. Ready-to-use API requests
+
+| API | Vercel base URL |
+|---|---|
+| Tour Operations | https://sanpu-travel.vercel.app/api/v1 |
+| AI Travel | https://sanpu-trip-copilot.vercel.app/api/v1 |
+
+Open these in a browser to see live data without signing in:
+
+- https://sanpu-travel.vercel.app/api/v1/public/settings
+- https://sanpu-travel.vercel.app/api/v1/catalog/destinations
+- https://sanpu-travel.vercel.app/api/v1/catalog/tours?destination=ALISHAN&pax=2
+- https://sanpu-travel.vercel.app/api/v1/catalog/tours/TW-G29
+- https://sanpu-travel.vercel.app/api/v1/discover/compare?codes=TW-G29,TW-G15
+- https://sanpu-travel.vercel.app/api/v1/travel/places
+- https://sanpu-travel.vercel.app/api/v1/travel/search?kind=Hotel&date=2027-01-07&endDate=2027-01-09&units=1&travelers=2
+- https://sanpu-travel.vercel.app/api/v1/travel/search?kind=Flight&date=2027-01-07&travelers=1
+- https://sanpu-travel.vercel.app/api/v1/travel/search?kind=Bus&date=2027-01-07&travelers=1
+- https://sanpu-travel.vercel.app/api/v1/travel/search?kind=Taxi&date=2027-01-07&travelers=1
+- https://sanpu-trip-copilot.vercel.app/api/v1/public/settings
+
+### Step 1: sign in from PowerShell
+
+Replace `YOUR_PASSWORD`, then paste this block:
+
+```powershell
+$erp = "https://sanpu-travel.vercel.app/api/v1"
+$ai = "https://sanpu-trip-copilot.vercel.app/api/v1"
+$password = "YOUR_PASSWORD"
+function Get-Auth($base, $email, $realm) {
+  $body = @{ email = $email; password = $password } | ConvertTo-Json
+  $login = Invoke-RestMethod "$base/auth/login" -Method Post -ContentType "application/json" -Headers @{ "X-Session-Realm" = $realm } -Body $body
+  @{ Authorization = "Bearer $($login.accessToken)"; "X-Session-Realm" = $realm }
+}
+$erpCustomer = Get-Auth $erp "traveler.chen@demo.sanpu.test" "site"
+$erpAdmin = Get-Auth $erp "admin@demo.sanpu.test" "admin"
+$aiCustomer = Get-Auth $ai "traveler.chen@demo.sanpu.test" "site"
+$aiAdmin = Get-Auth $ai "admin@demo.sanpu.test" "admin"
+function Send-Json($url, $headers, $data) { Invoke-RestMethod $url -Method Post -Headers $headers -ContentType "application/json" -Body ($data | ConvertTo-Json -Depth 6) }
+```
+
+### Step 2: read data (safe to repeat)
+
+```powershell
+Invoke-RestMethod "$erp/auth/me" -Headers $erpCustomer
+Invoke-RestMethod "$erp/my/bookings" -Headers $erpCustomer
+Invoke-RestMethod "$erp/travel/my/bookings" -Headers $erpCustomer
+Invoke-RestMethod "$erp/payments/summary?orderType=Tour&orderId=8" -Headers $erpCustomer
+Invoke-RestMethod "$erp/ops/dashboard" -Headers $erpAdmin
+Invoke-RestMethod "$erp/ops/bookings?status=Pending&page=1&pageSize=5" -Headers $erpAdmin
+Invoke-RestMethod "$erp/ops/bookings/24" -Headers $erpAdmin
+Invoke-RestMethod "$erp/ops/approvals/inbox" -Headers $erpAdmin
+Invoke-RestMethod "$erp/ops/payments?status=Paid&page=1" -Headers $erpAdmin
+Invoke-RestMethod "$erp/ops/services/bookings?kind=Hotel" -Headers $erpAdmin
+Invoke-RestMethod "$ai/my/bookings" -Headers $aiCustomer
+Invoke-RestMethod "$ai/aiops/dashboard" -Headers $aiAdmin
+Invoke-RestMethod "$ai/aiops/reservations?status=Confirmed" -Headers $aiAdmin
+Invoke-RestMethod "$ai/aiops/payments?status=Pending" -Headers $aiAdmin
+Invoke-RestMethod "$ai/aiops/ai-usage" -Headers $aiAdmin
+```
+
+### Step 3: AI Travel booking and ECPay checkout
+
+This creates one booking, starts an ECPay checkout, then cancels the booking:
+
+```powershell
+$chat = Send-Json "$ai/assistant/chat" @{} @{ messages = @(@{ role = "user"; content = "Find a hotel in Kinmen" }) }
+$chat.reply
+
+$prepared = Send-Json "$ai/assistant/prepare" $aiCustomer @{ kind = "Hotel"; code = "H-G39"; date = "2027-01-07"; end_date = "2027-01-09"; travelers = 2 }
+$booking = ($prepared.cards | Where-Object { $_.type -eq "booking" }).data
+$booking | Select-Object ref, status, total
+
+$checkout = Send-Json "$ai/my/bookings/$($booking.reservationId)/checkout" $aiCustomer @{ mode = "Deposit" }
+$checkout | Select-Object provider, amount, completed, action
+
+Invoke-RestMethod "$ai/payments/$($checkout.merchantTradeNo)/refresh" -Method Post -Headers $aiCustomer | Select-Object status
+Invoke-RestMethod "$ai/my/bookings/$($booking.reservationId)/cancel" -Method Post -Headers $aiCustomer | Select-Object ref, status
+```
+
+### Request bodies that change live data
+
+Replace `{id}` with a real ID. Use `Send-Json` with the matching sign-in from step 1.
+
+| App | Sign in as | Full URL | JSON body |
+|---|---|---|---|
+| Tour Operations | None | `POST https://sanpu-travel.vercel.app/api/v1/auth/register` | `{"email":"new.user@example.com","displayName":"New User","password":"YOUR_NEW_PASSWORD"}` |
+| Tour Operations | None | `POST https://sanpu-travel.vercel.app/api/v1/auth/forgot-password` | `{"email":"traveler.chen@demo.sanpu.test"}` |
+| Tour Operations | Customer | `POST https://sanpu-travel.vercel.app/api/v1/bookings/holds` | `{"departureId":489,"pax":2,"idempotencyKey":"demo-hold-001"}` |
+| Tour Operations | Customer | `POST https://sanpu-travel.vercel.app/api/v1/bookings` | `{"holdId":"HOLD_ID_FROM_THE_HOLD_RESPONSE","leadName":"Chen Ya Ting","leadPhone":"+886912345678","passportNo":"A12345678","specialRequests":"","acceptTerms":true,"couponCode":null}` |
+| Tour Operations | Customer | `POST https://sanpu-travel.vercel.app/api/v1/travel/bookings` | `{"serviceCode":"H-G39","date":"2027-01-07","endDate":"2027-01-09","units":1,"travelers":2,"leadName":"Chen Ya Ting","leadPhone":"+886912345678","pickupAddress":null,"pickupTime":null,"notes":null,"couponCode":null,"acceptTerms":true,"idempotencyKey":"demo-service-001"}` |
+| Tour Operations | Customer | `POST https://sanpu-travel.vercel.app/api/v1/payments/checkout` | `{"orderType":"Tour","orderId":{id},"mode":"Deposit"}` |
+| Tour Operations | Customer | `POST https://sanpu-travel.vercel.app/api/v1/my/bookings/{id}/cancel` | `{"reason":"Change of plans"}` |
+| Tour Operations | Admin | `POST https://sanpu-travel.vercel.app/api/v1/ops/bookings/{id}/decision` | `{"decision":"Approved","comment":"Payment checked"}` |
+| Tour Operations | Admin | `POST https://sanpu-travel.vercel.app/api/v1/ops/bookings/{id}/cancel` | `{"reason":"Customer request"}` |
+| Tour Operations | Admin | `POST https://sanpu-travel.vercel.app/api/v1/ops/bookings/{id}/refunds` | `{"amount":1000,"reason":"Customer request"}` |
+| AI Travel | Customer | `POST https://sanpu-trip-copilot.vercel.app/api/v1/my/bookings/{id}/checkout` | `{"mode":"Full"}` |
+
+### Allowed values
+
+| Field | Values |
+|---|---|
+| `kind` | `Hotel`, `Flight`, `Bus`, `Taxi`, and `Tour` for `/assistant/prepare` only |
+| `mode` | `Deposit`, `Balance`, `Full` |
+| `orderType` | `Tour`, `Service` |
+| `decision` | `Approved`, `Rejected`. A comment is required to reject |
+| Tour booking `status` | `Pending`, `Confirmed`, `Rejected`, `CancelRequested`, `Cancelled` |
+| Payment `status` | `Paid`, `Pending`, `Failed` |
+| AI booking `status` | `AwaitingConfirmation`, `PartiallyPaid`, `Confirmed`, `Cancelled` |
+| `from`, `to` | Place codes from `/travel/places`, such as `TSA` or `KNH` |
+| Dates | `YYYY-MM-DD` |
+
+## 9. Architecture answers
 
 | Question | Answer |
 |---|---|
@@ -362,7 +476,7 @@ Swagger lists 151 Tour Operations routes and 92 AI Travel routes. These are the 
 | AI safety | The AI can prepare a booking but can never pay or confirm it |
 | Payments | ECPay sandbox. The signature is checked, then the trade is confirmed with ECPay server to server |
 
-## 9. Known limits
+## 10. Known limits
 
 Say these plainly if asked:
 
