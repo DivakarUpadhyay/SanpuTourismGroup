@@ -5,6 +5,59 @@ Two connected travel products, built on one shared platform:
 - **Sanpu Travel:** a travel booking website and the operations back office behind it.
 - **Sanpu AI Travel:** an AI assistant where a traveler plans, compares and books in one conversation.
 
+## Run the APIs and apps manually
+
+**Do not run these during the interview unless a site is down.** The live Vercel sites use the APIs running on this laptop, and restarting them interrupts both sites.
+
+Run every command in PowerShell from the project folder:
+
+```powershell
+cd D:\Divakar-Apps\SanpuTourismGroup\sanpu-workspace
+```
+
+### Option A: run everything locally
+
+Open four PowerShell windows, go to the project folder in each, and run one command per window:
+
+| Window | Starts | Command | Opens at |
+|---|---|---|---|
+| 1 | Tour Operations API | `dotnet run --project tour-operations/backend/src/Api --launch-profile http` | http://localhost:5101/swagger |
+| 2 | AI Travel API | `dotnet run --project ai-travel/backend/src/Api --launch-profile http` | http://localhost:5102/swagger |
+| 3 | Sanpu Travel website | `npm run dev:erp` | http://localhost:3101 |
+| 4 | AI Travel website | `npm run dev:ai` | http://localhost:3102 |
+
+Press `Ctrl+C` in a window to stop that service.
+
+### Option B: restart both APIs in the background
+
+```powershell
+./scripts/dev-api.ps1
+```
+
+This stops the APIs on ports 5101 and 5102, rebuilds them and starts them again for local use.
+
+### Option C: bring the live Vercel sites back
+
+| Situation | Command |
+|---|---|
+| The APIs stopped but the tunnels still work | `./scripts/go-live.ps1 -ApisOnly` |
+| The tunnels also stopped | `npx vercel login`, then `./scripts/go-live.ps1` |
+| Check the live connection | `node tools/live.mjs status` |
+| Switch the sites to the offline preview | `./scripts/go-live.ps1 -Off` |
+
+Running the full `./scripts/go-live.ps1` creates new tunnel URLs, so the Swagger links in section 1 will change.
+
+### First-time setup on a new computer
+
+Replace `YOUR_SQL_SERVER` with your SQL Server name:
+
+```powershell
+npm install
+./scripts/dev-secrets.ps1 -Server "YOUR_SQL_SERVER"
+./scripts/db-setup.ps1 -App erp -Server "YOUR_SQL_SERVER"
+./scripts/db-setup.ps1 -App ai -Server "YOUR_SQL_SERVER"
+```
+
 ## 1. Links
 
 | What | URL |
