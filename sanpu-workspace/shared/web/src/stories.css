@@ -90,3 +90,47 @@
 .header-search { flex: 1 1 170px; min-width: 170px; max-width: 340px; }
 @media (max-width: 1500px) { .header-search { display: none; } }
 @media (max-width: 1240px) { .site .user-chip, .site .user-menu .hide-sm { display: none; } }
+
+/* compare tours */
+.cmp-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0 14px; }
+.cmp-slot { display: flex; align-items: center; gap: 12px; min-height: 76px; min-width: 0; padding: 10px 12px; border: 1px solid var(--stroke); border-radius: 12px; background: var(--card); font: inherit; text-align: left; }
+.cmp-slot.empty { justify-content: center; gap: 8px; border: 1.5px dashed var(--stroke-strong); background: transparent; color: var(--muted); font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s; }
+.cmp-slot.empty:hover { border-color: var(--accent); color: var(--accent); }
+.cmp-plus { font-size: 20px; line-height: 1; }
+.cmp-thumb { flex: none; width: 54px; height: 54px; border-radius: 9px; background: center / cover no-repeat var(--subtle); }
+.cmp-slot-text { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.cmp-slot-text b { font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--ink); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.cmp-slot-text small { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-remove { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--subtle); color: var(--ink-2); font-size: 18px; line-height: 1; cursor: pointer; }
+.cmp-remove:hover { background: var(--stroke-strong); }
+.cmp-picker { margin-bottom: 22px; border: 1px solid var(--stroke); border-radius: 14px; background: var(--card); overflow: hidden; }
+.cmp-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--stroke); }
+.cmp-tools input, .cmp-tools select { height: 38px; padding: 0 12px; border: 1px solid var(--stroke-strong); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: 14px; }
+.cmp-tools input { flex: 1 1 220px; min-width: 0; }
+.cmp-tools select { flex: 0 1 200px; min-width: 0; }
+.cmp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 8px; max-height: 324px; padding: 12px 14px; overflow-y: auto; }
+.cmp-tile { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid var(--stroke); border-radius: 10px; background: var(--card); font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+.cmp-tile .cmp-thumb { width: 46px; height: 46px; border-radius: 8px; }
+.cmp-tile:hover:not(:disabled) { border-color: var(--accent); }
+.cmp-tile[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+.cmp-tile:disabled { opacity: .5; cursor: not-allowed; }
+.cmp-mark { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--stroke-strong); border-radius: 50%; color: var(--muted); font-size: 14px; line-height: 1; }
+.cmp-tile[aria-pressed="true"] .cmp-mark { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.cmp-none { grid-column: 1 / -1; margin: 0; padding: 18px 0; text-align: center; }
+.cmp-change { display: inline-block; margin-bottom: 16px; }
+.cmp-result { padding: 0; overflow-x: auto; }
+.cmp-result table.compare { table-layout: fixed; min-width: 640px; }
+.cmp-result table.compare thead th:first-child, .cmp-result table.compare tbody th { width: 150px; }
+.cmp-result table.compare thead th { padding: 16px 14px 14px; vertical-align: top; }
+.cmp-result table.compare tbody tr:last-child > * { border-bottom: 0; }
+.cmp-result .cmp-img { height: auto; aspect-ratio: 16 / 9; margin-bottom: 12px; border-radius: 10px; }
+.cmp-title { display: block; font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ink); text-decoration: none; }
+.cmp-title:hover { color: var(--accent); }
+.cmp-price td b { font-family: var(--font-display); font-size: 18px; color: var(--accent); }
+.cmp-best { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, var(--card)); color: var(--accent); font-size: 11.5px; font-weight: 600; vertical-align: 2px; }
+@media (max-width: 760px) {
+  .cmp-slots { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .cmp-slot { min-height: 64px; }
+  .cmp-list { grid-template-columns: minmax(0, 1fr); }
+  .cmp-tools select { flex: 1 1 100%; }
+}

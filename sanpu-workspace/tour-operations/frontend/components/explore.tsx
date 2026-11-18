@@ -414,30 +414,90 @@ interface CompareRow { code: string; slug?: string | null; title: string; slogan
 function CompareInner({ params }: { params: URLSearchParams }) {
   const tours = useAsync(() => get<TourCard[]>("/catalog/tours"), []);
   const [picked, setPicked] = useState<string[]>((params.get("codes") ?? "").split(",").filter(Boolean).slice(0, 3));
+  const [listOpen, setListOpen] = useState(picked.length < 2);
+  const [find, setFind] = useState("");
+  const [place, setPlace] = useState("");
   const cmp = useAsync(() => (picked.length >= 2 ? get<CompareRow[]>("/discover/compare", { codes: picked.join(",") }) : Promise.resolve([] as CompareRow[])), [picked.join(",")]);
   const toggle = (c: string) => {
     const next = picked.includes(c) ? picked.filter((x) => x !== c) : picked.length < 3 ? [...picked, c] : picked;
     setPicked(next); savePageParams({ codes: next.join(",") });
+    if (next.length === 3) setListOpen(false);
   };
+  const all = tours.data ?? [];
+  const places = Array.from(new Set(all.map((t) => t.destinationName))).sort();
+  const term = find.trim().toLowerCase();
+  const shown = all.filter((t) => (!place || t.destinationName === place) && (!term || `${t.title} ${t.destinationName}`.toLowerCase().includes(term)));
+  const dayText = (d: number) => `${d} ${d === 1 ? "day" : "days"}`;
   const rows: [string, (r: CompareRow) => React.ReactNode][] = [
-    ["Destination", (r) => `${r.destinationName} · ${r.region}`], ["Length", (r) => `${r.days} days`], ["From", (r) => <b>{money(r.fromPrice, r.currency)}</b>],
+    ["Destination", (r) => `${r.destinationName} · ${r.region}`], ["Length", (r) => dayText(r.days)],
     ["Next departure", (r) => fmtDate(r.nextDeparture)], ["Open dates", (r) => r.openDepartures], ["Seats left", (r) => r.seatsLeft ?? 0], ["Run by", (r) => r.businessUnitName],
-    ["Best time", (r) => r.bestTime], ["Getting there", (r) => r.gettingThere], ["Nearby highlights", (r) => r.nearbyNames]];
+    ["Best time", (r) => r.bestTime || "—"], ["Getting there", (r) => r.gettingThere || "—"], ["Nearby highlights", (r) => r.nearbyNames || "—"]];
   return (
     <>
       <PageHeader tagline="Plan" title="Compare tours" lead="Pick two or three tours to see them side by side." />
-      <div className="chip-pick" role="group" aria-label="Tours to compare">
-        {(tours.data ?? []).map((t) => <button key={t.code} type="button" aria-pressed={picked.includes(t.code)} onClick={() => toggle(t.code)} disabled={!picked.includes(t.code) && picked.length >= 3}>{t.title}</button>)}
+      <div className="cmp-slots" data-testid="compare-slots">
+        {[0, 1, 2].map((i) => {
+          const code = picked[i], t = all.find((x) => x.code === code);
+          if (!code) return <button key={i} type="button" className="cmp-slot empty" onClick={() => setListOpen(true)}><span className="cmp-plus" aria-hidden="true">+</span>{i === 2 ? "Add a third tour" : `Choose tour ${i + 1}`}</button>;
+          return (
+            <div key={code} className="cmp-slot">
+              <span className="cmp-thumb" style={bg(t?.imageUrl)} />
+              <span className="cmp-slot-text"><b>{t?.title ?? code}</b>{t && <small>{t.destinationName} · {dayText(t.days)}</small>}</span>
+              <button type="button" className="cmp-remove" aria-label={`Remove ${t?.title ?? code}`} title="Remove" onClick={() => { toggle(code); setListOpen(true); }}>×</button>
+            </div>
+          );
+        })}
       </div>
-      {picked.length < 2 ? <Empty>Choose at least two tours above.</Empty> : (
-        <Async state={cmp}>{(list) => (
-          <div className="table-wrap card" style={{ padding: 0 }}>
-            <table className="compare" data-testid="compare-table">
-              <thead><tr><th />{list.map((r) => <th key={r.code}><div className="cmp-img" style={bg(r.imageUrl)} /><Link href={`/tours/${r.slug ?? r.code}`}>{r.title}</Link></th>)}</tr></thead>
-              <tbody>{rows.map(([label, f]) => <tr key={label}><th scope="row">{label}</th>{list.map((r) => <td key={r.code}>{f(r)}</td>)}</tr>)}</tbody>
-            </table>
+
+      {listOpen ? (
+        <section className="cmp-picker" aria-label="Choose tours to compare">
+          <div className="cmp-tools">
+            <input type="search" value={find} onChange={(e) => setFind(e.target.value)} placeholder="Search by tour or place" aria-label="Search tours" data-testid="compare-search" />
+            <select value={place} onChange={(e) => setPlace(e.target.value)} aria-label="Destination">
+              <option value="">All destinations</option>
+              {places.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <span className="small muted" aria-live="polite">{shown.length} {shown.length === 1 ? "tour" : "tours"}</span>
+            {picked.length >= 2 && <button type="button" className="btn small" onClick={() => setListOpen(false)}>Done</button>}
           </div>
-        )}</Async>
+          <div className="cmp-list" role="group" aria-label="Tours">
+            {shown.map((t) => {
+              const on = picked.includes(t.code);
+              return (
+                <button key={t.code} type="button" className="cmp-tile" aria-pressed={on} disabled={!on && picked.length >= 3} onClick={() => toggle(t.code)}>
+                  <span className="cmp-thumb" style={bg(t.imageUrl)} />
+                  <span className="cmp-slot-text"><b>{t.title}</b><small>{t.destinationName} · {dayText(t.days)}{t.fromPrice != null ? ` · ${money(t.fromPrice, t.currency)}` : ""}</small></span>
+                  <span className="cmp-mark" aria-hidden="true">{on ? "✓" : "+"}</span>
+                </button>
+              );
+            })}
+            {tours.data && shown.length === 0 && <p className="small muted cmp-none">No tours match your search.</p>}
+          </div>
+        </section>
+      ) : <button type="button" className="link-btn cmp-change" onClick={() => setListOpen(true)}>Change tours</button>}
+
+      {picked.length < 2 ? <Empty>{picked.length === 1 ? "Choose one more tour to compare." : "Choose at least two tours to compare."}</Empty> : (
+        <Async state={cmp}>{(list) => {
+          const prices = list.map((r) => r.fromPrice).filter((v): v is number => v != null);
+          const low = prices.length > 1 && new Set(prices).size > 1 ? Math.min(...prices) : null;
+          return (
+            <div className="table-wrap card cmp-result">
+              <table className="compare" data-testid="compare-table">
+                <thead><tr><th scope="col"><span className="sr-only">Detail</span></th>{list.map((r) => (
+                  <th key={r.code} scope="col">
+                    <div className="cmp-img" style={bg(r.imageUrl)} />
+                    <Link className="cmp-title" href={`/tours/${r.slug ?? r.code}`}>{r.title}</Link>
+                  </th>
+                ))}</tr></thead>
+                <tbody>
+                  <tr className="cmp-price"><th scope="row">Price from</th>{list.map((r) => <td key={r.code}><b>{money(r.fromPrice, r.currency)}</b>{r.fromPrice === low && <span className="cmp-best">Lowest price</span>}</td>)}</tr>
+                  {rows.map(([label, f]) => <tr key={label}><th scope="row">{label}</th>{list.map((r) => <td key={r.code}>{f(r)}</td>)}</tr>)}
+                  <tr className="cmp-actions"><th scope="row"><span className="sr-only">Open tour</span></th>{list.map((r) => <td key={r.code}><Link className="btn primary small" href={`/tours/${r.slug ?? r.code}`}>View tour</Link></td>)}</tr>
+                </tbody>
+              </table>
+            </div>
+          );
+        }}</Async>
       )}
     </>
   );
