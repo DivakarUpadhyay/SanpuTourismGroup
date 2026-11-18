@@ -1,6 +1,6 @@
 "use client";
 
-import { STANDALONE_POSSIBLE, goOffline, isStandalone, standaloneApi, standaloneRefresh } from "./standalone";
+import { STANDALONE_POSSIBLE, goOffline, goOnline, isStandalone, previewOnly, standaloneApi, standaloneRefresh } from "./standalone";
 
 /** Error shape of every API failure (RFC 7807 ProblemDetails + code + correlationId). */
 export class ApiError extends Error {
@@ -80,11 +80,14 @@ export function refreshSession(realm: Realm = currentRealm()): Promise<boolean> 
 export interface RequestOptions { method?: string; body?: unknown; query?: Query; form?: FormData; signal?: AbortSignal; retry?: boolean }
 
 export async function api<T = unknown>(path: string, opts: RequestOptions = {}): Promise<T> {
-  if (isStandalone()) {   // no API server: answer from the bundled snapshot
+  const verb = opts.method ?? (opts.body !== undefined || opts.form ? "POST" : "GET");
+  const fromPreview = () => {   // no API server: answer from the bundled snapshot
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(opts.query ?? {})) if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
-    return standaloneApi<T>(opts.method ?? (opts.body !== undefined || opts.form ? "POST" : "GET"), path, qs, opts.form ?? opts.body);
-  }
+    return standaloneApi<T>(verb, path, qs, opts.form ?? opts.body);
+  };
+  // reads use the preview during an outage; chat, sign-in, bookings and payments always try the live system first
+  if (isStandalone() && (previewOnly || verb === "GET")) return fromPreview();
   // After a reload, pages can ask for data before the session is restored (child effects run before the provider's).
   // Wait for the shared refresh instead of sending a request that is sure to get 401.
   const realm = currentRealm(), r = realms[realm];
@@ -103,13 +106,14 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
     if (opts.retry !== false && STANDALONE_POSSIBLE) { await pause(900); return api<T>(path, { ...opts, retry: false }); }   // one quiet retry first
-    if (!(await liveHealthy()) && goOffline()) return api<T>(path, opts);   // live service really down: answer from the preview
+    if (!(await liveHealthy()) && goOffline()) return fromPreview();   // live service really down: answer from the preview
     throw new ApiError(0, "network_error", "Cannot reach the server. Check your connection and try again.");
   }
   if (unreachable(res) && STANDALONE_POSSIBLE) {
     if (opts.retry !== false) { await pause(900); return api<T>(path, { ...opts, retry: false }); }
-    if (!(await liveHealthy()) && goOffline()) return api<T>(path, opts);
+    if (!(await liveHealthy()) && goOffline()) return fromPreview();
   }
+  goOnline();
   if (res.status === 401 && opts.retry !== false && !path.startsWith("/auth/")) {
     if (await refreshSession(realm)) return api<T>(path, { ...opts, retry: false });
     listeners.forEach((l) => l());

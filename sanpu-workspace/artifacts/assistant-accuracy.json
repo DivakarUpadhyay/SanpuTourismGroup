@@ -1,0 +1,170 @@
+{
+  "at": "2026-11-18T03:35:01.741Z",
+  "base": "https://sanpu-trip-copilot.vercel.app",
+  "results": [
+    {
+      "name": "Hotel by city",
+      "text": "Find a hotel in Kinmen",
+      "status": 200,
+      "reply": "9 hotels in Kinmen for Wed 2 Dec to Fri 4 Dec, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "Hotel, relative dates",
+      "text": "Find a hotel in Tainan for 2 nights from next Friday",
+      "status": 200,
+      "reply": "8 hotels in Tainan for Fri 20 Nov to Sun 22 Nov, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "passed": 3,
+      "total": 3,
+      "failed": []
+    },
+    {
+      "name": "Hotel, exact dates",
+      "text": "Hotel in Taipei from 2026-12-20 to 2026-12-23",
+      "status": 200,
+      "reply": "10 hotels in Taipei for Sun 20 Dec to Wed 23 Dec, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "passed": 3,
+      "total": 3,
+      "failed": []
+    },
+    {
+      "name": "Hotel, group size",
+      "text": "Hotel in Hualien for 5 guests",
+      "status": 200,
+      "reply": "8 hotels in Hualien for Wed 2 Dec to Fri 4 Dec, 5 guests. Prices are totals. Press Book this on the one you like.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "Hotel, budget",
+      "text": "Hotel in Taipei under TWD 8000",
+      "status": 200,
+      "reply": "2 hotels in Taipei for Wed 2 Dec to Fri 4 Dec, 2 guests, up to TWD 8,000. Prices are totals. Press Book this on the one you like.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "Flight route + date + people",
+      "text": "Flights from Taipei to Kinmen next weekend for 2",
+      "status": 200,
+      "reply": "3 flights from Taipei to Kinmen for Sat 21 Nov, 2 travelers. Prices are totals. Press Book this on the one you like.",
+      "passed": 5,
+      "total": 5,
+      "failed": []
+    },
+    {
+      "name": "Bus route + tomorrow + people",
+      "text": "Bus from Taipei to Tainan tomorrow for 3 people",
+      "status": 200,
+      "reply": "5 buses from Taipei to Tainan for Thu 19 Nov, 3 travelers. Prices are totals. Press Book this on the one you like.",
+      "passed": 4,
+      "total": 4,
+      "failed": []
+    },
+    {
+      "name": "Taxi from airport",
+      "text": "Book a taxi from Taoyuan airport to Taipei tomorrow morning",
+      "status": 200,
+      "reply": "9 taxis from Taoyuan to Taipei for Thu 19 Nov, 1 traveler. Prices are totals. Press Book this on the one you like.",
+      "passed": 4,
+      "total": 4,
+      "failed": []
+    },
+    {
+      "name": "Tours by place + budget",
+      "text": "Tours in Hualien under TWD 10000",
+      "status": 200,
+      "reply": "4 tours in Hualien (up to TWD 10,000 per person). Open Dates & details to pick a departure.",
+      "passed": 3,
+      "total": 3,
+      "failed": []
+    },
+    {
+      "name": "Tours by length",
+      "text": "3 day tours in Kinmen",
+      "status": 200,
+      "reply": "1 tour in Kinmen (3 days). Open Dates & details to pick a departure.",
+      "passed": 3,
+      "total": 3,
+      "failed": []
+    },
+    {
+      "name": "Tours by interest",
+      "text": "Food tours in Tainan",
+      "status": 200,
+      "reply": "4 tours in Tainan. Open Dates & details to pick a departure.",
+      "passed": 2,
+      "total": 3,
+      "failed": [
+        "food themed"
+      ]
+    },
+    {
+      "name": "Compare tours",
+      "text": "Compare the East Rift Valley and Kinmen Heritage tours",
+      "status": 200,
+      "reply": "Here they are side by side.",
+      "passed": 1,
+      "total": 1,
+      "failed": []
+    },
+    {
+      "name": "Trip plan request",
+      "text": "Plan 3 relaxed days in Hualien for 2 people under TWD 25,000",
+      "status": 200,
+      "reply": "For your trip in Hualien (within TWD 25,000 for 2), I suggest **Indigenous Culture of the East 3D2N** from TWD 22,400 for 2. 4 more options are below; open Dates & details to pick a departure.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "My bookings as a guest",
+      "text": "Show my bookings",
+      "status": 200,
+      "reply": "Sign in to see your bookings. Your conversation stays here.",
+      "passed": 1,
+      "total": 1,
+      "failed": []
+    },
+    {
+      "name": "Greeting",
+      "text": "Hello",
+      "status": 200,
+      "reply": "Hello! I can find tours, hotels, flights, buses and taxis across Taiwan. Try \"hotel in Tainan for 2 nights from Friday\", \"flights from Taipei to Kinmen tomorrow for 2\" or \"3 day tours in Hualien under TWD 15000\".",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "Place we do not serve",
+      "text": "Hotel in Paris",
+      "status": 200,
+      "reply": "Sanpu travels within Taiwan, so I can't offer Paris. Popular places: Taipei, Hualien, Sun Moon Lake, Alishan, Tainan and Kinmen.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    },
+    {
+      "name": "Nonsense text",
+      "text": "asdfghjkl qwerty",
+      "status": 200,
+      "reply": "I didn't catch that. I can find tours, hotels, flights, buses and taxis across Taiwan. Try \"hotel in Tainan for 2 nights from Friday\", \"flights from Taipei to Kinmen tomorrow for 2\" or \"3 day tours in Hualien under TWD 15000\".",
+      "passed": 1,
+      "total": 1,
+      "failed": []
+    },
+    {
+      "name": "Past date",
+      "text": "Hotel in Tainan on 2020-01-01",
+      "status": 200,
+      "reply": "That date has already passed. Please choose a future date.",
+      "passed": 2,
+      "total": 2,
+      "failed": []
+    }
+  ]
+}

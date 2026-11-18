@@ -229,6 +229,7 @@ export function AssistantPage() {
   const end = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLTextAreaElement>(null);
   const started = useRef(false);
+  const fresh = useRef(-1);   // index of the reply that is being revealed
   const signedIn = status === "authenticated" && has("Assistant.Use");
   const canUse = status !== "loading";   // visitors can chat too; booking asks them to sign in
   const router = useRouter();
@@ -245,9 +246,9 @@ export function AssistantPage() {
     try {
       const r = await post<{ reply: string; cards: Card[]; aiAvailable: boolean; notice?: string | null }>("/assistant/chat", { messages: next.map((m) => ({ role: m.role, content: m.content })) });
       const done: Msg[] = [...next, { role: "assistant", content: r.reply, cards: r.cards, notice: r.notice, ai: r.aiAvailable }];
-      setMsgs(done); saveChat(done);
+      fresh.current = done.length - 1; setMsgs(done); saveChat(done);
     } catch (e) {
-      setError(e instanceof ApiError ? (e.status === 0 ? "You seem to be offline. Check your connection and try again." : e.message) : "The assistant could not answer. Try again.");
+      setError(e instanceof ApiError && e.code !== "offline_only" && e.status !== 0 ? e.message : "The connection dropped for a moment.");
       setMsgs(msgs); setInput(t); saveChat(msgs);
     } finally { setBusy(false); setTimeout(() => box.current?.focus(), 0); }
   };
@@ -261,7 +262,7 @@ export function AssistantPage() {
     try {
       const r = await post<{ reply: string; cards: Card[] }>("/assistant/prepare", input);
       const done: Msg[] = [...next, { role: "assistant", content: r.reply, cards: r.cards, ai: true }];
-      setMsgs(done); saveChat(done);
+      fresh.current = done.length - 1; setMsgs(done); saveChat(done);
     } catch (e) {
       const msg = e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : "That option could not be prepared. Try again.";
       const done: Msg[] = [...next, { role: "assistant", content: msg, ai: true }];
@@ -277,66 +278,94 @@ export function AssistantPage() {
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
   const first = me?.user.displayName.split(" ")[0];
+  const lastUser = [...msgs].reverse().find((m) => m.role === "user")?.content ?? "";
+  const lastIndex = msgs.length - 1;
   return (
-    <div className="as-page">
-      <aside className="as-side">
-        <div className="as-side-in">
-          <p className="as-kicker"><Icon name="sparkle" size={14} /> AI Travel</p>
-          <h2>Your AI travel assistant</h2>
-          <p className="muted">Plans, live prices and bookings across tours, hotels, flights, buses and taxis in Taiwan.</p>
-          <ul className="as-can">
-            <li><Icon name="map" size={16} /> Plan day-by-day trips</li>
-            <li><Icon name="scale" size={16} /> Compare options side by side</li>
-            <li><Icon name="ticket" size={16} /> Prepare bookings you confirm</li>
-            <li><Icon name="shield" size={16} /> You approve every payment</li>
-          </ul>
-          {signedIn && <div className="as-side-links"><Link href="/my/bookings"><Icon name="ticket" size={16} /> My bookings</Link><Link href="/my/trips"><Icon name="calendar" size={16} /> Trip plans</Link></div>}
-          {msgs.length > 0 && <button className="btn subtle small" onClick={() => { setMsgs([]); saveChat([]); setError(null); }} data-testid="chat-new"><Icon name="plus" size={14} /> New conversation</button>}
-        </div>
-      </aside>
-      <section className="as-main" aria-label="Conversation">
-        <BookCtx.Provider value={book}>
-        <div className="as-thread" data-testid="chat-thread">
-          {msgs.length === 0 && (
-            <div className="as-welcome">
-              <div className="orb" aria-hidden="true"><Icon name="sparkle" size={30} /></div>
-              <h1>{first ? `Hi ${first}, where to next?` : "Where do you want to go?"}</h1>
-              <p className="muted">Ask in your own words. I search live tours, hotels, flights, buses and taxis, compare them, and prepare a booking for you to confirm.</p>
-              <div className="as-suggest">{SUGGESTIONS.map((s) => <button key={s.text} onClick={() => (canUse ? send(s.text) : undefined)} disabled={!canUse}><Icon name={s.icon} size={16} />{s.text}</button>)}</div>
-            </div>
-          )}
-          {msgs.map((m, i) => (
-            <div key={i} className={`as-msg ${m.role}`}>
-              {m.role === "assistant" && <span className="as-ava" aria-hidden="true"><Icon name="sparkle" size={16} /></span>}
-              <div className="as-bubble">
-                {m.role === "user" ? <p>{m.content}</p> : <RichText text={m.content} />}
-                {m.notice && <p className="as-note" data-testid="chat-note"><Icon name="info" size={14} /> Showing live search results. Add a city, dates and number of travelers to narrow them down.</p>}
-                {m.cards?.map((c, j) => <CardView key={j} card={c} ask={send} />)}
+    <div className="as-app">
+      <header className="as-bar">
+        <span className="as-ava lg" aria-hidden="true"><Icon name="sparkle" size={18} /></span>
+        <span className="as-bar-t"><b>AI Travel assistant</b><small><i /> Live prices across Taiwan</small></span>
+        <span className="spacer" />
+        {signedIn && <Link className="btn small subtle" href="/my/bookings"><Icon name="ticket" size={15} /> My bookings</Link>}
+        {msgs.length > 0 && <button className="btn small" onClick={() => { setMsgs([]); saveChat([]); setError(null); fresh.current = -1; }} data-testid="chat-new"><Icon name="plus" size={15} /> New chat</button>}
+      </header>
+      <BookCtx.Provider value={book}>
+        <section className="as-scroll" aria-label="Conversation" aria-live="polite">
+          <div className="as-thread" data-testid="chat-thread">
+            {msgs.length === 0 && (
+              <div className="as-welcome">
+                <div className="orb" aria-hidden="true"><Icon name="sparkle" size={30} /></div>
+                <h1>{first ? `Hi ${first}, where to next?` : "Where would you like to go?"}</h1>
+                <p className="muted">Tell me in your own words. I'll find tours, hotels, flights, buses and taxis, compare them, and get a booking ready for you to confirm.</p>
+                <div className="as-suggest">{SUGGESTIONS.map((x) => <button key={x.text} onClick={() => send(x.text)} disabled={!canUse}><span><Icon name={x.icon} size={17} /></span>{x.text}</button>)}</div>
               </div>
-            </div>
-          ))}
-          {busy && <div className="as-msg assistant"><span className="as-ava"><Icon name="sparkle" size={16} /></span><div className="as-bubble as-typing"><i /><i /><i /><span>Searching live options…</span></div></div>}
-          {error && <div className="alert error" role="alert" data-testid="chat-error">{error} <button className="link" onClick={() => send(input)}>Try again</button></div>}
-          <div ref={end} />
-        </div>
-        </BookCtx.Provider>
-        {!signedIn && status === "anonymous" && <p className="as-guest"><Icon name="info" size={14} /> You are chatting as a guest. <Link href="/login?next=/assistant">Sign in</Link> to book and keep your trips.</p>}
-        {status === "loading" ? null : canUse ? (
-          <form className="as-compose" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-            <textarea ref={box} value={input} onChange={(e) => setInput(e.target.value)} rows={1} maxLength={2000} placeholder="Ask about a trip, a hotel, a flight… or say “show my bookings”"
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }} aria-label="Message" data-testid="chat-input" />
-            <button className="btn primary" disabled={busy || !input.trim()} aria-label="Send" data-testid="chat-send"><Icon name="send" size={18} /></button>
-          </form>
-        ) : (
-          <div className="as-signin">
-            <b>Sign in to chat with your assistant</b>
-            <span className="muted">It is free. Your conversations and bookings stay private to your account.</span>
-            <div><Link className="btn primary" href="/login?next=/assistant">Sign in</Link><Link className="btn" href="/register">Create an account</Link></div>
+            )}
+            {msgs.map((m, i) => {
+              const live = i === fresh.current;
+              const delay = live ? Math.min(1400, m.content.split(/\s+/).length * 26) : 0;
+              return (
+                <div key={i} className={`as-msg ${m.role}`}>
+                  {m.role === "assistant" && <span className="as-ava" aria-hidden="true"><Icon name="sparkle" size={15} /></span>}
+                  <div className="as-bubble">
+                    {m.role === "user" ? <p>{m.content}</p> : <Reveal text={m.content} animate={live} />}
+                    <div className="as-cards" style={{ animationDelay: `${delay}ms` }}>
+                      {m.notice && <p className="as-note" data-testid="chat-note"><Icon name="info" size={14} /> Showing live search results. Add a city, dates and number of travelers to narrow them down.</p>}
+                      {m.cards?.map((c, j) => <CardView key={j} card={c} ask={send} />)}
+                      {m.role === "assistant" && i === lastIndex && !busy && <FollowUps cards={m.cards} last={lastUser} ask={send} />}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {busy && <Thinking />}
+            {error && <div className="alert error" role="alert" data-testid="chat-error">{error} <button className="link" onClick={() => send(input)}>Try again</button></div>}
+            <div ref={end} />
           </div>
-        )}
-      </section>
+        </section>
+      </BookCtx.Provider>
+      <footer className="as-dock">
+        {status === "anonymous" && <p className="as-guest"><Icon name="info" size={14} /> You're chatting as a guest. <Link href="/login?next=/assistant">Sign in</Link> to book and keep your trips.</p>}
+        <form className="as-compose" onSubmit={(e) => { e.preventDefault(); send(input); }}>
+          <textarea ref={box} value={input} onChange={(e) => setInput(e.target.value)} rows={1} maxLength={2000} placeholder="Ask about a trip, a hotel, a flight…"
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }} aria-label="Message" data-testid="chat-input" />
+          <button className="as-send" disabled={busy || !input.trim() || !canUse} aria-label="Send" data-testid="chat-send"><Icon name="send" size={18} /></button>
+        </form>
+        <small className="as-foot">Prices are checked live. You confirm every payment.</small>
+      </footer>
     </div>
   );
+}
+
+/** The newest reply appears word by word, the way a person types. */
+function Reveal({ text, animate }: { text: string; animate: boolean }) {
+  const words = text.split(/(\s+)/);
+  const [n, setN] = useState(animate ? 0 : words.length);
+  useEffect(() => {
+    if (!animate) return;
+    const t = setInterval(() => setN((x) => { if (x >= words.length) { clearInterval(t); return x; } return x + 2; }), 26);
+    return () => clearInterval(t);
+  }, [animate, words.length]);
+  return <RichText text={words.slice(0, n).join("")} />;
+}
+
+const STEPS = ["Reading your request", "Checking live availability", "Comparing prices", "Preparing your options"];
+/** What the assistant is doing while it works. */
+function Thinking() {
+  const [i, setI] = useState(0);
+  useEffect(() => { const t = setInterval(() => setI((x) => Math.min(x + 1, STEPS.length - 1)), 1100); return () => clearInterval(t); }, []);
+  return <div className="as-msg assistant"><span className="as-ava pulse" aria-hidden="true"><Icon name="sparkle" size={15} /></span><div className="as-think" role="status"><i /><i /><i /><span key={i}>{STEPS[i]}…</span></div></div>;
+}
+
+/** Next steps that fit what was just shown. */
+function FollowUps({ cards, last, ask }: { cards?: Card[]; last: string; ask: (t: string) => void }) {
+  const types = (cards ?? []).map((c) => c.type);
+  const clean = last.replace(/[.?!]+$/, "");
+  const ideas = types.includes("services") ? [`${clean} for 4 people`, `${clean} next weekend`, `${clean} under TWD 8000`]
+    : types.includes("tours") ? [`${clean} under TWD 10000`, `${clean} for 2 people`, "Compare the East Rift Valley and Kinmen Heritage tours"]
+    : types.includes("compare") ? ["3 day tours in Hualien", "Tours in Kinmen"]
+    : types.includes("booking") || types.includes("signin") ? [] : ["Find a hotel in Tainan for 2 nights", "Flights from Taipei to Kinmen tomorrow", "3 day tours in Hualien"];
+  if (!ideas.length) return null;
+  return <div className="as-follow" aria-label="Suggestions">{ideas.map((x) => <button key={x} onClick={() => ask(x)}>{x}</button>)}</div>;
 }
 
 // ------------------------------------------------------------------ my bookings

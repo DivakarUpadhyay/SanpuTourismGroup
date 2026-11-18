@@ -261,14 +261,28 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         var date = Date(Req(input, "date"));
         var end = Str(input, "end_date") is { } e ? Date(e) : (DateTime?)null;
         if (kind == "Hotel" && end is null) end = date.AddDays(1);
+        return await FindTravelAsync(kind, Str(input, "from"), Str(input, "to"), date, end, Int(input, "travelers") ?? 1, Int(input, "units") ?? 1, null, Str(input, "sort") ?? "price", cards, ct);
+    }
+
+    private static bool PlaceMatches(JsonNode row, string side, string? place)
+    {
+        if (string.IsNullOrWhiteSpace(place)) return true;
+        var t = place.Trim();
+        return new[] { "City", "Name", "Code" }.Any(k => (row[side + k]?.ToString() ?? "").Contains(t, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Live availability for one kind, narrowed to the named places and budget. Adds the option cards.</summary>
+    private async Task<JsonNode?> FindTravelAsync(string kind, string? from, string? to, DateTime date, DateTime? end, int travelers, int units, decimal? budget, string sort, List<ChatCard> cards, CancellationToken ct)
+    {
         var q = new Dictionary<string, string?>
         {
             ["kind"] = kind, ["date"] = date.ToString("yyyy-MM-dd"), ["endDate"] = end?.ToString("yyyy-MM-dd"),
-            ["from"] = await PlaceCodeAsync(Str(input, "from"), ct), ["to"] = await PlaceCodeAsync(Str(input, "to"), ct),
-            ["travelers"] = (Int(input, "travelers") ?? 1).ToString(), ["units"] = (Int(input, "units") ?? 1).ToString(), ["sort"] = Str(input, "sort") ?? "price",
+            ["travelers"] = travelers.ToString(), ["units"] = units.ToString(), ["sort"] = sort,
         };
-        var rows = (await catalog.GetAsync("travel/search", q, ct))?.AsArray() ?? [];
-        var list = new JsonArray([.. rows.Take(8).Select(r => r?.DeepClone())]);
+        var rows = ((await catalog.GetAsync("travel/search", q, ct))?.AsArray() ?? []).Where(r => r is not null)
+            .Where(r => PlaceMatches(r!, "from", from) && PlaceMatches(r!, "to", to))
+            .Where(r => budget is null || r!["totalPrice"]!.GetValue<decimal>() <= budget).ToList();
+        var list = new JsonArray([.. rows.Take(8).Select(r => r!.DeepClone())]);
         if (list.Count > 0) cards.Add(new ChatCard("services", new JsonObject { ["kind"] = kind, ["date"] = q["date"], ["endDate"] = q["endDate"], ["travelers"] = q["travelers"], ["items"] = list.DeepClone() }));
         return new JsonObject { ["search"] = JsonSerializer.SerializeToNode(q), ["results"] = list, ["count"] = rows.Count };
     }
@@ -374,33 +388,99 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         return paid;
     }
 
-    // ---------------- without the model: keyword search so the page always answers ----------------
+    // ---------------- without a model: understand the request and answer exactly that from live data ----------------
+    private const string Help = "I can find tours, hotels, flights, buses and taxis across Taiwan. Try \"hotel in Tainan for 2 nights from Friday\", \"flights from Taipei to Kinmen tomorrow for 2\" or \"3 day tours in Hualien under TWD 15000\".";
+    private static string Day(DateTime d) => d.ToString("ddd d MMM", CultureInfo.InvariantCulture);
+    private static string Twd(decimal v) => "TWD " + v.ToString("#,0", CultureInfo.InvariantCulture);
+
     private async Task<ChatReply> FallbackAsync(string message, List<ChatCard> cards, string? notice, CancellationToken ct)
     {
-        var m = message.ToLowerInvariant();
-        var kind = m.Contains("hotel") || m.Contains("stay") || m.Contains("room") ? "Hotel" : m.Contains("flight") || m.Contains("fly") ? "Flight"
-                 : m.Contains("bus") ? "Bus" : m.Contains("taxi") || m.Contains("transfer") || m.Contains("airport") ? "Taxi" : null;
+        var today = clock.UtcNow.AddHours(8).Date;
+        var q = TripQueryParser.Parse(message, today);
         string reply;
         try
         {
-            if ((m.Contains("my booking") || m.Contains("my reservation")) && current.UserId is null) { SignInNeeded(cards); reply = "Sign in to see your bookings. Your conversation stays here."; }
-            else if (m.Contains("my booking") || m.Contains("my reservation")) { await MyBookingsAsync(cards, ct); reply = "Here are your bookings."; }
-            else if (kind is not null)
+            reply = q switch
             {
-                var date = clock.UtcNow.Date.AddDays(14);
-                var places = (await catalog.GetAsync("travel/places", null, ct))?.AsArray() ?? [];
-                var cities = places.Select(p => p?["city"]?.ToString()).Where(c => !string.IsNullOrEmpty(c)).Distinct().Where(c => m.Contains(c!.ToLowerInvariant()))
-                                   .OrderBy(c => m.IndexOf(c!.ToLowerInvariant(), StringComparison.Ordinal)).ToList();
-                string? from = cities.ElementAtOrDefault(0), to = kind is "Hotel" ? null : cities.ElementAtOrDefault(1);
-                if (kind is "Taxi" && from is null && m.Contains("airport")) from = "Taoyuan";
-                using var doc = JsonDocument.Parse(JsonSerializer.Serialize(new { kind, from, to, date = date.ToString("yyyy-MM-dd"), end_date = kind == "Hotel" ? date.AddDays(2).ToString("yyyy-MM-dd") : null, travelers = 2 }));
-                await SearchTravelAsync(doc.RootElement, cards, ct);
-                reply = $"Here are available {kind.ToLowerInvariant()} options from {date:d MMM}. Tell me your dates and I will narrow it down.";
-            }
-            else { await SearchToursAsync(m, null, 1, cards, ct); reply = "Here are tours that match. Ask for details or dates of any of them."; }
+                { Intent: "greeting" } => "Hello! " + Help,
+                { Intent: "mybookings" } when current.UserId is null => SignInReply(cards),
+                { Intent: "mybookings" } => await BookingsReplyAsync(cards, ct),
+                { UnknownPlace: { } place } => $"Sanpu travels within Taiwan, so I can't offer {place}. Popular places: Taipei, Hualien, Sun Moon Lake, Alishan, Tainan and Kinmen.",
+                { PastDate: true } => "That date has already passed. Please choose a future date.",
+                { Intent: "hotel" or "flight" or "bus" or "taxi" } => await TravelReplyAsync(q, today, cards, ct),
+                { Intent: "compare" } => await CompareReplyAsync(q, cards, ct),
+                { Intent: "tours" or "plan" } => await ToursReplyAsync(q, cards, ct),
+                _ => "I didn't catch that. " + Help,
+            };
         }
+        catch (AppException ex) { reply = ex.Message; }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { reply = "The travel catalog is not reachable right now. Please try again in a moment."; }
-        return new ChatReply(reply, Dedup(cards), false, notice ?? "The AI assistant is resting, so these are direct search results. Planning and booking by chat return when it is back.");
+        return new ChatReply(reply, Dedup(cards), false, cards.Count > 0 ? notice ?? "live-search" : null);
+    }
+
+    private static string SignInReply(List<ChatCard> cards) { SignInNeeded(cards); return "Sign in to see your bookings. Your conversation stays here."; }
+    private async Task<string> BookingsReplyAsync(List<ChatCard> cards, CancellationToken ct) { await MyBookingsAsync(cards, ct); return "Here are your bookings."; }
+
+    private async Task<string> TravelReplyAsync(TripQuery q, DateTime today, List<ChatCard> cards, CancellationToken ct)
+    {
+        var kind = char.ToUpperInvariant(q.Intent[0]) + q.Intent[1..];
+        var hotel = kind == "Hotel";
+        var date = q.Date ?? today.AddDays(14);
+        DateTime? end = hotel ? (q.End > date ? q.End : date.AddDays(q.Nights is > 0 ? q.Nights.Value : 2)) : null;
+        var people = q.Travelers ?? (hotel ? 2 : 1);
+        var node = await FindTravelAsync(kind, q.From, hotel ? null : q.To, date, end, people, 1, q.Budget, "price", cards, ct);
+        var count = node?["count"]?.GetValue<int>() ?? 0;
+        var noun = kind switch { "Hotel" => "hotel", "Flight" => "flight", "Bus" => "bus", _ => "taxi" };
+        var plural = count == 1 ? noun : noun == "bus" ? "buses" : noun == "taxi" ? "taxis" : noun + "s";
+        var where = hotel ? (q.From is null ? "" : $" in {q.From}") : (q.From is null ? "" : $" from {q.From}") + (q.To is null ? "" : $" to {q.To}");
+        var when = hotel ? $"{Day(date)} to {Day(end!.Value)}" : Day(date);
+        var who = $"{people} {(hotel ? (people == 1 ? "guest" : "guests") : people == 1 ? "traveler" : "travelers")}";
+        var cap = q.Budget is { } b ? $", up to {Twd(b)}" : "";
+        return count == 0
+            ? $"No {noun} options{where} for {when} ({who}{cap}). Try another date{(q.Budget is null ? "" : " or a higher budget")}."
+            : $"{count} {plural}{where} for {when}, {who}{cap}. Prices are totals. Press Book this on the one you like.";
+    }
+
+    private async Task<IReadOnlyList<JsonNode>> ToursAsync(int travelers, CancellationToken ct) =>
+        [.. ((await catalog.GetAsync("catalog/tours", new Dictionary<string, string?> { ["pax"] = Math.Clamp(travelers, 1, 20).ToString() }, ct))?.AsArray() ?? []).Where(t => t is not null).Select(t => t!)];
+
+    private async Task<string> ToursReplyAsync(TripQuery q, List<ChatCard> cards, CancellationToken ct)
+    {
+        var people = q.Travelers ?? 1;
+        var plan = q.Intent == "plan";
+        var place = q.From;
+        var rows = (await ToursAsync(people, ct)).Where(t =>
+        {
+            var text = $"{t["title"]} {t["slogan"]} {t["summary"]}";
+            var price = PriceOf(t) ?? 0;
+            return (place is null || (t["destinationName"]?.ToString() ?? "").Contains(place, StringComparison.OrdinalIgnoreCase))
+                && (q.Days is null || (plan ? t["days"]!.GetValue<int>() <= q.Days : t["days"]!.GetValue<int>() == q.Days))
+                && (q.Budget is null || price * (plan ? people : 1) <= q.Budget)
+                && (q.Interests.Count == 0 || q.Interests.Any(i => TripQueryParser.InterestWords[i].IsMatch(text)));
+        }).OrderByDescending(t => plan ? t["days"]!.GetValue<int>() : 0).ThenBy(t => PriceOf(t) ?? 0).ToList();
+        var where = place is null ? "" : $" in {place}";
+        var limits = string.Join(", ", new[] { q.Days is { } d ? (plan ? $"up to {d} days" : $"{d} days") : null, q.Budget is { } b ? (plan ? $"within {Twd(b)} for {people}" : $"up to {Twd(b)} per person") : null }.Where(x => x is not null));
+        limits = limits.Length > 0 ? $" ({limits})" : "";
+        if (rows.Count == 0) return $"No tours{where} match that{limits}. Try a longer trip, a higher budget or another place.";
+        cards.Add(new ChatCard("tours", new JsonArray([.. rows.Take(6).Select(t => t.DeepClone())])));
+        return plan
+            ? $"For your trip{where}{limits}, I suggest **{rows[0]["title"]}** from {Twd((PriceOf(rows[0]) ?? 0) * people)} for {people}. {rows.Count - 1} more options are below; open Dates & details to pick a departure."
+            : $"{rows.Count} {(rows.Count == 1 ? "tour" : "tours")}{where}{limits}. Open Dates & details to pick a departure.";
+    }
+
+    private async Task<string> CompareReplyAsync(TripQuery q, List<ChatCard> cards, CancellationToken ct)
+    {
+        var tours = await ToursAsync(1, ct);
+        var codes = q.CompareParts.Select(part =>
+        {
+            var words = part.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length > 2).ToArray();
+            return tours.Select(t => (Code: t["code"]!.ToString(), Score: words.Count(w => (t["title"]?.ToString() ?? "").Contains(w, StringComparison.OrdinalIgnoreCase))))
+                .Where(x => x.Score > 0).OrderByDescending(x => x.Score).Select(x => x.Code).FirstOrDefault();
+        }).Where(c => c is not null).Distinct().Take(3).ToList();
+        if (codes.Count < 2) return "Tell me two tours to compare, for example \"compare East Rift Valley and Kinmen Heritage\".";
+        var rows = await catalog.GetAsync("discover/compare", new Dictionary<string, string?> { ["codes"] = string.Join(',', codes) }, ct);
+        if (rows is JsonArray { Count: > 0 }) cards.Add(new ChatCard("compare", rows.DeepClone()));
+        return "Here they are side by side.";
     }
 
     // ---------------- helpers ----------------

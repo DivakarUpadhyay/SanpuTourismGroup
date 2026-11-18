@@ -11,19 +11,25 @@ import { createReset, decideStaffRequest, idOf, localUsers, registerCustomer, re
 /* NEXT_PUBLIC_STANDALONE: "1" = always the preview; "auto" = live API, falling back to the preview while the API is unreachable;
    anything else = live only (local development). */
 const MODE = process.env.NEXT_PUBLIC_STANDALONE ?? "";
-let offline = MODE === "1";
 const OFFLINE_KEY = "sanpu.offline.until";
-if (MODE === "auto" && typeof window !== "undefined") { try { offline = Number(sessionStorage.getItem(OFFLINE_KEY) ?? 0) > Date.now(); } catch { /* ignore */ } }
-/** True while answers come from the bundled preview. */
-export const isStandalone = () => offline;
+let offlineUntil = 0;
+if (MODE === "auto" && typeof window !== "undefined") { try { offlineUntil = Number(sessionStorage.getItem(OFFLINE_KEY) ?? 0); } catch { /* ignore */ } }
+/** True while answers come from the bundled preview; in auto mode this always ends by itself. */
+export const isStandalone = () => MODE === "1" || (MODE === "auto" && offlineUntil > Date.now());
+export const previewOnly = MODE === "1";
 export const STANDALONE_POSSIBLE = MODE === "1" || MODE === "auto";
-/** Called when the live API cannot be reached: switch this tab to the preview for 30 seconds, then try live again. */
+/** Called when the live API cannot be reached: read from the preview for 30 seconds, then try live again. */
 export function goOffline() {
   if (MODE !== "auto") return false;
-  offline = true;
-  try { sessionStorage.setItem(OFFLINE_KEY, String(Date.now() + 30_000)); } catch { /* ignore */ }
-  setTimeout(() => { offline = false; }, 30_000);
+  offlineUntil = Date.now() + 30_000;
+  try { sessionStorage.setItem(OFFLINE_KEY, String(offlineUntil)); } catch { /* ignore */ }
   return true;
+}
+/** The live API answered: leave the preview at once. */
+export function goOnline() {
+  if (!offlineUntil) return;
+  offlineUntil = 0;
+  try { sessionStorage.removeItem(OFFLINE_KEY); } catch { /* ignore */ }
 }
 const APP = process.env.NEXT_PUBLIC_COOKIE_PREFIX ?? "app";
 const roleKey = (realm: Realm) => `sanpu.sa.${APP}.${realm}.account`;

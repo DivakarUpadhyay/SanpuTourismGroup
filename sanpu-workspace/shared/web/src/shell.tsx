@@ -134,7 +134,7 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
   const newsletter = useSetting("Feature.Newsletter", "false") === "true";
   const { status } = useAuth();
   // landing and detail pages run edge to edge (full-width hero); every other page keeps the reading width
-  const authPage = /^\/(login|register)$/.test(path);   // sign-in screens fill the window: no footer, no scrolling
+  const authPage = /^\/(login|register|assistant)$/.test(path);   // sign-in screens fill the window: no footer, no scrolling
   const bleed = path === "/" || /^\/(news|blog|login|register|assistant|tours|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))(\/|$)?/.test(path);
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
