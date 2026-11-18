@@ -310,7 +310,7 @@ export function AssistantPage() {
               {m.role === "assistant" && <span className="as-ava" aria-hidden="true"><Icon name="sparkle" size={16} /></span>}
               <div className="as-bubble">
                 {m.role === "user" ? <p>{m.content}</p> : <RichText text={m.content} />}
-                {m.notice && <p className="as-note"><Icon name="info" size={14} /> {m.notice}</p>}
+                {m.notice && <p className="as-note" data-testid="chat-note"><Icon name="info" size={14} /> Showing live search results. Add a city, dates and number of travelers to narrow them down.</p>}
                 {m.cards?.map((c, j) => <CardView key={j} card={c} ask={send} />)}
               </div>
             </div>
