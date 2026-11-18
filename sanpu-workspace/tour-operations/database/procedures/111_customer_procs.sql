@@ -384,17 +384,20 @@ BEGIN
     DECLARE @Last date = CASE WHEN @Kind = 'Hotel' THEN DATEADD(DAY, -1, @EndDate) ELSE @Date END;
     SELECT s.ServiceId, s.Code, s.Slug, s.Kind, s.Name, s.Features, s.CancellationPolicy, s.ImageUrl, s.Rating, s.DepartTime, s.DurationMin, s.PeoplePerUnit, s.MaxPerBooking, s.Currency,
            sp.Name AS ProviderName, f.Code AS FromCode, f.Name AS FromName, f.City AS FromCity, tp.Code AS ToCode, tp.Name AS ToName, tp.City AS ToCity,
-           a.Available, a.TotalPrice, a.TotalPrice / @Nights AS NightlyPrice, @Nights AS Nights
+           a.Available, u.U AS Units, a.TotalPrice AS UnitPrice, a.TotalPrice * u.U AS TotalPrice, a.TotalPrice / @Nights AS NightlyPrice, @Nights AS Nights
     FROM dbo.TravelServices s
     JOIN dbo.Places f ON f.PlaceId = s.FromPlaceId
     LEFT JOIN dbo.Places tp ON tp.PlaceId = s.ToPlaceId
     LEFT JOIN dbo.Suppliers sp ON sp.SupplierId = s.SupplierId
     CROSS APPLY (SELECT MIN(i.Capacity - i.Sold - i.Held) AS Available, SUM(i.Price) AS TotalPrice, COUNT(*) AS Days
                  FROM dbo.ServiceInventory i WHERE i.ServiceId = s.ServiceId AND i.Status = 'Open' AND i.ServiceDate BETWEEN @Date AND @Last) a
-    WHERE s.IsActive = 1 AND s.Kind = @Kind AND a.Days = @Nights AND a.Available >= @Units
+    -- what the group needs: a seat per traveler on flights and buses; enough rooms / cars for everyone (at least what was asked) otherwise
+    CROSS APPLY (SELECT CASE WHEN s.Kind IN ('Flight','Bus') THEN @Travelers
+                             WHEN s.PeoplePerUnit * @Units >= @Travelers THEN @Units
+                             ELSE CEILING(@Travelers * 1.0 / NULLIF(s.PeoplePerUnit, 0)) END AS U) u
+    WHERE s.IsActive = 1 AND s.Kind = @Kind AND a.Days = @Nights AND a.Available >= u.U AND u.U <= s.MaxPerBooking
       AND (@From IS NULL OR f.Code = @From OR (s.Kind = 'Hotel' AND f.City = (SELECT City FROM dbo.Places WHERE Code = @From)))
       AND (@To IS NULL OR tp.Code = @To OR tp.City = (SELECT City FROM dbo.Places WHERE Code = @To))
-      AND s.PeoplePerUnit * @Units >= @Travelers
     ORDER BY CASE WHEN @Sort = 'rating' THEN -ISNULL(s.Rating, 0) END, CASE WHEN @Sort = 'time' THEN s.DepartTime END, a.TotalPrice;
 END;
 GO

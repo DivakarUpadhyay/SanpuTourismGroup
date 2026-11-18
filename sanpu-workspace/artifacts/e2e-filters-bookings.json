@@ -1,0 +1,95 @@
+{
+  "at": "2026-11-18T03:07:04.756Z",
+  "base": "https://sanpu-travel.vercel.app",
+  "customer": "buyer127815@example.com",
+  "refs": {
+    "Tour": "BK-000017",
+    "Hotel": "SB-000031",
+    "Flight": "SB-000032",
+    "Bus": "SB-000033",
+    "Taxi": "SB-000034"
+  },
+  "results": [
+    {
+      "name": "Tours: destination filter narrows results to that destination",
+      "ok": true,
+      "info": "all=5; Alishan=5, Sun Moon Lake=1, Hualien / Taitung=1, Kinmen=1"
+    },
+    {
+      "name": "Tours: travelers stepper keeps prices per group",
+      "ok": true,
+      "info": "2 travelers"
+    },
+    {
+      "name": "Hotel: city filter, date and sort",
+      "ok": true,
+      "info": "all=7; Alishan=1; price order ok (7)"
+    },
+    {
+      "name": "Flight: city filter, date and sort",
+      "ok": true,
+      "info": "all=8; Hualien Airport=1; price order ok (8)"
+    },
+    {
+      "name": "Bus: city filter, date and sort",
+      "ok": true,
+      "info": "all=4; Chiayi Bus Station=1; price order ok (4)"
+    },
+    {
+      "name": "Taxi: city filter, date and sort",
+      "ok": true,
+      "info": "all=6; Kaohsiung International Airport=1; price order ok (6)"
+    },
+    {
+      "name": "Deals: coupon list and Use now",
+      "ok": true,
+      "info": "5 coupons"
+    },
+    {
+      "name": "Destinations, calendar, compare, help search, news categories",
+      "ok": true,
+      "info": "destinations=6, help hits=5, news in first category=2"
+    },
+    {
+      "name": "Customer signs up",
+      "ok": true,
+      "info": "buyer127815@example.com"
+    },
+    {
+      "name": "Book a tour",
+      "ok": true,
+      "info": "BK-000017"
+    },
+    {
+      "name": "Book a hotel",
+      "ok": true,
+      "info": "SB-000031"
+    },
+    {
+      "name": "Book a flight",
+      "ok": true,
+      "info": "SB-000032"
+    },
+    {
+      "name": "Book a bus",
+      "ok": true,
+      "info": "SB-000033"
+    },
+    {
+      "name": "Book a taxi",
+      "ok": true,
+      "info": "SB-000034"
+    },
+    {
+      "name": "Customer starts a payment (deposit) on the tour",
+      "ok": false,
+      "info": "locator.waitFor: Timeout 20000ms exceeded."
+    },
+    {
+      "name": "Admin: every booking and payment appears",
+      "ok": false,
+      "info": "payment for BK-000017 not in Payments"
+    }
+  ],
+  "serverErrors": []
+}

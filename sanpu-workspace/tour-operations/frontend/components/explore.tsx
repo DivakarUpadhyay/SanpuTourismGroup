@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { Async, Card, CleanParams, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, savePageParams, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
 import { TourTile, type TourCard } from "./customer-home";
+import { TourResults } from "./advanced-filters";
 
 const bg = (url?: string | null) => (url ? { backgroundImage: `url(${url})` } : undefined);
 interface Destination { code: string; slug?: string | null; name: string; region: string; imageUrl?: string | null; tourCount: number }
@@ -293,7 +294,7 @@ function ToursInner({ params }: { params: URLSearchParams }) {
       </div>
 
       <div className={tours.loading && tours.data ? "refreshing" : undefined}>
-        <Async state={tours} empty={(t) => t.length === 0}>{() => <div className="lp-cards" data-testid="tour-list">{sorted.map((t) => <TourTile key={t.code} t={t} />)}</div>}</Async>
+        <Async state={tours} empty={(t) => t.length === 0}>{() => <TourResults list={sorted} render={(t) => <TourTile key={t.code} t={t} />} />}</Async>
       </div>
       <p className="small muted" style={{ marginTop: 18 }}>Can&apos;t decide? <Link href="/compare">Compare tours side by side</Link> or see the <Link href="/calendar">departure calendar</Link>.</p>
     </div>

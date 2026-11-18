@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ServiceResults } from "./advanced-filters";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -65,9 +66,7 @@ function SearchInner({ kind, params }: { kind: Kind; params: URLSearchParams }) 
         </div>
         <div className={results.loading && results.data ? "refreshing" : undefined}>
           <Async state={results} empty={(r) => r.length === 0}>{(list) => (
-            <div className="svc-list" data-testid="svc-results">
-              {list.map((r) => <ResultCard key={r.code} r={r} applied={applied} />)}
-            </div>
+            <ServiceResults list={list} kind={kind} render={(r) => <ResultCard key={r.code} r={r} applied={applied} />} />
           )}</Async>
         </div>
       </section>
@@ -77,9 +76,11 @@ function SearchInner({ kind, params }: { kind: Kind; params: URLSearchParams }) 
 }
 
 function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDate: string; units: number; travelers: number } }) {
-  const units = r.kind === "Flight" || r.kind === "Bus" ? applied.travelers : applied.units;
+  // the search prices the whole group: a seat per traveler, or the rooms / cars everyone needs (may be more than asked)
+  const each = r.nightlyPrice * r.nights;
+  const units = each > 0 ? Math.max(1, Math.round(r.totalPrice / each)) : (r.kind === "Flight" || r.kind === "Bus" ? applied.travelers : applied.units);
   const href = `/services/book?${new URLSearchParams({ code: r.code, date: applied.date, ...(r.kind === "Hotel" ? { endDate: applied.endDate } : {}), units: String(units), travelers: String(applied.travelers) })}`;
-  const total = r.totalPrice * units;
+  const total = r.totalPrice;
   const detail = `/services/${r.slug ?? r.code}`;
   const keep = () => savePageParams({ date: applied.date, endDate: r.kind === "Hotel" ? applied.endDate : undefined, units: applied.units, travelers: applied.travelers }, detail);   // carry the search into the detail page without a query string
   return (
@@ -100,9 +101,9 @@ function ResultCard({ r, applied }: { r: Result; applied: { date: string; endDat
       </div>
       <div className="svc-price">
         {r.available <= 5 && <span className="pill warn">Only {r.available} left</span>}
-        <small>{r.kind === "Hotel" ? `${money(r.nightlyPrice, r.currency)} / night` : `${money(r.totalPrice, r.currency)} each`}</small>
+        <small>{r.kind === "Hotel" ? `${money(r.nightlyPrice, r.currency)} / night` : `${money(each, r.currency)} each`}</small>
         <b>{money(total, r.currency)}</b>
-        <small>total for {units} {units === 1 ? META[r.kind].unit : META[r.kind].units}</small>
+        <small>total for {units} {units === 1 ? META[r.kind].unit : META[r.kind].units}{(r.kind === "Hotel" || r.kind === "Taxi") && units > applied.units ? ` (needed for ${applied.travelers})` : ""}</small>
         <Link className="btn primary" href={href} data-testid={`svc-book-${r.code}`}>Select</Link>
         <Link className="svc-more" href={detail} onClick={keep} data-testid={`svc-detail-${r.code}`}>View details <Icon name="arrow" size={13} /></Link>
       </div>
