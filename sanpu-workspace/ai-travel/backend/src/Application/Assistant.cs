@@ -85,12 +85,15 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         new("compare_tours", "Compare two or three tours side by side (price, days, seats, ratings).",
             """{"codes":{"type":"array","items":{"type":"string"},"minItems":2,"maxItems":3}}""", ["codes"]),
         new("search_travel", "Live availability and total prices for hotels, domestic flights, express buses or taxis. Hotels need date (check-in) and end_date (check-out).",
-            """{"kind":{"type":"string","enum":["Hotel","Flight","Bus","Taxi"]},"from":{"type":"string","description":"City or place name/code (departure, or hotel city). Optional."},"to":{"type":"string","description":"City or place name/code (arrival). Optional."},"date":{"type":"string","description":"YYYY-MM-DD"},"end_date":{"type":"string","description":"YYYY-MM-DD, hotels only"},"travelers":{"type":"integer"},"units":{"type":"integer","description":"Rooms, cars or seats blocks; default 1"},"sort":{"type":"string","enum":["price","rating","time"]}}""", ["kind", "date"]),
+            """{"kind":{"type":"string","enum":["Hotel","Flight","Bus","Taxi"]},"from":{"type":"string","description":"City or place name/code (departure, or hotel city). Optional."},"to":{"type":"string","description":"City or place name/code (arrival). Optional."},"date":{"type":"string","description":"YYYY-MM-DD"},"end_date":{"type":"string","description":"YYYY-MM-DD, hotels only"},"travelers":{"type":"integer"},"units":{"type":"integer","description":"Rooms, cars or seats blocks; default 1"},"sort":{"type":"string","enum":["price","rating","time"]}}""", ["kind"]),
         new("prepare_booking", "Prepare a booking for the traveler at the live price. It is held for 30 minutes and shown with Confirm buttons; the traveler confirms and pays themselves. Call only after the traveler clearly asked to book a specific option.",
             """{"kind":{"type":"string","enum":["Tour","Hotel","Flight","Bus","Taxi"]},"code":{"type":"string","description":"Tour or service code"},"date":{"type":"string","description":"YYYY-MM-DD (tour departure date, check-in or travel date)"},"end_date":{"type":"string","description":"YYYY-MM-DD, hotels only"},"travelers":{"type":"integer"},"units":{"type":"integer","description":"Rooms/cars, default 1"},"departure_id":{"type":"integer","description":"Tours: departureId from tour_details (preferred over date)"},"notes":{"type":"string","description":"Short note, e.g. dietary needs"}}""", ["kind", "code", "travelers"]),
         new("my_bookings", "The traveler's own bookings made here: reference, item, dates, total, paid, status.", "{}", []),
         new("my_trip_plans", "The traveler's own day-by-day trip plans (with disruption status).", "{}", []),
     ];
+
+    /// <summary>What this message explicitly asks for. Enforced on every search, whatever the model passes to the tools.</summary>
+    private TripQuery _asked = new();
 
     private string SystemPrompt(string name) => $"""
         You are Sanpu AI Travel, a friendly travel assistant for trips in Taiwan run by Sanpu. Today in Taiwan is {clock.UtcNow.AddHours(8):dddd, yyyy-MM-dd}. The traveler is {name}.
@@ -111,6 +114,8 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         var userId = current.UserId;   // visitors may chat; booking and "my" tools ask them to sign in
         var history = Clean(request.Messages);
         var cards = new List<ChatCard>();
+        _asked = TripQueryParser.Parse(history[^1].Content, clock.UtcNow.AddHours(8).Date);
+        if (_asked.PastDate || _asked.UnknownPlace is not null) return await FallbackAsync(history[^1].Content, cards, null, ct);   // clear, fixed answers
         var status = await gateway.StatusAsync(ct);
         var aiOn = model.IsConfigured && status.Provider != "Disabled" && status.MonthCostUsd < status.MonthlyBudgetUsd;
         if (!aiOn)
@@ -126,6 +131,12 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
             var cost = run.InputTokens * await settings.GetDecimalAsync("Ai.InputUsdPerMTok", 0, ct) / 1_000_000m + run.OutputTokens * await settings.GetDecimalAsync("Ai.OutputUsdPerMTok", 0, ct) / 1_000_000m;
             await repo.WriteUsageAsync("assistant", run.Model.StartsWith("claude") ? "Anthropic" : run.Model.StartsWith("gemini") ? "Gemini" : "OpenAI", run.Model, run.InputTokens, run.OutputTokens, Math.Round(cost, 6), (int)sw.ElapsedMilliseconds, run.StopReason == "refusal" ? "refused" : "ok", null, userId, current.CorrelationId, ct);
             var text = string.IsNullOrWhiteSpace(run.Text) ? "Here is what I found." : run.Text.Trim();
+            var searchable = _asked.Intent is "hotel" or "flight" or "bus" or "taxi" or "tours" or "plan" or "compare" && _asked.UnknownPlace is null && !_asked.PastDate;
+            if (cards.Count == 0 && searchable)
+            {
+                var direct = await FallbackAsync(history[^1].Content, cards, null, ct);
+                return direct with { AiAvailable = true, Notice = null };
+            }
             return new ChatReply(text, Dedup(cards), true, null);
         }
         catch (AiUnavailableException ex)
@@ -202,6 +213,8 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
     private async Task<JsonNode?> SearchToursAsync(string? destination, decimal? maxPrice, int travelers, List<ChatCard> cards, CancellationToken ct)
     {
         var all = (await catalog.GetAsync("catalog/tours", new Dictionary<string, string?> { ["pax"] = Math.Clamp(travelers, 1, 20).ToString() }, ct))?.AsArray() ?? [];
+        travelers = _asked.Travelers ?? travelers;
+        destination = _asked.From ?? destination;
         var words = (destination ?? "").ToLowerInvariant().Split([' ', ',', '/'], StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length > 2).ToArray();
         var hits = all.Where(t => t is not null).Where(t =>
         {
@@ -209,7 +222,14 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
             var price = PriceOf(t!);
             return (words.Length == 0 || words.Any(text.Contains)) && (maxPrice is null || price is null || price <= maxPrice);
         }).Select(t => t!.DeepClone()).ToList();
-        if (hits.Count == 0 && words.Length > 0) hits = all.Where(t => t is not null).Select(t => t!.DeepClone()).ToList();   // nothing matched: show everything rather than nothing
+        var plan = _asked.Intent == "plan";
+        hits = hits.Where(t =>
+        {
+            var text = $"{t["title"]} {t["slogan"]} {t["summary"]}";
+            return (_asked.Days is null || (plan ? t["days"]!.GetValue<int>() <= _asked.Days : t["days"]!.GetValue<int>() == _asked.Days))
+                && (_asked.Budget is null || (PriceOf(t) ?? 0) * (plan ? Math.Max(1, travelers) : 1) <= _asked.Budget)
+                && (_asked.Interests.Count == 0 || _asked.Interests.Any(i => TripQueryParser.InterestWords[i].IsMatch(text)));
+        }).ToList();
         var arr = new JsonArray([.. hits]);
         if (hits.Count > 0) cards.Add(new ChatCard("tours", arr.DeepClone()));
         return arr;
@@ -262,10 +282,14 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
     {
         var kind = Req(input, "kind");
         if (!Kinds.Contains(kind)) throw AppException.Validation("kind", "Use Hotel, Flight, Bus or Taxi.");
-        var date = Date(Req(input, "date"));
-        var end = Str(input, "end_date") is { } e ? Date(e) : (DateTime?)null;
-        if (kind == "Hotel" && end is null) end = date.AddDays(1);
-        return await FindTravelAsync(kind, Str(input, "from"), Str(input, "to"), date, end, Int(input, "travelers") ?? 1, Int(input, "units") ?? 1, null, Str(input, "sort") ?? "price", cards, ct);
+        var hotel = kind == "Hotel";
+        var sameKind = string.Equals(_asked.Intent, kind, StringComparison.OrdinalIgnoreCase);
+        var date = _asked.Date ?? (Str(input, "date") is { } ds ? Date(ds) : clock.UtcNow.AddHours(8).Date.AddDays(14));
+        DateTime? end = !hotel ? null : _asked.End is { } e0 && e0 > date ? e0 : _asked.Nights is > 0 ? date.AddDays(_asked.Nights.Value) : Str(input, "end_date") is { } es && Date(es) > date ? Date(es) : date.AddDays(2);
+        var from = (sameKind ? _asked.From : null) ?? Str(input, "from") ?? (hotel ? Str(input, "to") : null);
+        var to = hotel ? null : (sameKind ? _asked.To : null) ?? Str(input, "to");
+        var people = _asked.Travelers ?? Int(input, "travelers") ?? (hotel ? 2 : 1);
+        return await FindTravelAsync(kind, from, to, date, end, people, Int(input, "units") ?? 1, _asked.Budget, Str(input, "sort") ?? "price", cards, ct);
     }
 
     private static bool PlaceMatches(JsonNode row, string side, string? place)

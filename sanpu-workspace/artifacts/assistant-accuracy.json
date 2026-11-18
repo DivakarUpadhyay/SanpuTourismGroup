@@ -1,12 +1,12 @@
 {
-  "at": "2026-11-18T03:38:21.901Z",
+  "at": "2026-11-18T03:46:42.992Z",
   "base": "https://sanpu-trip-copilot.vercel.app",
   "results": [
     {
       "name": "Hotel by city",
       "text": "Find a hotel in Kinmen",
       "status": 200,
-      "reply": "9 hotels in Kinmen for Wed 2 Dec to Fri 4 Dec, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are some hotel options in **Kinmen** for 2 travelers from **Wednesday, 2026-12-02 to Friday, 2026-12-04** (2 nights):\n\n* **Juguang Tower Hotel · Deluxe Twin** – **TWD 5,600** total (TWD 2,800/night) | ★4.7 · Breakfast included, garden, free Wi-Fi\n* **Kinmen Courtyard Inn · Courtyard Room** – **TWD 6,800** total (TWD 3,400/night) | ★4.6 · Traditional house style, bicycle rental, breakfast included\n* **Shanhou Folk Village Inn · Standard Double** – **TWD 9,440** total (TWD 4,720/night) | ★4.9 · Breakfast included, hot spring bath, free Wi-Fi\n* **Jincheng Old Street Inn · Standard Double** – **TWD 10,220** total (TWD 5,110/night) | ★4.7 · Breakfast included, airport shuttle, sea view\n\nLet me know if you'd like to adjust the dates, number of guests, or if you'd like to book one of these!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -15,7 +15,7 @@
       "name": "Hotel, relative dates",
       "text": "Find a hotel in Tainan for 2 nights from next Friday",
       "status": 200,
-      "reply": "8 hotels in Tainan for Fri 20 Nov to Sun 22 Nov, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are hotel options in Tainan for 2 nights starting next Friday (**Friday, 2026-11-27 to Sunday, 2026-11-29**) for 1 traveler:\n\n* **Kenting Bay Resort · Standard Double** — **TWD 5,500** total (2 nights) | Rating: 4.7 (Breakfast, sea & lake views)\n* **Confucius Lane Inn · Standard Double** — **TWD 7,869** total | Rating: 4.7 (Breakfast, bicycle rental, parking)\n* **Anping Canal Hotel · Superior King** — **TWD 8,235** total | Rating: 4.5 (Breakfast, rooftop terrace, airport shuttle)\n* **Old Capital House · Heritage Double** — **TWD 9,204** total | Rating: 4.8 (Restored shophouse, walk to temples)\n* **Salt Field Retreat · Superior King** — **TWD 9,632** total | Rating: 4.2 (Breakfast, city view, rooftop terrace)\n* **Tainan Station Hotel · Deluxe Twin** — **TWD 9,890** total | Rating: 4.1 (Breakfast, hot spring bath)\n\nLet me know if you would like to book one of these!",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -24,7 +24,7 @@
       "name": "Hotel, exact dates",
       "text": "Hotel in Taipei from 2026-12-20 to 2026-12-23",
       "status": 200,
-      "reply": "10 hotels in Taipei for Sun 20 Dec to Wed 23 Dec, 2 guests. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are available hotels in Taipei from **Sunday, 2026-12-20** to **Wednesday, 2026-12-23** (3 nights, based on 2 travelers):\n\n*   **Taipei Park View · Standard Double** (H-G06)\n    *   **Price:** **TWD 7,182** total (approx. TWD 2,394/night)\n    *   **Features:** Breakfast included, bicycle rental, parking, free cancellation (48h). Rating: 4.4/5\n*   **Ximen Corner Hotel · Deluxe Twin** (H-G04)\n    *   **Price:** **TWD 12,569** total (approx. TWD 4,190/night)\n    *   **Features:** Breakfast included, hot spring bath, free cancellation (48h). Rating: 4.6/5\n*   **Zhongshan Heritage Hotel · Superior King** (H-G05)\n    *   **Price:** **TWD 14,711** total (approx. TWD 4,904/night)\n    *   **Features:** Breakfast included, family friendly, airport shuttle, free cancellation (48h). Rating: 4.3/5\n*   **Xinyi Skyline Hotel · Deluxe King** (H-TPE-SKY-DLX)\n    *   **Price:** **TWD 15,600** total (approx. TWD 5,200/night)\n    *   **Features:** Free Wi-Fi, city view, breakfast included, gym, near MRT (3 min), free cancellation (24h). Rating: 4.6/5\n\nLet me know if you'd like to book one of these or need options for a different number of guests!",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -33,7 +33,7 @@
       "name": "Hotel, group size",
       "text": "Hotel in Hualien for 5 guests",
       "status": 200,
-      "reply": "8 hotels in Hualien for Wed 2 Dec to Fri 4 Dec, 5 guests. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are hotel options in **Hualien** for **5 guests** checking in tomorrow, **Thursday, 2026-11-19** to **Friday, 2026-11-20** (1 night). \n\nSince our standard rooms typically accommodate up to 4 guests per room, you may need to book multiple rooms or a larger family option. Here are top choices available:\n\n* **Hualien Harbour Inn · Family Room** (Code: `H-G16` / max 4 per room): **TWD 10,240** (Breakfast included, lake view, family-friendly)\n* **Taroko Gateway Lodge · Standard Double** (Code: `H-G10` / max 4 per room): **TWD 8,310** (Breakfast included, lake view, airport shuttle)\n* **Rift Valley Farmstay · Deluxe Twin** (Code: `H-G13` / max 4 per room): **TWD 8,610** (Breakfast included, family friendly)\n\nIf you would like to adjust your dates or need help booking across multiple rooms for your 5 guests, just let me know!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -42,7 +42,7 @@
       "name": "Hotel, budget",
       "text": "Hotel in Taipei under TWD 8000",
       "status": 200,
-      "reply": "2 hotels in Taipei for Wed 2 Dec to Fri 4 Dec, 2 guests, up to TWD 8,000. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are some top-rated hotels in **Taipei** under TWD 8,000 for a 1-night stay from **tomorrow, Thursday, 2026-11-19 to Friday, 2026-11-20** (assumed for 2 travelers):\n\n*   **Taipei Park View · Standard Double** (H-G06) — **TWD 2,280 / night** (Rating: 4.4)\n    *   *Features:* Breakfast included, bicycle rental, parking.\n*   **Ximen Corner Hotel · Deluxe Twin** (H-G04) — **TWD 3,990 / night** (Rating: 4.6)\n    *   *Features:* Breakfast included, hot spring bath.\n*   **Da'an Boutique Rooms · Family Room** (H-G02) — **TWD 4,120 / night** (Rating: 4.4)\n    *   *Features:* Breakfast included, family-friendly, city view (fits up to 4).\n*   **Zhongshan Heritage Hotel · Superior King** (H-G05) — **TWD 4,670 / night** (Rating: 4.3)\n    *   *Features:* Breakfast included, family-friendly, airport shuttle.\n*   **Xinyi Skyline Hotel · Deluxe King** (H-TPE-SKY-DLX) — **TWD 5,200 / night** (Rating: 4.6)\n    *   *Features:* Free Wi-Fi, city view, breakfast included, gym, 3 min to MRT.\n*   **Beitou Spring Retreat · Family Room** (H-G07) — **TWD 7,000 / night** (Rating: 4.9)\n    *   *Features:* Breakfast included, family-friendly, lake view (fits up to 4).\n\nLet me know if you'd like to adjust the dates or book one of these!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -51,7 +51,7 @@
       "name": "Flight route + date + people",
       "text": "Flights from Taipei to Kinmen next weekend for 2",
       "status": 200,
-      "reply": "3 flights from Taipei to Kinmen for Sat 21 Nov, 2 travelers. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are the available flights from **Taipei (TSA)** to **Kinmen (KNH)** for **2 travelers** next weekend, leaving on **Friday, 2026-11-21**:\n\n* **Formosa Sky FS301** (09:00 departure, 65 min): **TWD 5,332** total for 2\n* **Island Hopper Air IH425** (14:05 departure, 60 min): **TWD 6,808** total for 2\n* **Formosa Sky FS405** (19:05 departure, 60 min): **TWD 6,832** total for 2\n\nWould you like to book one of these flights?",
       "passed": 5,
       "total": 5,
       "failed": []
@@ -60,7 +60,7 @@
       "name": "Bus route + tomorrow + people",
       "text": "Bus from Taipei to Tainan tomorrow for 3 people",
       "status": 200,
-      "reply": "5 buses from Taipei to Tainan for Thu 19 Nov, 3 travelers. Prices are totals. Press Book this on the one you like.",
+      "reply": "Here are the available buses from **Taipei** to **Tainan** for tomorrow, **Thursday, 2026-11-19**, for **3 travelers**:\n\n*   **Central Line C1 Express** (08:00 departure, ~4h 30m) – **TWD 1,770** total\n*   **Formosa Coaches FC344** (14:45 departure, ~4h 20m) – **TWD 1,905** total\n*   **Formosa Coaches FC316** (06:20 departure, ~4h 20m) – **TWD 2,010** total\n*   **Formosa Coaches FC302** (10:45 departure, ~4h 20m) – **TWD 2,025** total\n*   **Formosa Coaches FC330** (18:00 departure, ~4h 20m) – **TWD 2,115** total\n\nLet me know which departure time you'd like to book!",
       "passed": 4,
       "total": 4,
       "failed": []
@@ -69,7 +69,7 @@
       "name": "Taxi from airport",
       "text": "Book a taxi from Taoyuan airport to Taipei tomorrow morning",
       "status": 200,
-      "reply": "9 taxis from Taoyuan to Taipei for Thu 19 Nov, 1 traveler. Prices are totals. Press Book this on the one you like.",
+      "reply": "I found a great airport transfer option for tomorrow morning (**Thursday, 2026-11-19**):\n\n* **Sanpu Limo Sedan · Taoyuan Airport → Taipei city**\n* **Price:** TWD 890\n* **Features:** Meet and greet, flight tracking, free cancellation up to 24 hours before pickup.\n\nSince you are not currently signed in, please sign in or create a free account to complete your booking. You can use the buttons below to sign in, and then we can confirm your ride!",
       "passed": 4,
       "total": 4,
       "failed": []
@@ -96,12 +96,10 @@
       "name": "Tours by interest",
       "text": "Food tours in Tainan",
       "status": 200,
-      "reply": "4 tours in Tainan. Open Dates & details to pick a departure.",
-      "passed": 2,
+      "reply": "3 tours in Tainan. Open Dates & details to pick a departure.",
+      "passed": 3,
       "total": 3,
-      "failed": [
-        "food themed"
-      ]
+      "failed": []
     },
     {
       "name": "Compare tours",
@@ -161,10 +159,12 @@
       "name": "Past date",
       "text": "Hotel in Tainan on 2020-01-01",
       "status": 200,
-      "reply": "That date has already passed. Please choose a future date.",
-      "passed": 2,
+      "reply": "Here is what I found.",
+      "passed": 1,
       "total": 2,
-      "failed": []
+      "failed": [
+        "explains"
+      ]
     }
   ]
 }
