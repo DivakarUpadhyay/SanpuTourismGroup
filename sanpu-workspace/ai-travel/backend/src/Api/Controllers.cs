@@ -2,7 +2,6 @@ using Divakar.Sanpu.AiOps.Application;
 using Divakar.Sanpu.Core.Api;
 using Divakar.Sanpu.Core.Application;
 using Microsoft.AspNetCore.Mvc;
-
 namespace Divakar.Sanpu.AiOps.Api;
 
 [ApiController, Route("api/v1"), Tags("Trips (traveler)")]

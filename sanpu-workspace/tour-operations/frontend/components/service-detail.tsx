@@ -177,7 +177,7 @@ function DetailInner({ p }: { p: URLSearchParams }) {
               {travelers > s.peoplePerUnit * (perUnitTravel ? travelers : units) && <p className="error small">Add another {meta.unit} for {travelers} people.</p>}
               <button className="btn primary lg block" disabled={!known || !enough} onClick={() => router.push(bookHref)} data-testid="sd-reserve">Reserve</button>
               <ul className="sd-assure">
-                <li><Icon name="check" size={14} />Confirmed instantly</li>
+                <li><Icon name="check" size={14} />Confirmed once payment succeeds</li>
                 <li><Icon name="check" size={14} />Pay now or pay a deposit</li>
                 <li><Icon name="tag" size={14} />Have a coupon? Add it at checkout</li>
               </ul>

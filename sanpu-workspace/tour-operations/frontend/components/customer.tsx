@@ -90,7 +90,7 @@ export function MyBookingsPage() {
   const list = useAsync(() => get<MyBooking[]>("/my/bookings"), []);
   return (
     <>
-      <PageHeader tagline="My trips" title="My bookings" lead="Tours wait for our team to confirm them. Hotels, flights, buses and taxis are confirmed instantly." />
+      <PageHeader tagline="My trips" title="My bookings" lead="A booking is confirmed only after your payment succeeds. Tours are then approved by our team." />
       <CleanParams persist={false}>{(p) => <><PaymentResultBanner p={p} /><MyServiceBookingsSection highlight={p.get("pay") ?? undefined} /></>}</CleanParams>
       <h2 className="sec-title">Guided tours</h2>
       <Async state={list} empty={(r) => r.length === 0}>{(rows) => <DataTable rows={rows} rowKey={(b) => b.bookingId} onRowClick={(b) => router.push(`/my/bookings/${b.bookingId}`)} testId="my-bookings" columns={[
@@ -110,8 +110,8 @@ function BookingProgress({ status, payment }: { status: string; payment: string 
   if (status === "Cancelled" || status === "Rejected" || status === "CancelRequested") return <div className="alert info" style={{ marginBottom: 16 }}>This booking is <b>{status === "CancelRequested" ? "waiting for cancellation" : status.toLowerCase()}</b>.</div>;
   const steps = [
     { label: "Booked", done: true },
-    { label: "Approved by our team", done: status === "Confirmed" || status === "Completed" },
-    { label: payment === "PartiallyPaid" ? "Deposit paid" : "Paid", done: payment === "Paid" || payment === "PartiallyPaid", partial: payment === "PartiallyPaid" },
+    { label: payment === "PartiallyPaid" ? "Deposit paid" : "Payment", done: payment === "Paid" || payment === "PartiallyPaid", partial: payment === "PartiallyPaid" },
+    { label: "Confirmed", done: status === "Confirmed" || status === "Completed" },
     { label: "Travel", done: status === "Completed" },
   ];
   return <ol className="bk-steps" aria-label="Booking progress">{steps.map((st, i) => <li key={i} className={st.done ? (st.partial ? "part" : "done") : ""}><span>{st.done ? "✓" : i + 1}</span>{st.label}</li>)}</ol>;

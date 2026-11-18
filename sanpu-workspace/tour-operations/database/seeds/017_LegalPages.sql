@@ -68,7 +68,7 @@ If we change how we use personal data, we will update this page and the date abo
 ## Contact
 Questions or concerns: {support}. If you are not satisfied with our answer, you may contact the competent authority in Taiwan.'),
  ('terms', N'Terms of use', N'These terms apply when you use the {brand} website and book with us. Please read them before you book.
-- Tours are confirmed after our team reviews them; hotels, flights, buses and taxis are confirmed instantly.
+- Tours are confirmed after our team reviews them; hotels, flights, buses and taxis are confirmed once payment succeeds.
 - You can pay in full, or pay a deposit and the balance later.
 - Free cancellation rules are shown on each option before you book.
 - Prices are in New Taiwan dollars (TWD) and include tax.
@@ -84,7 +84,7 @@ By creating an account or making a booking you agree to these terms and to our p
 ### Tours
 - Your seats are held for a short time while you complete the booking. A tour booking is confirmed only when our team approves it; you will see the status change in My bookings.
 ### Hotels, flights, buses and taxis
-- These bookings are confirmed instantly because the room, seat or car is reserved for you at that moment.
+- The room, seat or car is held when you book, and the booking is confirmed once your payment succeeds.
 - Taxi transfers are booked for the pickup time and address you give; drivers wait for the free waiting time shown on the booking.
 
 ## Prices and payment

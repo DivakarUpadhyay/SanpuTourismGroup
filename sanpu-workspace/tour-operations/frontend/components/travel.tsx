@@ -181,7 +181,7 @@ function BookInner({ p }: { p: URLSearchParams }) {
                 e.preventDefault();
                 const r = await a.run(() => post<{ serviceBookingId: number; bookingRef: string }>("/travel/bookings", {
                   serviceCode: code, date, endDate: s.kind === "Hotel" ? endDate : null, units, travelers, ...f, pickupAddress: s.kind === "Taxi" ? f.pickupAddress : null,
-                  pickupTime: s.kind === "Taxi" ? f.pickupTime : null, couponCode: coupon.code || null, idempotencyKey: key }), "Booking confirmed");
+                  pickupTime: s.kind === "Taxi" ? f.pickupTime : null, couponCode: coupon.code || null, idempotencyKey: key }), "Booking created. Pay now to confirm it.");
                 if (r) { if (coupon.code) clearSavedCoupon(); router.push(`/my/bookings?booked=${r.bookingRef}&pay=Service:${r.serviceBookingId}`); }
               }}>
                 <div className="form cols">
@@ -207,7 +207,7 @@ function BookInner({ p }: { p: URLSearchParams }) {
                 <li className="total"><span>Total</span><b>{money(subtotal - coupon.discount, s.currency)}</b></li>
               </ul>
               {kind && <CouponField kind={kind} amount={subtotal} value={coupon.code} onApplied={(c, d) => setCoupon({ code: c, discount: d })} />}
-              <p className="small muted" style={{ marginBottom: 0 }}>Confirmed instantly. Pay now in full, or pay a deposit and the rest later, from My bookings.</p>
+              <p className="small muted" style={{ marginBottom: 0 }}>Confirmed as soon as your payment succeeds. Pay in full, or pay a deposit and the rest later, from My bookings.</p>
             </aside>
           </div>
           <PromoStrip placement="Checkout" />
@@ -253,7 +253,7 @@ export function PaymentPanel({ orderType, orderId, onPaid }: { orderType: "Tour"
               {x.canPayDeposit && <button className="btn" disabled={a.busy} onClick={() => pay("Deposit")} data-testid="pay-deposit">Pay {x.depositPercent}% deposit {money(x.depositAmount)}</button>}
             </>}
           </div>
-        ) : x.status === "Confirmed" ? <p className="ok small">Fully paid. Thank you.</p> : x.status === "Pending" ? <p className="small muted">You can pay once our team confirms this booking.</p> : null}
+        ) : x.balance <= 0 && x.status === "Confirmed" ? <p className="ok small">Fully paid. Thank you.</p> : null}
         {history.length > 0 && <ul className="pay-hist">{history.map((h) => <li key={h.merchantTradeNo}><Pill value={h.status} /> {h.mode} {money(h.amount)} · {h.provider}{h.paymentMethod ? ` (${h.paymentMethod})` : ""} · {fmtDateTime(h.createdAtUtc)}</li>)}</ul>}
       </div>
     )}</Async>
@@ -280,10 +280,10 @@ export function MyServiceBookings({ highlight }: { highlight?: string }) {
               <h3>{b.serviceName}</h3>
               <p className="small muted">{b.kind === "Hotel" ? `${fmtDate(b.startDate)} to ${fmtDate(b.endDate)}` : `${fmtDate(b.startDate)}${b.departTime ? ` · ${hhmm(b.departTime)}` : ""} · ${b.fromName} → ${b.toName}`} · {b.travelers} traveler(s)</p>
               <p className="small">Total {money(b.totalAmount, b.currency)}{b.discountAmount > 0 ? ` (saved ${money(b.discountAmount, b.currency)})` : ""}</p>
-              {open === b.serviceBookingId && b.status === "Confirmed" && <PaymentPanel orderType="Service" orderId={b.serviceBookingId} onPaid={list.reload} />}
+              {open === b.serviceBookingId && (b.status === "Confirmed" || b.status === "AwaitingPayment") && <PaymentPanel orderType="Service" orderId={b.serviceBookingId} onPaid={list.reload} />}
               <div className="row" style={{ marginTop: 8 }}>
-                {b.status === "Confirmed" && <button className="btn small" onClick={() => setOpen(open === b.serviceBookingId ? null : b.serviceBookingId)} data-testid={`svc-pay-${b.bookingRef}`}>{open === b.serviceBookingId ? "Hide payments" : b.paymentStatus === "Paid" ? "Payments" : "Pay"}</button>}
-                {b.status === "Confirmed" && <ConfirmButton className="btn small subtle" confirm="Cancel this booking? It is free until 24 hours before the start; any payment is refunded." testId={`svc-cancel-${b.bookingRef}`}
+                {(b.status === "Confirmed" || b.status === "AwaitingPayment") && <button className="btn small" onClick={() => setOpen(open === b.serviceBookingId ? null : b.serviceBookingId)} data-testid={`svc-pay-${b.bookingRef}`}>{open === b.serviceBookingId ? "Hide payments" : b.paymentStatus === "Paid" ? "Payments" : "Pay"}</button>}
+                {(b.status === "Confirmed" || b.status === "AwaitingPayment") && <ConfirmButton className="btn small subtle" confirm="Cancel this booking? It is free until 24 hours before the start; any payment is refunded." testId={`svc-cancel-${b.bookingRef}`}
                   onConfirm={async () => { if (await a.run(() => post(`/travel/my/bookings/${b.serviceBookingId}/cancel`), "Booking cancelled") !== undefined) list.reload(); }}>Cancel</ConfirmButton>}
               </div>
             </div>
@@ -298,7 +298,7 @@ export function MyServiceBookings({ highlight }: { highlight?: string }) {
 export function PaymentResultBanner({ p }: { p: URLSearchParams }) {
   const outcome = p.get("payment"), ref = p.get("ref"), booked = p.get("booked");
   const msg = useMemo(() => {
-    if (booked) return { tone: "ok", text: `Booking ${booked} is confirmed. You can pay now or pay a deposit below.` };
+    if (booked) return { tone: "ok", text: `Booking ${booked} is created. Pay in full or pay a deposit below to confirm it.` };
     if (outcome === "paid") return { tone: "ok", text: `Payment received for ${ref}. Thank you!` };
     if (outcome === "failed") return { tone: "error", text: `The payment for ${ref} did not go through. You have not been charged; please try again.` };
     if (outcome === "pending") return { tone: "info", text: `We are waiting for the payment for ${ref} to be confirmed (for example an ATM transfer).` };

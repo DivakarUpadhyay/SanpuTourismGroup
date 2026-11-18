@@ -37,33 +37,33 @@ Role: {{role}}
 Your access request was not approved this time. If you think this is a mistake, please contact your manager or an administrator.'),
  ('email.booking_created', N'Booking {{ref}} received', N'Hello {{displayName}},
 
-Thank you for booking with {{brand}}. Your seats are reserved.
+Thank you for booking with {{brand}}. Your seats are held, and your booking is confirmed once your payment succeeds.
 
 Booking: {{ref}}
 Tour: {{item}}
 Departure: {{date}}
 Travelers: {{pax}}
 Total: {{total}}
-Status: {{status}}
+Status: Awaiting payment
 
 To confirm your place, pay a deposit or the full amount from your booking page.
 
 [View my booking]({{link}})'),
  ('email.service_booked', N'{{kind}} booking {{ref}} received', N'Hello {{displayName}},
 
-Your {{kindLower}} is reserved.
+Your {{kindLower}} is held for you. It is confirmed once your payment succeeds.
 
 Booking: {{ref}}
 Item: {{item}}
 Date: {{date}}
 Travelers: {{pax}}
 Total: {{total}}
-Status: {{status}}
+Status: Awaiting payment
 
-[View my bookings]({{link}})'),
+[Pay now]({{link}})'),
  ('email.payment_received', N'Payment received for {{ref}}', N'Hello {{displayName}},
 
-We received your payment. Thank you.
+We received your payment, thank you. Your booking is now secured.
 
 Booking: {{ref}}
 Item: {{item}}
@@ -75,7 +75,7 @@ Still to pay: {{balance}}
 [View my booking]({{link}})'),
  ('email.payment_failed', N'Payment for {{ref}} did not go through', N'Hello {{displayName}},
 
-Your payment could not be completed, so nothing was charged. Your booking is still held for now.
+Your payment could not be completed, so nothing was charged. Your booking is not confirmed yet.
 
 Booking: {{ref}}
 Amount: {{amount}}

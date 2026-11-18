@@ -107,9 +107,10 @@ export function BookingDetailPage() {
               {b.specialRequests && <p className="small">Requests: {b.specialRequests}</p>}
               {b.cancelReason && <p className="small">Cancel reason: {b.cancelReason}</p>}
               <div className="form-actions">
-                {can("approve") && has("Booking.Approve") && <ConfirmButton className="btn primary" confirm="Approve this booking? Held seats become sold." testId="approve" onConfirm={() => done(() => post(`/ops/bookings/${id}/decision`, { decision: "Approved", comment }), "Booking approved")}>Approve</ConfirmButton>}
+                {can("approve") && has("Booking.Approve") && b.amountPaid <= 0 && <span className="pill warn" data-testid="approve-needs-payment">Approval opens after payment</span>}
+                {can("approve") && has("Booking.Approve") && b.amountPaid > 0 && <ConfirmButton className="btn primary" confirm="Approve this booking? Held seats become sold." testId="approve" onConfirm={() => done(() => post(`/ops/bookings/${id}/decision`, { decision: "Approved", comment }), "Booking approved")}>Approve</ConfirmButton>}
                 {can("reject") && has("Booking.Approve") && <ConfirmButton className="btn danger" confirm="Reject this booking? The seats are released." testId="reject" onConfirm={() => done(() => post(`/ops/bookings/${id}/decision`, { decision: "Rejected", comment }), "Booking rejected")}>Reject</ConfirmButton>}
-                {can("payment") && has("Finance.Payment") && <button className="btn" data-testid="pay-open" onClick={() => setPay({ amount: b.totalAmount - b.amountPaid, method: "BankTransfer", key: newKey("pay") })}>Record payment (SIMULATED)</button>}
+                {(can("payment") || b.status === "Pending") && has("Finance.Payment") && <button className="btn" data-testid="pay-open" onClick={() => setPay({ amount: b.totalAmount - b.amountPaid, method: "BankTransfer", key: newKey("pay") })}>Record payment (SIMULATED)</button>}
                 {can("refund") && has("Finance.Refund") && b.amountPaid > b.amountRefunded && <button className="btn" data-testid="refund-open" onClick={() => setRefund({ amount: b.amountPaid - b.amountRefunded, reason: "Customer request" })}>Issue refund</button>}
                 {can("cancel") && has("Booking.Cancel") && <button className="btn danger" data-testid="cancel-open" onClick={() => setCancel("")}>Cancel booking</button>}
               </div>

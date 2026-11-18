@@ -25,7 +25,7 @@ BEGIN
         FROM dbo.ServiceBookings b WITH (UPDLOCK) JOIN dbo.TravelServices s ON s.ServiceId = b.ServiceId
         WHERE b.ServiceBookingId = @OrderId AND b.CustomerUserId = @UserId;
     IF @St IS NULL THROW 50001, 'not_found', 1;
-    IF @St NOT IN ('Pending','Confirmed') OR @Paid >= @Total THROW 50031, 'invalid_state', 1;
+    IF @St NOT IN ('Pending','AwaitingPayment','Confirmed') OR @Paid >= @Total THROW 50031, 'invalid_state', 1;
     IF @Mode = 'Deposit' AND (@Paid > 0 OR @DepositPercent NOT BETWEEN 1 AND 99 OR DATEDIFF(DAY, CAST(SYSUTCDATETIME() AS date), @Start) <= @BalanceDueDays)
         THROW 50067, 'deposit_not_available', 1;
     DECLARE @Amount decimal(12,2) = CASE @Mode WHEN 'Deposit' THEN ROUND(@Total * @DepositPercent / 100.0, 0) ELSE @Total - @Paid END;
@@ -70,10 +70,10 @@ BEGIN
             BEGIN
                 DECLARE @Total decimal(12,2), @Paid decimal(12,2), @Start date, @BSt varchar(20);
                 SELECT @Total = TotalAmount, @Paid = AmountPaid, @Start = StartDate, @BSt = Status FROM dbo.ServiceBookings WITH (UPDLOCK) WHERE ServiceBookingId = @OrderId;
-                IF @BSt NOT IN ('Pending','Confirmed') OR @Paid + @Amount > @Total THROW 50035, 'amount_exceeds_balance', 1;
+                IF @BSt NOT IN ('AwaitingPayment','Confirmed') OR @Paid + @Amount > @Total THROW 50035, 'amount_exceeds_balance', 1;
                 INSERT dbo.ServicePayments(ServiceBookingId, Amount, Mode, Provider, ProviderRef, IdempotencyKey, CreatedBy)
                 VALUES (@OrderId, @Amount, @Mode, (SELECT Provider FROM dbo.PaymentIntents WHERE IntentId = @Id), ISNULL(@ProviderTradeNo, @MerchantTradeNo), @MerchantTradeNo, @User);
-                UPDATE dbo.ServiceBookings SET AmountPaid = AmountPaid + @Amount,
+                UPDATE dbo.ServiceBookings SET Status = 'Confirmed', AmountPaid = AmountPaid + @Amount,   -- the first successful payment confirms the booking
                        PaymentStatus = CASE WHEN AmountPaid + @Amount >= TotalAmount THEN 'Paid' ELSE 'PartiallyPaid' END,
                        BalanceDueDate = CASE WHEN AmountPaid + @Amount >= TotalAmount THEN NULL ELSE DATEADD(DAY, -@BalanceDueDays, @Start) END
                 WHERE ServiceBookingId = @OrderId;
@@ -108,7 +108,7 @@ BEGIN
         SELECT @St = Status, @Ref = BookingRef, @Total = TotalAmount, @Paid = AmountPaid, @Start = StartDate, @Due = BalanceDueDate, @Pay = PaymentStatus
         FROM dbo.ServiceBookings WHERE ServiceBookingId = @OrderId AND CustomerUserId = @UserId;
     IF @St IS NULL THROW 50001, 'not_found', 1;
-    DECLARE @CanPay bit = CASE WHEN @St IN ('Pending','Confirmed') AND @Paid < @Total THEN 1 ELSE 0 END;   -- pay right after booking; approval runs in parallel
+    DECLARE @CanPay bit = CASE WHEN @St IN ('Pending','AwaitingPayment','Confirmed') AND @Paid < @Total THEN 1 ELSE 0 END;   -- pay right after booking; approval runs in parallel
     SELECT @Ref AS OrderRef, @St AS Status, @Pay AS PaymentStatus, @Total AS TotalAmount, @Paid AS AmountPaid, @Total - @Paid AS Balance, @Start AS StartDate,
            COALESCE(@Due, CASE WHEN @Paid > 0 AND @Paid < @Total THEN DATEADD(DAY, -@BalanceDueDays, @Start) END) AS BalanceDueDate,
            @CanPay AS CanPay,

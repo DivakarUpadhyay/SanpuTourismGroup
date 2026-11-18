@@ -95,13 +95,14 @@ export function Kpi({ label, value, testId, href, hint }: { label: string; value
 }
 
 const tones: Record<string, string> = {
+  AwaitingPayment: "warn",
   Confirmed: "ok", Approved: "ok", Active: "ok", Processed: "ok", Matched: "ok", Settled: "ok", Paid: "ok", Accepted: "ok", Done: "ok", Planned: "ok", Open: "info",
   Pending: "warn", PendingReview: "warn", Invited: "warn", CancelRequested: "warn", Submitted: "warn", Draft: "info", InProgress: "info", Extracted: "warn", Disrupted: "bad",
   Rejected: "bad", Cancelled: "bad", Locked: "bad", Inactive: "bad", Failed: "bad", DeadLetter: "bad", Mismatch: "bad", MissingStatement: "warn", Replaced: "info",
   PartiallyRefunded: "warn", Refunded: "info", Unpaid: "warn", Closed: "bad", Superseded: "info", PendingApproval: "warn", PendingCredentials: "warn", LocalMock: "info", WebhookReady: "ok"
 };
 export function Pill({ value, tone }: { value: string; tone?: string }) {
-  return <span className={`pill ${tone ?? tones[value] ?? ""}`}>{value}</span>;
+  return <span className={`pill ${tone ?? tones[value] ?? ""}`}>{value === "AwaitingPayment" ? "Awaiting payment" : value === "PartiallyPaid" ? "Deposit paid" : value}</span>;
 }
 /** Seed-data flag. Records keep IsDemo in the database for clean-up, but nothing is shown to users. */
 export const Demo = (_: { show?: boolean }) => null;

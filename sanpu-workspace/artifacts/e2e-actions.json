@@ -1,17 +1,17 @@
 {
-  "at": "2026-11-18T03:50:14.932Z",
+  "at": "2026-11-18T03:58:05.633Z",
   "erp": "https://sanpu-travel.vercel.app",
   "ai": "https://sanpu-trip-copilot.vercel.app",
   "results": [
     {
       "name": "ERP: customer signs up with own email and password",
       "ok": true,
-      "info": "guest750422@example.com"
+      "info": "guest221178@example.com"
     },
     {
       "name": "ERP: tour booking (hold seats, traveler details, confirm)",
       "ok": true,
-      "info": "/my/bookings/20"
+      "info": "/my/bookings/21"
     },
     {
       "name": "ERP: payment summary on the booking",
@@ -26,12 +26,12 @@
     {
       "name": "ERP: hotel booking (search, detail, book)",
       "ok": true,
-      "info": "SB-000040 · Hotel | Confirmed"
+      "info": "SB-000041 · Hotel | Confirmed"
     },
     {
       "name": "ERP admin: sign in (separate session) and open Payments & transactions",
       "ok": true,
-      "info": "18 Nov 2026, 11:49 BK-000020 East Rift Valley 3D2N Guest Traveler guest750422@example.com Deposit TWD 3,840 Pending ECPay SP2611180349224630"
+      "info": "18 Nov 2026, 11:57 BK-000021 East Rift Valley 3D2N Guest Traveler guest221178@example.com Deposit TWD 3,840 Pending ECPay SP2611180357137705"
     },
     {
       "name": "ERP admin: customer session still signed in (no mixing)",
@@ -56,7 +56,7 @@
     {
       "name": "AI: customer signs up",
       "ok": true,
-      "info": "guest750422@example.com"
+      "info": "guest221178@example.com"
     },
     {
       "name": "AI: assistant finds hotels and Book this prepares a booking",
@@ -71,7 +71,7 @@
     {
       "name": "AI admin: booking shows in Assistant bookings",
       "ok": true,
-      "info": "AI-000009 Guest Traveler guest750422@example.com Juguang Tower Hotel · Deluxe Twin Thu 19 Nov – Fri 20 Nov · 2 pax TWD 2"
+      "info": "AI-000011 Guest Traveler guest221178@example.com Juguang Tower Hotel · Deluxe Twin Fri 20 Nov – Sat 21 Nov · 1 pax TWD 2"
     }
   ],
   "pageErrors": []

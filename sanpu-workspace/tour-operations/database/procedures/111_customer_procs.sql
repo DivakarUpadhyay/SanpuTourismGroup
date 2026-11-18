@@ -469,7 +469,7 @@ BEGIN
     FROM dbo.ServiceBookings b WITH (UPDLOCK) JOIN dbo.TravelServices s ON s.ServiceId = b.ServiceId
     WHERE b.ServiceBookingId = @ServiceBookingId AND b.CustomerUserId = @UserId;
     IF @St IS NULL THROW 50001, 'not_found', 1;
-    IF @St <> 'Confirmed' OR @Start <= CAST(DATEADD(HOUR, 24, SYSUTCDATETIME()) AS date) THROW 50031, 'invalid_state', 1;
+    IF @St NOT IN ('AwaitingPayment','Confirmed') OR @Start <= CAST(DATEADD(HOUR, 24, SYSUTCDATETIME()) AS date) THROW 50031, 'invalid_state', 1;
     DECLARE @Last date = CASE WHEN @Kind = 'Hotel' THEN DATEADD(DAY, -1, @End) ELSE @Start END;
     UPDATE dbo.ServiceInventory SET Sold = Sold - @Units WHERE ServiceId = @Sid AND ServiceDate BETWEEN @Start AND @Last;
     UPDATE dbo.ServiceBookings SET Status = 'Cancelled', CancelledAtUtc = SYSUTCDATETIME(), PaymentStatus = CASE WHEN @Pay IN ('Paid', 'PartiallyPaid') THEN 'Refunded' ELSE PaymentStatus END

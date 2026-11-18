@@ -85,6 +85,8 @@ BEGIN
         DECLARE @Pax int, @Dep int, @St varchar(20), @Ref varchar(20);
         SELECT @Pax = Pax, @Dep = DepartureId, @St = Status, @Ref = BookingRef FROM dbo.Bookings WITH (UPDLOCK) WHERE BookingId = @EntityId;
         IF @St <> 'Pending' THROW 50031, 'invalid_state', 1;
+        -- a booking is never confirmed before a payment has succeeded
+        IF @Outcome = 'Approved' AND (SELECT AmountPaid FROM dbo.Bookings WHERE BookingId = @EntityId) <= 0 THROW 50031, 'invalid_state', 1;
         DECLARE @To varchar(20) = CASE WHEN @Outcome = 'Approved' THEN 'Confirmed' ELSE 'Rejected' END;
         UPDATE dbo.Departures SET SeatsHeld = SeatsHeld - @Pax,
                SeatsSold = SeatsSold + CASE WHEN @Outcome = 'Approved' THEN @Pax ELSE 0 END, UpdatedAtUtc = SYSUTCDATETIME()
@@ -133,6 +135,8 @@ BEGIN
     IF @Wf IS NOT NULL SELECT @Step = StepNo, @Sla = SlaHours FROM dbo.fn_NextWorkflowStep(@Wf, 0, @Amount, @Pax);
     IF @Step IS NULL
     BEGIN
+        -- no approval needed, but an unpaid booking waits: the first successful payment confirms it (usp_Finance_RecordPayment)
+        IF @EntityType = 'Booking' AND (SELECT AmountPaid FROM dbo.Bookings WHERE BookingId = @EntityId) <= 0 RETURN;
         SET @AutoApproved = 1;
         EXEC dbo.usp_Approval_ApplyOutcome @EntityType, @EntityId, 'Approved', NULL, N'auto: no workflow step applies', @CorrelationId;
         RETURN;
@@ -495,7 +499,7 @@ BEGIN
         DECLARE @St varchar(20), @Total decimal(12,2), @Paid decimal(12,2), @Cur char(3), @Ref varchar(20);
         SELECT @St = Status, @Total = TotalAmount, @Paid = AmountPaid, @Cur = Currency, @Ref = BookingRef FROM dbo.Bookings WITH (UPDLOCK) WHERE BookingId = @BookingId;
         IF @St IS NULL THROW 50001, 'not_found', 1;
-        IF @St <> 'Confirmed' THROW 50031, 'invalid_state', 1;
+        IF @St NOT IN ('Pending','Confirmed') THROW 50031, 'invalid_state', 1;
         IF @Amount <= 0 OR @Amount > @Total - @Paid THROW 50035, 'amount_exceeds_balance', 1;
         INSERT dbo.Payments(BookingId, Amount, Currency, ProviderRef, Method, IdempotencyKey, CreatedBy)
         VALUES (@BookingId, @Amount, @Cur, 'SIM-' + LEFT(REPLACE(CONVERT(varchar(36), NEWID()), '-', ''), 12), @Method, @IdempotencyKey, @ActorUserId);
@@ -503,6 +507,9 @@ BEGIN
                UpdatedAtUtc = SYSUTCDATETIME() WHERE BookingId = @BookingId;
         DECLARE @d nvarchar(200) = (SELECT @Amount AS amount, @Method AS method, 'SIMULATED' AS provider FOR JSON PATH, WITHOUT_ARRAY_WRAPPER);
         EXEC dbo.usp_Audit_Write @ActorUserId, 'Payment.Recorded', 'Booking', @Ref, @d, @CorrelationId, NULL;
+        -- paid and no approval step is open: the booking is confirmed now
+        IF @St = 'Pending' AND NOT EXISTS (SELECT 1 FROM dbo.ApprovalRequests WHERE EntityType = 'Booking' AND EntityId = @BookingId AND Status = 'Pending')
+            EXEC dbo.usp_Approval_ApplyOutcome 'Booking', @BookingId, 'Approved', @ActorUserId, N'auto: paid, no approval step applies', @CorrelationId;
     END
     COMMIT;
     SELECT PaymentId, BookingId, Amount, Currency, Provider, ProviderRef, Method, CreatedAtUtc FROM dbo.Payments WHERE IdempotencyKey = @IdempotencyKey;

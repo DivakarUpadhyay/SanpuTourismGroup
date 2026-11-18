@@ -68,7 +68,7 @@ If we change how we use personal data, we will update this page and the date abo
 Questions or concerns: {support}. If you are not satisfied with our answer, you may contact the competent authority in Taiwan.`;
 
 const terms = (ai) => `These terms apply when you use the {brand} website and book with us. Please read them before you book.
-- Tours are confirmed after our team reviews them; ${ai ? "trip changes are approved by our team before they take effect" : "hotels, flights, buses and taxis are confirmed instantly"}.
+- Tours are confirmed after our team reviews them; ${ai ? "trip changes are approved by our team before they take effect" : "hotels, flights, buses and taxis are confirmed once payment succeeds"}.
 - You can pay in full, or pay a deposit and the balance later.
 - Free cancellation rules are shown on each option before you book.
 - Prices are in New Taiwan dollars (TWD) and include tax.
@@ -84,7 +84,7 @@ By creating an account or making a booking you agree to these terms and to our p
 ### Tours
 - Your seats are held for a short time while you complete the booking. A tour booking is confirmed only when our team approves it; you will see the status change in My bookings.
 ### ${ai ? "Trip plans and changes" : "Hotels, flights, buses and taxis"}
-${ai ? "- Itineraries are built from verified places. When weather or transport disrupts a trip, we propose a recovery plan, and a member of our team approves it before anything changes.\n- Suggestions written with the help of AI are checked against our rules and data; they are never booked without a person approving them." : "- These bookings are confirmed instantly because the room, seat or car is reserved for you at that moment.\n- Taxi transfers are booked for the pickup time and address you give; drivers wait for the free waiting time shown on the booking."}
+${ai ? "- Itineraries are built from verified places. When weather or transport disrupts a trip, we propose a recovery plan, and a member of our team approves it before anything changes.\n- Suggestions written with the help of AI are checked against our rules and data; they are never booked without a person approving them." : "- The room, seat or car is held when you book, and the booking is confirmed once your payment succeeds.\n- Taxi transfers are booked for the pickup time and address you give; drivers wait for the free waiting time shown on the booking."}
 
 ## Prices and payment
 - Prices are shown in New Taiwan dollars (TWD) and include tax unless stated otherwise.
