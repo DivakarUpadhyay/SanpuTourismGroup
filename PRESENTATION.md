@@ -82,6 +82,8 @@ Passwords are not stored here because this GitHub repository is public. Every ac
 
 Staff sign in at `/admin/login`. Customers sign in at `/login`.
 
+**Quick role switch on the admin login:** choose a role under **Sign in as**, type the password once and press **Sign in**. After signing out in the same browser tab, choosing another role signs in directly. Closing the tab forgets the password.
+
 ### Sanpu Travel
 
 | Role | Email | Signs in at |

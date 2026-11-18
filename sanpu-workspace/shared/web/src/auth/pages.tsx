@@ -71,6 +71,15 @@ function AuthBox({ tagline, title, children, footer, variant = "plain" }: { tagl
   );
 }
 
+/** Staff accounts offered in the role list on the admin sign-in page. The password is never part of the site's code. */
+const STAFF_ROLES = APP === "ai"
+  ? [["admin@demo.sanpu.test", "System admin"], ["supervisor@demo.sanpu.test", "Operations supervisor"], ["ops.agent@demo.sanpu.test", "Operations agent"], ["ai.engineer@demo.sanpu.test", "AI engineer"]]
+  : [["admin@demo.sanpu.test", "System admin"], ["director@demo.sanpu.test", "Director"], ["ops.manager@demo.sanpu.test", "Operations manager"], ["agent@demo.sanpu.test", "Reservations agent"], ["finance@demo.sanpu.test", "Finance"], ["marketing@demo.sanpu.test", "Marketing manager"]];
+/** Remembered only for this browser tab, so switching role needs no retyping. Closing the tab forgets it. */
+const STAFF_PASSWORD_KEY = "sanpu.staff.signin";
+const tabPassword = { get: () => { try { return sessionStorage.getItem(STAFF_PASSWORD_KEY) ?? ""; } catch { return ""; } },
+  set: (v: string | null) => { try { if (v) sessionStorage.setItem(STAFF_PASSWORD_KEY, v); else sessionStorage.removeItem(STAFF_PASSWORD_KEY); } catch { /* storage blocked: the password is simply typed again */ } } };
+
 const safeNext = (next: string | null) => (next && next.startsWith("/") && !next.startsWith("//") ? next : null);
 
 function LoginInner({ params, staff }: { params: URLSearchParams; staff: boolean }) {
@@ -80,10 +89,16 @@ function LoginInner({ params, staff }: { params: URLSearchParams; staff: boolean
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const a = useAction();
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const me = await a.run(() => login(email, password));
+  const signIn = async (mail: string, pass: string) => {
+    const me = await a.run(() => login(mail, pass));
+    if (staff) tabPassword.set(me ? pass : null);
     if (me) router.push(safeNext(params.get("next")) ?? (staff ? "/admin" : "/"));
+  };
+  const submit = (e: React.FormEvent) => { e.preventDefault(); void signIn(email, password); };
+  const pickRole = (mail: string) => {
+    setEmail(mail);
+    const pass = password || tabPassword.get();
+    if (mail && pass) void signIn(mail, pass);
   };
   const err = a.error instanceof ApiError && !a.error.errors ? a.error : null;
   return (
@@ -91,6 +106,7 @@ function LoginInner({ params, staff }: { params: URLSearchParams; staff: boolean
       footer={staff ? <>New staff member? <Link href="/admin/register" data-testid="staff-request-link">Request access</Link> · <Link href="/login">Customer sign-in</Link></> : <>{signup && <>New here? <Link href="/register">Create an account</Link> · </>}Staff? <Link href="/admin/login">Admin sign-in</Link></>}>
       <form className="form" onSubmit={submit} noValidate data-testid="login-form">
         {err && <div className="alert error" role="alert" data-testid="login-error">{err.message}</div>}
+        {staff && <SelectInput label="Sign in as" value={STAFF_ROLES.some(([m]) => m === email) ? email : ""} onChange={pickRole} placeholder="Choose a role" options={STAFF_ROLES.map(([value, label]) => ({ value, label }))} disabled={a.busy} testId="login-role" />}
         <TextInput label="Email" type="email" autoComplete="username" value={email} onChange={setEmail} error={a.fieldError("email")} data-testid="login-email" required />
         <TextInput label="Password" type="password" autoComplete="current-password" value={password} onChange={setPassword} error={a.fieldError("password")} data-testid="login-password" required />
         <div className="auth-row"><span /><Link href="/forgot-password">Forgot password?</Link></div>
