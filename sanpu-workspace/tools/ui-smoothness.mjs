@@ -27,8 +27,8 @@ async function walk(label, base, loginPath, email, routes) {
   p.on("framenavigated", (f) => { if (f === p.mainFrame()) docLoads += 0; });
   p.on("request", (r) => { if (r.isNavigationRequest() && r.frame() === p.mainFrame()) docLoads++; if (r.url().includes("/api/v1/")) started.set(r, Date.now()); });
   p.on("requestfinished", (r) => { if (started.has(r)) api.push({ url: r.url().replace(/^.*\/api\/v1/, ""), ms: Date.now() - started.get(r) }); });
-  if (email) { await p.goto(base + loginPath); await p.getByTestId("login-email").fill(email); await p.getByTestId("login-password").fill(PW); await p.getByTestId("login-submit").click(); await p.waitForTimeout(3500); }
-  else { await p.goto(base + routes[0]); await p.waitForTimeout(3000); }
+  if (email) { await p.goto(base + loginPath); await p.getByTestId("login-email").fill(email); await p.getByTestId("login-password").fill(PW); await p.getByTestId("login-submit").click(); await p.locator(".sidebar a").first().waitFor({ timeout: 30000 }).catch(() => {}); await p.waitForTimeout(800); }
+  else { await p.goto(base + routes[0]); await p.locator(`a[href="${routes[1]}"]`).first().waitFor({ state: "attached", timeout: 30000 }).catch(() => {}); await p.waitForTimeout(800); }
   if (email && !(await p.locator(".sidebar a").count())) console.log(`${label}: sign-in did not reach the admin panel (${p.url()})`);
   const rows = [];
   for (const round of [1, 2]) for (const route of routes) {

@@ -70,7 +70,8 @@
 /* smooth navigation: no placeholder flash, no page jumps, no dimming while data refreshes */
 .wait .skeleton { opacity: 0; animation: sk 1.2s linear infinite, wait-in .2s ease-out .45s forwards; }
 @keyframes wait-in { to { opacity: 1; } }
-:where(main, .main, .page, .wrap, .st-wrap, .lp-section) > .wait { min-height: min(62vh, 520px); }
+.wait { min-height: min(62vh, 520px); }
+:where(.card, .modal, [role=dialog], .bk-box, .bot-panel) .wait { min-height: 0; }
 .site > main:not(.auth-main) { min-height: 100vh; }
 .admin .main { min-height: calc(100vh - 64px); }
 .st-cats { min-height: 34px; }
