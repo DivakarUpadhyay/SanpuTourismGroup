@@ -11,7 +11,7 @@ import { ApiError, Async, DataTable, ErrorBox, Icon, PageHeader, SelectInput, ge
    ============================================================================================================ */
 
 type Role = "user" | "assistant";
-interface Card { type: "tours" | "tour" | "services" | "compare" | "booking" | "bookings"; data: any }
+interface Card { type: "tours" | "tour" | "services" | "compare" | "booking" | "bookings" | "signin"; data: any }
 interface Msg { role: Role; content: string; cards?: Card[]; notice?: string | null; ai?: boolean }
 /** Book a specific option straight from a card (no AI needed). */
 type BookFn = (label: string, input: Record<string, unknown>) => void;
@@ -192,6 +192,17 @@ function BookingsCard({ rows }: { rows: Reservation[] }) {
   );
 }
 
+/** Shown when a visitor asks to book or see bookings: sign in and come straight back to this conversation. */
+function SignInCard() {
+  return (
+    <div className="as-signin-card">
+      <Icon name="lock" size={18} />
+      <span><b>Sign in to book and see your bookings</b><small>Free account. Your conversation stays here.</small></span>
+      <div><Link className="btn primary small" href="/login?next=/assistant">Sign in</Link><Link className="btn small" href="/register">Create account</Link></div>
+    </div>
+  );
+}
+
 function CardView({ card, ask }: { card: Card; ask: (t: string) => void }) {
   switch (card.type) {
     case "tours": return <TourCards items={card.data ?? []} ask={ask} />;
@@ -200,6 +211,7 @@ function CardView({ card, ask }: { card: Card; ask: (t: string) => void }) {
     case "compare": return <CompareCard rows={card.data ?? []} />;
     case "booking": return <BookingCard initial={card.data} />;
     case "bookings": return <BookingsCard rows={card.data ?? []} />;
+    case "signin": return <SignInCard />;
     default: return null;
   }
 }
@@ -217,7 +229,9 @@ export function AssistantPage() {
   const end = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLTextAreaElement>(null);
   const started = useRef(false);
-  const canUse = status === "authenticated" && has("Assistant.Use");
+  const signedIn = status === "authenticated" && has("Assistant.Use");
+  const canUse = status !== "loading";   // visitors can chat too; booking asks them to sign in
+  const router = useRouter();
 
   useEffect(() => { setMsgs(loadChat()); }, []);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [msgs, busy]);
@@ -240,6 +254,7 @@ export function AssistantPage() {
 
   const book: BookFn = async (label, input) => {
     if (busy) return;
+    if (!signedIn) { router.push("/login?next=/assistant"); return; }
     setError(null);
     const next: Msg[] = [...msgs, { role: "user", content: label }];
     setMsgs(next); saveChat(next); setBusy(true);
@@ -275,12 +290,12 @@ export function AssistantPage() {
             <li><Icon name="ticket" size={16} /> Prepare bookings you confirm</li>
             <li><Icon name="shield" size={16} /> You approve every payment</li>
           </ul>
-          {canUse && <div className="as-side-links"><Link href="/my/bookings"><Icon name="ticket" size={16} /> My bookings</Link><Link href="/my/trips"><Icon name="calendar" size={16} /> Trip plans</Link></div>}
+          {signedIn && <div className="as-side-links"><Link href="/my/bookings"><Icon name="ticket" size={16} /> My bookings</Link><Link href="/my/trips"><Icon name="calendar" size={16} /> Trip plans</Link></div>}
           {msgs.length > 0 && <button className="btn subtle small" onClick={() => { setMsgs([]); saveChat([]); setError(null); }} data-testid="chat-new"><Icon name="plus" size={14} /> New conversation</button>}
         </div>
       </aside>
       <section className="as-main" aria-label="Conversation">
-        <BookCtx.Provider value={canUse ? book : null}>
+        <BookCtx.Provider value={book}>
         <div className="as-thread" data-testid="chat-thread">
           {msgs.length === 0 && (
             <div className="as-welcome">
@@ -305,6 +320,7 @@ export function AssistantPage() {
           <div ref={end} />
         </div>
         </BookCtx.Provider>
+        {!signedIn && status === "anonymous" && <p className="as-guest"><Icon name="info" size={14} /> You are chatting as a guest. <Link href="/login?next=/assistant">Sign in</Link> to book and keep your trips.</p>}
         {status === "loading" ? null : canUse ? (
           <form className="as-compose" onSubmit={(e) => { e.preventDefault(); send(input); }}>
             <textarea ref={box} value={input} onChange={(e) => setInput(e.target.value)} rows={1} maxLength={2000} placeholder="Ask about a trip, a hotel, a flight… or say “show my bookings”"
@@ -379,7 +395,7 @@ export function CopilotHome() {
   const start = (text: string) => {
     const t = text.trim();
     try { if (t) sessionStorage.setItem(PROMPT_KEY, t); } catch { /* ignore */ }
-    router.push(status === "authenticated" && has("Assistant.Use") ? "/assistant" : "/login?next=/assistant");
+    router.push("/assistant");
   };
   return (
     <div className="cp-home">

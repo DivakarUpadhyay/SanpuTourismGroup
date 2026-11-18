@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-18T02:29:12.101Z",
+  "erp": "https://sanpu-travel.vercel.app",
+  "ai": "https://sanpu-trip-copilot.vercel.app",
+  "results": [
+    {
+      "name": "ERP: customer signs up with own email and password",
+      "ok": true,
+      "info": "guest826750@example.com"
+    },
+    {
+      "name": "ERP: tour booking (hold seats, traveler details, confirm)",
+      "ok": true,
+      "info": "/my/bookings/13"
+    },
+    {
+      "name": "ERP: payment summary on the booking",
+      "ok": false,
+      "info": "locator.waitFor: Timeout 20000ms exceeded."
+    },
+    {
+      "name": "ERP: pay deposit through the ECPay sandbox gateway",
+      "ok": false,
+      "info": "locator.click: Timeout 30000ms exceeded."
+    },
+    {
+      "name": "ERP: hotel booking (search, detail, book)",
+      "ok": false,
+      "info": "locator.waitFor: Timeout 30000ms exceeded."
+    },
+    {
+      "name": "ERP admin: sign in (separate session) and open Payments & transactions",
+      "ok": false,
+      "info": "new transaction not at the top: 18 Nov 2026, 06:52\tSB-000027\tKinmen Courtyard Inn · Courtyard Room\tMail Test"
+    },
+    {
+      "name": "ERP admin: customer session still signed in (no mixing)",
+      "ok": true,
+      "info": "Guest Traveler"
+    },
+    {
+      "name": "ERP admin: Excel and PDF downloads",
+      "ok": true,
+      "info": "payments-transactions-2026-11-18.xlsx, payments-transactions-2026-11-18.pdf"
+    },
+    {
+      "name": "ERP admin: dashboard numbers open their pages",
+      "ok": true,
+      "info": "8 clickable numbers; first opened /admin/bookings"
+    },
+    {
+      "name": "ERP: News and blog pages",
+      "ok": true,
+      "info": "Three slow days in the East Rift Valley"
+    },
+    {
+      "name": "AI: customer signs up",
+      "ok": true,
+      "info": "guest826750@example.com"
+    },
+    {
+      "name": "AI: assistant finds hotels and Book this prepares a booking",
+      "ok": true,
+      "info": "Kinmen Courtyard Inn · Courtyard Room"
+    },
+    {
+      "name": "AI: pay deposit then balance (sandbox) → Confirmed",
+      "ok": true,
+      "info": "Confirmed"
+    },
+    {
+      "name": "AI admin: booking shows in Assistant bookings",
+      "ok": true,
+      "info": "AI-000003 Guest Traveler guest826750@example.com Kinmen Courtyard Inn · Courtyard Room Wed 2 Dec – Fri 4 Dec · 2 pax TWD"
+    }
+  ],
+  "pageErrors": []
+}

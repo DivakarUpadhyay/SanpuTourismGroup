@@ -144,7 +144,7 @@ public sealed class RulesController(CopilotAdminService admin, EvalService evals
 public sealed class AssistantController(AssistantService assistant) : ControllerBase
 {
     /// <summary>One chat turn. Send the conversation so far (user/assistant text). The reply comes with cards (tours, options, comparisons, a booking to confirm).</summary>
-    [HttpPost("assistant/chat"), HasPermission("Assistant.Use"), Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public")]
+    [HttpPost("assistant/chat"), Microsoft.AspNetCore.Authorization.AllowAnonymous, Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public")]
     public Task<ChatReply> Chat(ChatRequest r, CancellationToken ct) => assistant.ChatAsync(r, ct);
 
     [HttpGet("my/bookings"), HasPermission("Reservation.ViewOwn")]

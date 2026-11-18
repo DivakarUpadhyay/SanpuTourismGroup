@@ -234,3 +234,25 @@ main.page.wide:has(.cp-home), main.page.wide:has(.st-page), main.page.wide:has(.
 .nl-form input, .nl-form .btn, .nl-form button { height: 42px; box-sizing: border-box; }
 .nl-form .btn, .nl-form button { display: inline-flex; align-items: center; padding: 0 18px; }
 .site:has(.cp-home) .site-footer, .site:has(.st-page) .site-footer, .site:has(.st-article) .site-footer { margin-top: 0; }
+
+/* customer booking page */
+.bk-steps { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 18px; padding: 0; }
+.bk-steps li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--stroke); font-weight: 600; font-size: 14px; color: var(--muted); }
+.bk-steps li span { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--subtle); font-size: 13px; flex: none; }
+.bk-steps li.done { color: var(--ink); border-color: rgba(6, 118, 71, .3); } .bk-steps li.done span { background: var(--success); color: #fff; }
+.bk-steps li.part span { background: #B7791F; color: #fff; }
+.bk-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+.bk-main { display: grid; gap: 18px; }
+.bk-box, .bk-pay { background: #fff; border: 1px solid var(--stroke); border-radius: 14px; padding: 18px 20px; }
+.bk-pay { border: 1.5px solid #9EC5FF; box-shadow: 0 10px 30px rgba(11, 92, 173, .08); }
+.bk-box h2, .bk-pay h2 { display: flex; gap: 8px; align-items: center; font-size: 17px; margin: 0 0 12px; }
+.bk-dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px 20px; margin: 0; }
+.bk-dl dt { font-size: 12.5px; color: var(--muted); } .bk-dl dd { margin: 0; font-weight: 500; }
+@media (max-width: 900px) { .bk-layout { grid-template-columns: 1fr; } .bk-steps { grid-template-columns: 1fr 1fr; } }
+
+.as-signin-card { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #C4B5FD; background: #FBFAFF; }
+.as-signin-card > span { display: grid; flex: 1; min-width: 180px; } .as-signin-card small { color: var(--muted); }
+.as-signin-card > div { display: flex; gap: 6px; }
+.as-guest { width: min(860px, 100% - 32px); margin: 0 auto 6px; font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+main.page.wide:has(.as-page) { padding-bottom: 0 !important; }
+.site:has(.as-page) .site-footer { margin-top: 0; }

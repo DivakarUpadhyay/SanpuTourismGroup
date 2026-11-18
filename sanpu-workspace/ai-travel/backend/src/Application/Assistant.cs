@@ -106,7 +106,7 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
 
     public async Task<ChatReply> ChatAsync(ChatRequest request, CancellationToken ct)
     {
-        var userId = current.RequireUserId();
+        var userId = current.UserId;   // visitors may chat; booking and "my" tools ask them to sign in
         var history = Clean(request.Messages);
         var cards = new List<ChatCard>();
         var status = await gateway.StatusAsync(ct);
@@ -114,7 +114,7 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         if (!aiOn)
             return await FallbackAsync(history[^1].Content, cards, model.IsConfigured && status.MonthCostUsd >= status.MonthlyBudgetUsd ? status.Message : null, ct);
 
-        var me = await repo.UserDisplayNameAsync(userId, ct) ?? "the traveler";
+        var me = userId is { } uid ? await repo.UserDisplayNameAsync(uid, ct) ?? "the traveler" : "a visitor who has not signed in (they can browse, plan and compare; to book or see bookings they must sign in or create a free account)";
         var maxRounds = await settings.GetIntAsync("Assistant.MaxToolRounds", 8, ct);
         var timeout = TimeSpan.FromSeconds(Math.Max(60, await settings.GetIntAsync("Ai.TimeoutSeconds", 30, ct) * 3));
         var sw = Stopwatch.StartNew();
@@ -168,6 +168,7 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
                 "tour_details" => await TourDetailsAsync(Req(input, "code"), cards, ct),
                 "compare_tours" => await CompareAsync(input, cards, ct),
                 "search_travel" => await SearchTravelAsync(input, cards, ct),
+                "prepare_booking" or "my_bookings" or "my_trip_plans" when current.UserId is null => SignInNeeded(cards),
                 "prepare_booking" => await PrepareAsync(input, cards, ct),
                 "my_bookings" => await MyBookingsAsync(cards, ct),
                 "my_trip_plans" => JsonSerializer.SerializeToNode(await repo.TripsForTravelerAsync(current.RequireUserId(), ct)),
@@ -178,6 +179,12 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         catch (AppException ex) { return new JsonObject { ["error"] = ex.Message }.ToJsonString(); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
         { return new JsonObject { ["error"] = "The travel catalog is not reachable right now. Tell the traveler to try again in a moment." }.ToJsonString(); }
+    }
+
+    private static JsonNode SignInNeeded(List<ChatCard> cards)
+    {
+        cards.Add(new ChatCard("signin", new JsonObject()));
+        return new JsonObject { ["error"] = "The traveler is not signed in. Ask them to sign in or create a free account (buttons are shown) to book or see bookings; the conversation is kept." };
     }
 
     private async Task<JsonNode?> DestinationsAsync(CancellationToken ct)
@@ -376,7 +383,8 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         string reply;
         try
         {
-            if (m.Contains("my booking") || m.Contains("my reservation")) { await MyBookingsAsync(cards, ct); reply = "Here are your bookings."; }
+            if ((m.Contains("my booking") || m.Contains("my reservation")) && current.UserId is null) { SignInNeeded(cards); reply = "Sign in to see your bookings. Your conversation stays here."; }
+            else if (m.Contains("my booking") || m.Contains("my reservation")) { await MyBookingsAsync(cards, ct); reply = "Here are your bookings."; }
             else if (kind is not null)
             {
                 var date = clock.UtcNow.Date.AddDays(14);

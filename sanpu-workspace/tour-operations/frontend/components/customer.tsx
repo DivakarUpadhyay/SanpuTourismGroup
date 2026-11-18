@@ -7,7 +7,7 @@ import { CouponField, MyServiceBookings, PaymentPanel, PaymentResultBanner, clea
 import {
   ApiError, Async, CleanParams, Card, Checkbox, ConfirmButton, DataTable, Demo, ErrorBox, FormError, PageHeader, Pill, SelectInput, TextArea, TextInput,
   fmtDate, fmtDateTime, get, money, newKey, post, useAction, useAsync, useAuth, useContent, useSetting
-} from "@sanpu/web";
+, Icon } from "@sanpu/web";
 
 interface TourCard { imageUrl?: string | null; tourId: number; code: string; title: string; slogan?: string; days: number; currency: string; summary?: string; isDemo: boolean; destinationName: string; businessUnitName: string; fromPrice?: number; nextDeparture?: string; openDepartures: number }
 
@@ -105,6 +105,18 @@ export function MyBookingsPage() {
 
 interface MyBookingDetail { booking: MyBooking & { unitPrice: number; amountPaid: number; amountRefunded: number; leadName: string; leadPhoneMasked?: string; passportMasked?: string; specialRequests?: string; cancelReason?: string; createdAtUtc: string }; history: { fromStatus?: string; toStatus: string; comment?: string; occurredAtUtc: string }[]; allowedActions: string[] }
 
+/** Where the booking stands: booked → approved → paid → travel. */
+function BookingProgress({ status, payment }: { status: string; payment: string }) {
+  if (status === "Cancelled" || status === "Rejected" || status === "CancelRequested") return <div className="alert info" style={{ marginBottom: 16 }}>This booking is <b>{status === "CancelRequested" ? "waiting for cancellation" : status.toLowerCase()}</b>.</div>;
+  const steps = [
+    { label: "Booked", done: true },
+    { label: "Approved by our team", done: status === "Confirmed" || status === "Completed" },
+    { label: payment === "PartiallyPaid" ? "Deposit paid" : "Paid", done: payment === "Paid" || payment === "PartiallyPaid", partial: payment === "PartiallyPaid" },
+    { label: "Travel", done: status === "Completed" },
+  ];
+  return <ol className="bk-steps" aria-label="Booking progress">{steps.map((st, i) => <li key={i} className={st.done ? (st.partial ? "part" : "done") : ""}><span>{st.done ? "✓" : i + 1}</span>{st.label}</li>)}</ol>;
+}
+
 export function MyBookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const d = useAsync(() => get<MyBookingDetail>(`/my/bookings/${id}`), [id]);
@@ -115,19 +127,35 @@ export function MyBookingDetailPage() {
     <Async state={d}>{(x) => (
       <>
         <PageHeader tagline="Booking" title={`${x.booking.bookingRef} · ${x.booking.tourTitle}`} lead={<>Departure {fmtDate(x.booking.departureDate)} · {x.booking.pax} traveler(s) <Demo show={x.booking.isDemo} /></>} actions={<Link className="btn" href="/my/bookings">Back</Link>} />
-        <div className="grid two">
-          <Card title="Summary">
-            <p className="row"><Pill value={x.booking.status} /><Pill value={x.booking.paymentStatus} /></p>
-            <p>Total {money(x.booking.totalAmount, x.booking.currency)} · paid {money(x.booking.amountPaid, x.booking.currency)} · refunded {money(x.booking.amountRefunded, x.booking.currency)}</p>
-            <p className="small">Lead traveler: {x.booking.leadName} · {x.booking.leadPhoneMasked ?? "—"} · ID {x.booking.passportMasked ?? "—"}</p>
-            {x.booking.specialRequests && <p className="small">Requests: {x.booking.specialRequests}</p>}
-            {x.booking.cancelReason && <p className="small">Cancellation reason: {x.booking.cancelReason}</p>}
-          </Card>
-          <Card title="History">
+        <BookingProgress status={x.booking.status} payment={x.booking.paymentStatus} />
+        <div className="bk-layout">
+          <div className="bk-main">
+            {(x.booking.status === "Pending" || x.booking.status === "Confirmed") && x.booking.paymentStatus !== "Paid" && (
+              <section className="bk-pay" data-testid="payment-summary">
+                <h2><Icon name="ticket" size={18} /> Payment</h2>
+                <PaymentPanel orderType="Tour" orderId={Number(id)} onPaid={d.reload} />
+              </section>
+            )}
+            <section className="bk-box">
+              <h2>Trip details</h2>
+              <dl className="bk-dl">
+                <div><dt>Tour</dt><dd>{x.booking.tourTitle}</dd></div>
+                <div><dt>Departure</dt><dd>{fmtDate(x.booking.departureDate)}</dd></div>
+                <div><dt>Travelers</dt><dd>{x.booking.pax} × {money(x.booking.unitPrice, x.booking.currency)}</dd></div>
+                <div><dt>Total</dt><dd><b>{money(x.booking.totalAmount, x.booking.currency)}</b></dd></div>
+                <div><dt>Paid</dt><dd>{money(x.booking.amountPaid, x.booking.currency)}{x.booking.amountRefunded > 0 ? ` · refunded ${money(x.booking.amountRefunded, x.booking.currency)}` : ""}</dd></div>
+                <div><dt>Lead traveler</dt><dd>{x.booking.leadName} · {x.booking.leadPhoneMasked ?? "—"}</dd></div>
+                {x.booking.passportMasked && <div><dt>ID</dt><dd>{x.booking.passportMasked}</dd></div>}
+                {x.booking.specialRequests && <div><dt>Requests</dt><dd>{x.booking.specialRequests}</dd></div>}
+                {x.booking.cancelReason && <div><dt>Cancellation reason</dt><dd>{x.booking.cancelReason}</dd></div>}
+              </dl>
+            </section>
+          </div>
+          <aside className="bk-box">
+            <h2>History</h2>
             <ul className="timeline" data-testid="booking-history">{x.history.map((h, i) => <li key={i}><b>{h.toStatus}</b> <span className="small muted">{fmtDateTime(h.occurredAtUtc)}</span>{h.comment && <div className="small">{h.comment}</div>}</li>)}</ul>
-          </Card>
+          </aside>
         </div>
-        {x.booking.status === "Confirmed" && <Card title="Payments"><PaymentPanel orderType="Tour" orderId={Number(id)} onPaid={d.reload} /></Card>}
         {x.allowedActions.includes("cancel") && (
           <Card title={x.booking.status === "Pending" ? "Withdraw this booking" : "Request cancellation"}>
             {a.error ? <ErrorBox error={a.error} /> : null}
