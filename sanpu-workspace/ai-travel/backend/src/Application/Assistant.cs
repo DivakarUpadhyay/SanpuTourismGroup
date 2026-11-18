@@ -133,7 +133,10 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
             await repo.WriteUsageAsync("assistant", run.Model.StartsWith("claude") ? "Anthropic" : run.Model.StartsWith("gemini") ? "Gemini" : "OpenAI", run.Model, run.InputTokens, run.OutputTokens, Math.Round(cost, 6), (int)sw.ElapsedMilliseconds, run.StopReason == "refusal" ? "refused" : "ok", null, userId, current.CorrelationId, ct);
             var text = string.IsNullOrWhiteSpace(run.Text) ? "Here is what I found." : run.Text.Trim();
             var searchable = _asked.Intent is "hotel" or "flight" or "bus" or "taxi" or "tours" or "plan" or "compare" && _asked.UnknownPlace is null && !_asked.PastDate;
-            if (cards.Count == 0 && searchable)
+            // a question about a place ("is Alishan cold in December?") keeps the written answer
+            var question = System.Text.RegularExpressions.Regex.IsMatch(history[^1].Content.Trim(), @"^(is|are|was|what|when|why|how|do|does|did|can|could|should|will|would|where|who)\b|\?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (_asked.Intent == "compare" && !cards.Any(c => c.Type == "compare")) cards.Clear();   // a comparison must show the comparison table
+            if (cards.Count == 0 && searchable && !(question && _asked.Intent is "tours" or "plan"))
             {
                 var direct = await FallbackAsync(history[^1].Content, cards, null, ct);
                 return direct with { AiAvailable = true, Notice = null };

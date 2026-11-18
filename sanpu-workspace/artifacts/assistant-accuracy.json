@@ -1,12 +1,12 @@
 {
-  "at": "2026-11-18T03:49:08.140Z",
+  "at": "2026-11-18T03:54:55.872Z",
   "base": "https://sanpu-trip-copilot.vercel.app",
   "results": [
     {
       "name": "Hotel by city",
       "text": "Find a hotel in Kinmen",
       "status": 200,
-      "reply": "Here are some hotel options in Kinmen. I searched for **2 travelers** from **Wednesday, 2026-12-02 to Friday, 2026-12-04** (2 nights). \n\n* **Juguang Tower Hotel · Deluxe Twin**\n  * **Price:** TWD 5,600 total (TWD 2,800/night)\n  * **Features:** Breakfast included, garden, free Wi-Fi (Rating: 4.7)\n* **Kinmen Courtyard Inn · Courtyard Room**\n  * **Price:** TWD 6,800 total (TWD 3,400/night)\n  * **Features:** Traditional house, bicycle rental, breakfast included (Rating: 4.6)\n* **Shanhou Folk Village Inn · Standard Double**\n  * **Price:** TWD 9,440 total (TWD 4,720/night)\n  * **Features:** Breakfast included, free Wi-Fi, hot spring bath (Rating: 4.9)\n* **Jincheng Old Street Inn · Standard Double**\n  * **Price:** TWD 10,220 total (TWD 5,110/night)\n  * **Features:** Breakfast included, airport shuttle, sea view (Rating: 4.7)\n\nLet me know if you would like to adjust the dates, number of guests, or if you'd like to book one of these!",
+      "reply": "Here are hotel options in **Kinmen** for 1 traveler, assuming a 2-night stay from **Wednesday, 2026-12-02 to Friday, 2026-12-04**:\n\n* **Juguang Tower Hotel · Deluxe Twin** – **TWD 5,600** total (2 nights, breakfast included, rated 4.7)\n* **Kinmen Courtyard Inn · Courtyard Room** – **TWD 6,800** total (traditional house feel, breakfast included, rated 4.6)\n* **Shanhou Folk Village Inn · Standard Double** – **TWD 9,440** total (hot spring bath, breakfast included, rated 4.9)\n* **Jincheng Old Street Inn · Standard Double** – **TWD 10,220** total (airport shuttle, sea view, rated 4.7)\n* **Lieyu Island Stay · Suite** – **TWD 10,980** total (lake view, breakfast included, rated 4.8)\n\nLet me know if you would like to adjust your dates or if you'd like to book one of these!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -15,7 +15,7 @@
       "name": "Hotel, relative dates",
       "text": "Find a hotel in Tainan for 2 nights from next Friday",
       "status": 200,
-      "reply": "Here are hotel options in Tainan for 2 nights starting next Friday, **Friday, November 27 to Sunday, November 29, 2026** (for 1 traveler):\n\n* **Kenting Bay Resort · Standard Double**\n  * **Price:** TWD 5,504 total (TWD 2,752/night)\n  * **Rating:** 4.7 ⭐\n  * **Features:** Breakfast included, sea view, lake view\n\n* **Confucius Lane Inn · Standard Double**\n  * **Price:** TWD 7,869 total (TWD 3,934.50/night)\n  * **Rating:** 4.7 ⭐\n  * **Features:** Breakfast included, bicycle rental, parking\n\n* **Anping Canal Hotel · Superior King**\n  * **Price:** TWD 8,235 total (TWD 4,117.50/night)\n  * **Rating:** 4.5 ⭐\n  * **Features:** Breakfast included, airport shuttle, rooftop terrace\n\n* **Old Capital House · Heritage Double**\n  * **Price:** TWD 9,204 total (TWD 4,602/night)\n  * **Rating:** 4.8 ⭐\n  * **Features:** Restored shophouse, breakfast included, walk to temples",
+      "reply": "Here are hotel options in Tainan for **2 nights from next Friday, November 27 to Sunday, November 29, 2026** (for 1 traveler):\n\n*   **Kenting Bay Resort · Standard Double**\n    *   **Price:** **TWD 5,504** total for 2 nights (approx. TWD 2,752/night)\n    *   **Rating:** 4.7 ⭐\n    *   **Features:** Breakfast included, sea view, lake view, free cancellation.\n*   **Confucius Lane Inn · Standard Double**\n    *   **Price:** **TWD 7,869** total for 2 nights (approx. TWD 3,934/night)\n    *   **Rating:** 4.7 ⭐\n    *   **Features:** Breakfast included, bicycle rental, parking, free cancellation.\n*   **Anping Canal Hotel · Superior King**\n    *   **Price:** **TWD 8,235** total for 2 nights (approx. TWD 4,117/night)\n    *   **Rating:** 4.5 ⭐\n    *   **Features:** Breakfast included, airport shuttle, rooftop terrace, free cancellation.\n*   **Old Capital House · Heritage Double**\n    *   **Price:** **TWD 9,204** total for 2 nights (approx. TWD 4,602/night)\n    *   **Rating:** 4.8 ⭐\n    *   **Features:** Restored shophouse, breakfast included, walk to temples, free Wi-Fi.\n\nLet me know if you'd like to book one of these!",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -24,7 +24,7 @@
       "name": "Hotel, exact dates",
       "text": "Hotel in Taipei from 2026-12-20 to 2026-12-23",
       "status": 200,
-      "reply": "Here are available hotels in Taipei for **Sunday, 2026-12-20 to Wednesday, 2026-12-23** (3 nights, 1 traveler):\n\n* **Taipei Park View · Standard Double**\n  * **Price:** TWD 7,182 total (approx. TWD 2,394/night)\n  * **Features:** Breakfast included, bicycle rental, parking\n  * **Rating:** 4.4 / 5\n* **Ximen Corner Hotel · Deluxe Twin**\n  * **Price:** TWD 12,569 total (approx. TWD 4,190/night)\n  * **Features:** Breakfast included, hot spring bath\n  * **Rating:** 4.6 / 5\n* **Da'an Boutique Rooms · Family Room**\n  * **Price:** TWD 12,978 total (approx. TWD 4,326/night)\n  * **Features:** Breakfast included, family friendly, city view\n  * **Rating:** 4.4 / 5\n* **Xinyi Skyline Hotel · Deluxe King**\n  * **Price:** TWD 15,600 total (approx. TWD 5,200/night)\n  * **Features:** Free Wi-Fi, city view, breakfast included, gym, 3 min to MRT\n  * **Rating:** 4.6 / 5\n\nLet me know if you would like to book any of these or if you'd like to check different dates!",
+      "reply": "Here are hotel options in Taipei for **Sunday, 2026-12-20 to Wednesday, 2026-12-23** (3 nights, assuming 2 guests):\n\n* **Taipei Park View · Standard Double** (Code: `H-G06`) – **TWD 7,182** total (approx. TWD 2,394/night). Includes breakfast, parking, and bicycle rental (Rating: 4.4).\n* **Ximen Corner Hotel · Deluxe Twin** (Code: `H-G04`) – **TWD 12,569** total. Includes breakfast and hot spring bath (Rating: 4.6).\n* **Da'an Boutique Rooms · Family Room** (Code: `H-G02`) – **TWD 12,978** total for up to 4 guests. Includes breakfast and city view (Rating: 4.4).\n* **Xinyi Skyline Hotel · Deluxe King** (Code: `H-TPE-SKY-DLX`) – **TWD 15,600** total. Great location near MRT (3 min), gym, city view, and breakfast (Rating: 4.6).\n\nLet me know if you'd like to adjust the dates, number of guests, or if you'd like to book one of these!",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -33,7 +33,7 @@
       "name": "Hotel, group size",
       "text": "Hotel in Hualien for 5 guests",
       "status": 200,
-      "reply": "Here are available hotels in Hualien for **5 guests** checking in tomorrow (**Thursday, 2026-11-19** to **Friday, 2026-11-20**). \n\nNote that individual rooms have a maximum capacity of 4 guests, so for 5 guests you may need to book multiple rooms or units (e.g. a family room plus a double, or two rooms). \n\n- **Hualien Harbour Inn · Family Room** (Max 4 guests per room) — **TWD 10,240** / night (Breakfast included, lake view, family friendly)\n- **Taroko Gateway Lodge · Standard Double** (Max 4 guests per room) — **TWD 8,310** / night (Breakfast included, lake view, airport shuttle)\n- **Rift Valley Farmstay · Deluxe Twin** (Max 4 guests per room) — **TWD 8,610** / night (Breakfast included, family friendly)\n\nIf you'd like to adjust the check-in dates, number of rooms, or need help putting together a full trip plan, just let me know!",
+      "reply": "Here are hotel options in Hualien for **5 travelers** for **tomorrow night** (Thursday, 2026-11-29 to Friday, 2026-11-20). \n\nSince most individual rooms have a maximum occupancy of 4, groups of 5 typically book a family room alongside another room, or two rooms. \n\nLet me know if you would like to adjust the dates, number of rooms, or check specific options!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -42,7 +42,7 @@
       "name": "Hotel, budget",
       "text": "Hotel in Taipei under TWD 8000",
       "status": 200,
-      "reply": "Here are some great hotel options in Taipei under TWD 8,000 for **tomorrow night (Thursday, 2026-11-19 to Friday, 2026-11-20)** for 2 travelers:\n\n* **Taipei Park View · Standard Double** – **TWD 2,280** / night (Rating: 4.4)\n* **Ximen Corner Hotel · Deluxe Twin** – **TWD 3,990** / night (Rating: 4.6, includes hot spring bath)\n* **Da'an Boutique Rooms · Family Room** – **TWD 4,120** / night (Rating: 4.4, sleeps 4)\n* **Zhongshan Heritage Hotel · Superior King** – **TWD 4,670** / night (Rating: 4.3)\n* **Riverside Garden Hotel · Standard Double** – **TWD 4,850** / night (Rating: 4.4)\n* **Xinyi Skyline Hotel · Deluxe King** – **TWD 5,200** / night (Rating: 4.6, near MRT)\n* **Beitou Spring Retreat · Family Room** – **TWD 7,000** / night (Rating: 4.9, sleeps 4, lake view)\n\nAll include breakfast and free cancellation. Let me know if you'd like to book one or need different dates!",
+      "reply": "Here are some great hotel options in Taipei under TWD 8,000 for **tomorrow night (Thursday, 2026-11-19 to Friday, 2026-11-20)** for 2 travelers:\n\n*   **Taipei Park View · Standard Double** – TWD 2,280 / night (Rating: 4.4)\n*   **Ximen Corner Hotel · Deluxe Twin** – TWD 3,990 / night (Rating: 4.6)\n*   **Da'an Boutique Rooms · Family Room** – TWD 4,120 / night (Rating: 4.4)\n*   **Zhongshan Heritage Hotel · Superior King** – TWD 4,670 / night (Rating: 4.3)\n*   **Riverside Garden Hotel · Standard Double** – TWD 4,850 / night (Rating: 4.4)\n*   **Xinyi Skyline Hotel · Deluxe King** – TWD 5,200 / night (Rating: 4.6)\n*   **Beitou Spring Retreat · Family Room** – TWD 7,000 / night (Rating: 4.9)\n\nLet me know if you would like to adjust the dates or book one of these!",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -51,7 +51,7 @@
       "name": "Flight route + date + people",
       "text": "Flights from Taipei to Kinmen next weekend for 2",
       "status": 200,
-      "reply": "Here are the available flights from **Taipei (Songshan)** to **Kinmen** for next weekend (**Friday, 2026-11-21**) for **2 travelers**:\n\n* **Formosa Sky FS301**\n  * **Departure:** 09:00 (Duration: 1h 05m)\n  * **Total Price:** **TWD 5,332** for 2 passengers (TWD 2,666 / person)\n  * **Includes:** Economy, 7 kg carry-on, 20 kg checked bag\n\n* **Island Hopper Air IH425**\n  * **Departure:** 14:05 (Duration: 1h 00m)\n  * **Total Price:** **TWD 6,808** for 2 passengers (TWD 3,404 / person)\n  * **Includes:** 20 kg checked bag, Online check-in\n\n* **Formosa Sky FS405**\n  * **Departure:** 19:05 (Duration: 1h 00m)\n  * **Total Price:** **TWD 6,832** for 2 passengers (TWD 3,416 / person)\n  * **Includes:** 20 kg checked bag, Online check-in\n\nLet me know if you would like to book one of these flights or need a return flight and hotel as well!",
+      "reply": "Here are the available flights from Taipei (TSA) to Kinmen (KNH) for **next weekend on Friday, 2026-11-21** for **2 travelers**:\n\n* **Formosa Sky FS301**\n  * **Departure:** 09:00 (65 mins)\n  * **Total Price:** TWD 5,332 for 2 travelers\n  * **Features:** Economy, 1 carry-on (7 kg), Checked bag (20 kg)\n\n* **Island Hopper Air IH425**\n  * **Departure:** 14:05 (60 mins)\n  * **Total Price:** TWD 6,808 for 2 travelers\n  * **Features:** Checked bag (20 kg), Online check-in\n\n* **Formosa Sky FS405**\n  * **Departure:** 19:05 (60 mins)\n  * **Total Price:** TWD 6,832 for 2 travelers\n  * **Features:** Checked bag (20 kg), Online check-in\n\nLet me know if you would like to book one of these flights or need a return flight and hotel as well!",
       "passed": 5,
       "total": 5,
       "failed": []
@@ -60,7 +60,7 @@
       "name": "Bus route + tomorrow + people",
       "text": "Bus from Taipei to Tainan tomorrow for 3 people",
       "status": 200,
-      "reply": "Here are the available buses from **Taipei** to **Tainan** for tomorrow, **Thursday, 2026-11-19**, for **3 travelers**:\n\n*   **Central Line C1 Express** (08:00) — **1,770 TWD** total (590 TWD/person, ~4h 30m)\n*   **Formosa Coaches FC344** (14:45) — **1,905 TWD** total (635 TWD/person, ~4h 20m)\n*   **Formosa Coaches FC316** (06:20) — **2,010 TWD** total (670 TWD/person, ~4h 20m)\n*   **Formosa Coaches FC302** (10:45) — **2,025 TWD** total (675 TWD/person, ~4h 20m)\n*   **Formosa Coaches FC330** (18:00) — **2,115 TWD** total (705 TWD/person, ~4h 20m)\n\nLet me know which departure time you'd like to book!",
+      "reply": "Here are the available buses from **Taipei** to **Tainan** for **3 people** tomorrow, **Thursday, 2026-11-19**:\n\n*   **Central Line C1 Express** (08:00) – **1,770 TWD** total (approx. 4h 30m, includes USB charging & restroom)\n*   **Formosa Coaches FC344** (14:45) – **1,905 TWD** total (approx. 4h 20m)\n*   **Formosa Coaches FC316** (06:20) – **2,010 TWD** total (approx. 4h 20m)\n*   **Formosa Coaches FC302** (10:45) – **2,025 TWD** total (approx. 4h 20m)\n*   **Formosa Coaches FC330** (18:00) – **2,115 TWD** total (approx. 4h 20m)\n\nLet me know which departure you'd like to book!",
       "passed": 4,
       "total": 4,
       "failed": []
@@ -69,7 +69,7 @@
       "name": "Taxi from airport",
       "text": "Book a taxi from Taoyuan airport to Taipei tomorrow morning",
       "status": 200,
-      "reply": "9 taxis from Taoyuan to Taipei for Thu 19 Nov, 1 traveler. Prices are totals. Press Book this on the one you like.",
+      "reply": "I've found airport transfer options from Taoyuan Airport to Taipei for tomorrow, **Thursday, 2026-11-19** (for example, the Sanpu Limo Sedan to Taipei City at **TWD 890**).\n\nTo complete your booking, please **sign in or create a free account** using the buttons in the app. Once signed in, you can review and confirm your booking right below!",
       "passed": 4,
       "total": 4,
       "failed": []
@@ -78,7 +78,7 @@
       "name": "Tours by place + budget",
       "text": "Tours in Hualien under TWD 10000",
       "status": 200,
-      "reply": "4 tours in Hualien (up to TWD 10,000 per person). Open Dates & details to pick a departure.",
+      "reply": "Here are the tours available in Hualien under TWD 10,000 per person:\n\n* **Qingshui Cliffs Sunrise Drive** (1 day) – **TWD 3,400** (Code: `TW-G44`)\n  * Early morning drive for sunrise over the cliffs, plus breakfast.\n* **Chishang Rice Fields by Bike 2D1N** (2 days) – **TWD 6,800** (Code: `TW-G14`)\n  * Cycle the scenic paddy roads of Chishang with farmstead stay.\n* **Hualien Whale Watching & Coast 2D1N** (2 days) – **TWD 7,900** (Code: `TW-G11`)\n  * Morning Pacific boat trip for dolphins and whales, plus coastal exploration.\n* **Taroko Gorge Classic 2D1N** (2 days) – **TWD 8,900** (Code: `TW-G09`)\n  * Guided gorge walks and overnight stay near the park entrance.\n\nLet me know if you would like to check available dates, view details, or book any of these!",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -87,7 +87,7 @@
       "name": "Tours by length",
       "text": "3 day tours in Kinmen",
       "status": 200,
-      "reply": "1 tour in Kinmen (3 days). Open Dates & details to pick a departure.",
+      "reply": "I found a great 3-day tour for your trip to Kinmen:\n\n*   **Kinmen Heritage 3D2N** (TW-KIN-3D)\n    *   **Price:** 15,200 TWD per person\n    *   **Summary:** Includes flights, walking tours of old villages, and a local food trail.\n    *   **Next Departure:** 2026-12-12 (Saturday)\n\nWould you like to see the full itinerary or check for other departure dates?",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -96,7 +96,7 @@
       "name": "Tours by interest",
       "text": "Food tours in Tainan",
       "status": 200,
-      "reply": "Here are the food tours available in **Tainan**:\n\n*   **Tainan Food Weekend 2D1N** (`TW-TNN-2D`) – **7,400 TWD** per person (2 days). Includes a temple quarter walk and night-market dinner.\n*   **Tainan Cooking Class Weekend 2D1N** (`TW-G37`) – **7,900 TWD** per person (2 days). Features a local market visit and two cooking classes in the old city.\n*   **Tainan & Kaohsiung Southern Food Trail 3D2N** (`TW-G32`) – **11,400 TWD** per person (3 days). Covers food highlights and night markets in both Tainan and Kaohsiung.\n\nLet me know which tour you'd like to explore, how many travelers, and your preferred dates!",
+      "reply": "3 tours in Tainan. Open Dates & details to pick a departure.",
       "passed": 3,
       "total": 3,
       "failed": []
@@ -105,16 +105,18 @@
       "name": "Compare tours",
       "text": "Compare the East Rift Valley and Kinmen Heritage tours",
       "status": 200,
-      "reply": "Here they are side by side.",
-      "passed": 1,
+      "reply": "It seems there may be a misunderstanding regarding our available tours, as our system currently lists **Kinmen Heritage** and related island tours, but does not currently have specific \"East Rift Valley\" package tours available to compare directly.\n\nHere is a summary of the **Kinmen Heritage** options I can provide:\n\n*   **Kinmen Heritage 3D2N (TW-KIN-3D):** A comprehensive 3-day experience covering flights, guided village walks, and local food trails. **15,200 TWD**.\n*   **Kinmen Villages by Bicycle 2D1N (TW-G38):** A scenic, active 2-day trip focusing on quiet lanes and coastal views. **7,200 TWD**.\n*   **Kinmen Food & Kaoliang Heritage 2D1N (TW-G39):** A 2-day cultural experience focusing on local cuisine and the island's famous distillery history. **7,800 TWD**.\n*   **Kinmen Architecture Photo Tour 2D1N (TW-G42):** A 2-day specialized small-group tour for capturing traditional swallowtail roofs and historic architecture. **7,600 TWD**.\n\nIf you were interested in the **East Rift Valley**, I can help you plan a trip there using individual transportation and accommodation options instead of a pre-packaged tour. Would you like me to look into those for you, or would you prefer more details on the Kinmen heritage tours?",
+      "passed": 0,
       "total": 1,
-      "failed": []
+      "failed": [
+        "comparison shown"
+      ]
     },
     {
       "name": "Trip plan request",
       "text": "Plan 3 relaxed days in Hualien for 2 people under TWD 25,000",
       "status": 200,
-      "reply": "For your trip in Hualien (within TWD 25,000 for 2), I suggest **Indigenous Culture of the East 3D2N** from TWD 22,400 for 2. 4 more options are below; open Dates & details to pick a departure.",
+      "reply": "Here is a relaxed **3-day itinerary** for **2 people** in Hualien, featuring the all-inclusive 3-day guided tour **\"Indigenous Culture of the East\" (TW-G13)**. \n\n### **Trip Overview: Indigenous Culture of the East (3D2N)**\n* **Total Estimated Budget:** **TWD 22,400** for 2 people (TWD 11,200 per person), well under your TWD 25,000 limit.\n* **Inclusions:** Transport, guided tours, accommodations, and meals as per the itinerary.\n* **Next Available Departure:** **Thursday, 2026-11-26** (Departure ID: 217).\n\n---\n\n### **Day-by-Day Outline**\n\n* **Day 1: Thursday, 2026-11-26**\n  * **Morning & Afternoon:** Depart with your guide into the lush East Rift Valley. Visit local Amis and Bunun village communities, learn about traditional crafts, and explore village artisan workshops.\n  * **Evening:** Enjoy a home-cooked community dinner featuring local indigenous ingredients and stay overnight in the valley.\n\n* **Day 2: Friday, 2026-11-27**\n  * **Morning & Afternoon:** Continue exploring the slow-paced Rift Valley landscape. Take leisurely walks through farming communities, discover traditional weaving or wood carving techniques, and enjoy panoramic views framed by the coastal and central mountain ranges.\n  * **Evening:** Relax at your accommodation and sample regional night market treats.\n\n* **Day 3: Saturday, 2026-11-28**\n  * **Morning & Afternoon:** Final day of cultural exchanges, scenic valley viewpoints, and photography stops before heading back towards Hualien city.\n  * **Evening:** Return transfer to Hualien, concluding your relaxed 3-day journey.\n\n---\n\n### **Ready to book?**\nIf you would like to book the **Indigenous Culture of the East (3D2N)** tour for **2 travelers** departing on **2026-11-26**, just let me know and I will prepare your booking card! *(Note: You will need to sign in to complete the booking payment).*",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -123,7 +125,7 @@
       "name": "My bookings as a guest",
       "text": "Show my bookings",
       "status": 200,
-      "reply": "Sign in to see your bookings. Your conversation stays here.",
+      "reply": "It looks like you are not currently signed in. To view your bookings, please sign in or create a free account using the buttons below—your conversation will be kept right here!",
       "passed": 1,
       "total": 1,
       "failed": []
@@ -132,7 +134,7 @@
       "name": "Greeting",
       "text": "Hello",
       "status": 200,
-      "reply": "Hello! Welcome to Sanpu AI Travel. I'm here to help you plan your adventures in Taiwan, find guided tours, book hotels, flights, buses, or taxis, and check your trip plans. \n\nWhere would you like to go, or what are you looking for today?",
+      "reply": "Hello! Welcome to Sanpu AI Travel. I'm here to help you explore Taiwan, whether you're looking for guided tours, hotels, flights, buses, or taxis. \n\nWhere would you like to go, or what kind of trip are you dreaming of?",
       "passed": 2,
       "total": 2,
       "failed": []
@@ -150,7 +152,7 @@
       "name": "Nonsense text",
       "text": "asdfghjkl qwerty",
       "status": 200,
-      "reply": "I didn't catch that. I can find tours, hotels, flights, buses and taxis across Taiwan. Try \"hotel in Tainan for 2 nights from Friday\", \"flights from Taipei to Kinmen tomorrow for 2\" or \"3 day tours in Hualien under TWD 15000\".",
+      "reply": "Hello! Welcome to Sanpu AI Travel. How can I help you plan your trip in Taiwan today? \n\nWhether you're looking for guided tours, hotels, flights, buses, or taxis, just let me know what you have in mind!",
       "passed": 1,
       "total": 1,
       "failed": []
