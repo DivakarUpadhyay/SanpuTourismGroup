@@ -124,6 +124,7 @@ for (const pool of Object.values(responses)) JSON.stringify(pool, (k, v) => {
 });
 realEmails.forEach((e, i) => { text = text.split(e).join(`member${i + 1}@sanpu.test`); });
 [...realNames].forEach((n, i) => { text = text.split(JSON.stringify(n)).join(JSON.stringify(`Sanpu Member ${i + 1}`)); });
+text = text.replace(/[A-Za-z0-9]*+@[A-Za-z0-9.-]+.[a-z]{2,}/g, (m) => (m.endsWith(".test") ? m : "m***@sanpu.test"));   // masked addresses too
 fs.writeFileSync(cfg.out, text);
 if (realEmails.length) console.log(`masked ${realEmails.length} real email(s) and ${realNames.size} name(s)`);
 const n = Object.values(responses).reduce((a, r) => a + Object.keys(r).length, 0);

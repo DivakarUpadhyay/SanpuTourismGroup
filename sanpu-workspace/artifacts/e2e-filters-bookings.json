@@ -1,19 +1,20 @@
 {
-  "at": "2026-11-18T03:07:04.756Z",
+  "at": "2026-11-18T03:19:26.109Z",
   "base": "https://sanpu-travel.vercel.app",
-  "customer": "buyer127815@example.com",
+  "customer": "buyer907555@example.com",
   "refs": {
-    "Tour": "BK-000017",
-    "Hotel": "SB-000031",
-    "Flight": "SB-000032",
-    "Bus": "SB-000033",
-    "Taxi": "SB-000034"
+    "Tour": "BK-000018",
+    "tourUrl": "https://sanpu-travel.vercel.app/my/bookings/18",
+    "Hotel": "SB-000035",
+    "Flight": "SB-000036",
+    "Bus": "SB-000037",
+    "Taxi": "SB-000038"
   },
   "results": [
     {
       "name": "Tours: destination filter narrows results to that destination",
       "ok": true,
-      "info": "all=5; Alishan=5, Sun Moon Lake=1, Hualien / Taitung=1, Kinmen=1"
+      "info": "all=12; Alishan=12, Sun Moon Lake=12, Hualien / Taitung=10, Kinmen=6"
     },
     {
       "name": "Tours: travelers stepper keeps prices per group",
@@ -23,22 +24,22 @@
     {
       "name": "Hotel: city filter, date and sort",
       "ok": true,
-      "info": "all=7; Alishan=1; price order ok (7)"
+      "info": "all=12; Alishan=7; price order ok (12)"
     },
     {
       "name": "Flight: city filter, date and sort",
       "ok": true,
-      "info": "all=8; Hualien Airport=1; price order ok (8)"
+      "info": "all=12; Hualien Airport=8; price order ok (12)"
     },
     {
       "name": "Bus: city filter, date and sort",
       "ok": true,
-      "info": "all=4; Chiayi Bus Station=1; price order ok (4)"
+      "info": "all=12; Alishan Bus Stop=3; price order ok (12)"
     },
     {
       "name": "Taxi: city filter, date and sort",
       "ok": true,
-      "info": "all=6; Kaohsiung International Airport=1; price order ok (6)"
+      "info": "all=12; Hualien Airport=5; price order ok (12)"
     },
     {
       "name": "Deals: coupon list and Use now",
@@ -53,42 +54,42 @@
     {
       "name": "Customer signs up",
       "ok": true,
-      "info": "buyer127815@example.com"
+      "info": "buyer907555@example.com"
     },
     {
       "name": "Book a tour",
       "ok": true,
-      "info": "BK-000017"
+      "info": "BK-000018"
     },
     {
       "name": "Book a hotel",
       "ok": true,
-      "info": "SB-000031"
+      "info": "SB-000035"
     },
     {
       "name": "Book a flight",
       "ok": true,
-      "info": "SB-000032"
+      "info": "SB-000036"
     },
     {
       "name": "Book a bus",
       "ok": true,
-      "info": "SB-000033"
+      "info": "SB-000037"
     },
     {
       "name": "Book a taxi",
       "ok": true,
-      "info": "SB-000034"
+      "info": "SB-000038"
     },
     {
       "name": "Customer starts a payment (deposit) on the tour",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "ECPay sandbox opened"
     },
     {
       "name": "Admin: every booking and payment appears",
-      "ok": false,
-      "info": "payment for BK-000017 not in Payments"
+      "ok": true,
+      "info": "Bookings has BK-000018; Service bookings has SB-000035, SB-000036, SB-000037, SB-000038; Payments has BK-000018; TWD 26,892 Received | 25 Transactions | 19 Waiting for the gateway | 0 Failed"
     }
   ],
   "serverErrors": []
