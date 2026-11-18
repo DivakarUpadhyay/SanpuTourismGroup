@@ -64,7 +64,7 @@ Before you start, open these tabs and sign in: Sanpu Travel customer, Sanpu Trav
 | 5:00–6:30 | Admin operations | Dashboard, Bookings, Payments & transactions | "Every dashboard number opens its detail. Staff see each customer transaction, paid, pending or failed." |
 | 6:30–8:30 | AI assistant | /assistant | Type: **Find a hotel in Kinmen for 2 nights next Friday**. Press **Book this**, then **Pay**. "Prices are live. The AI can prepare a booking, but only the traveler can pay." |
 | 8:30–9:30 | AI admin | Assistant bookings, Payments | "Staff see every assistant booking and every payment attempt." |
-| 9:30–10:00 | Architecture and close | Swagger, or section 6 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
+| 9:30–10:00 | Architecture and close | Swagger, or section 7 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
 
 ### ECPay in the demo
 
@@ -119,7 +119,68 @@ If it stalls, say: "This is ECPay's sandbox. The booking stays unconfirmed until
 | Planning rules | Disruption scenarios, Itinerary templates, Travel constraints | Rules the planner follows |
 | Team & access | People | Staff accounts and access |
 
-## 5. Major database tables
+## 5. Payments, approvals and cancellations
+
+### Make an ECPay sandbox payment in AI Travel
+
+1. Sign in at https://sanpu-trip-copilot.vercel.app/login as `traveler.chen@demo.sanpu.test`.
+2. Open **AI assistant** and type `Find a hotel in Kinmen`.
+3. Press **Book this**, then **Pay now** or **Pay 30% deposit**.
+4. On the ECPay page, stay on the **信用卡** (credit card) tab and enter card `4311 9522 2222 2222`, expiry `12` / `30`, security code `222`, name `TEST TRAVELER`, phone `0912345678` and email `traveler@example.com`.
+5. Press the orange **測試付款請點此** (test payment) button. If a notice appears, press **關閉** (close), then press the orange button again.
+6. If it asks for an SMS code, try `1234`.
+7. You should return to **My bookings** with "Payment received".
+
+### Where each booking and payment shows in admin
+
+| Booked in | Booking shows at | Payment shows at |
+|---|---|---|
+| Sanpu Travel: tour | Admin > Operations > **Bookings** (`/admin/bookings`) | Admin > Partners & finance > **Payments & transactions** (`/admin/payments`), and inside the booking |
+| Sanpu Travel: hotel, flight, bus, taxi | Admin > Travel services > **Service bookings** (`/admin/service-bookings`) | Admin > Partners & finance > **Payments & transactions** (`/admin/payments`) |
+| AI Travel: assistant | Admin > Copilot > **Assistant bookings** (`/admin/reservations`) | Admin > Copilot > **Payments** (`/admin/payments`) |
+
+### Approve or reject a Sanpu Travel tour booking
+
+Sign in as `admin@demo.sanpu.test` or `ops.manager@demo.sanpu.test`.
+
+1. Open **Bookings** and set **Status** to **Pending**.
+2. Open a booking that has a payment. An unpaid booking shows "Approval opens after payment".
+3. Press **Approve**, then confirm. The held seats become sold and the booking becomes **Confirmed**.
+4. To reject, enter a **Decision comment**, press **Reject**, then confirm. The seats are released.
+
+The **Approval inbox** (`/admin/approvals`) lists the approvals waiting for the signed-in person, with **Approve** and **Reject** buttons.
+
+### Cancel or refund a Sanpu Travel tour booking
+
+| Who | Booking status | What to do | Result |
+|---|---|---|---|
+| Customer | Pending | My bookings > open the booking > **Withdraw booking** | Seats are released |
+| Customer | Confirmed | My bookings > open the booking > **Request cancellation** | Status becomes **CancelRequested** for staff to handle |
+| Staff | Pending, Confirmed or CancelRequested | Bookings > open the booking > **Cancel booking** | Booking is cancelled |
+| Finance or admin | Has a payment | Bookings > open the booking > **Issue refund** | The refund workflow decides, and large amounts need a second approver |
+
+### Cancel other bookings
+
+| App | Booking | How to cancel |
+|---|---|---|
+| Sanpu Travel | Hotel, flight, bus, taxi | Customer: My bookings > **Cancel**. Allowed until 24 hours before the start date. |
+| AI Travel | Not paid yet | Customer: press **Not now** on the booking card |
+| AI Travel | Deposit paid | Customer: My bookings > **Cancel booking** |
+
+### AI Travel has no staff approval step
+
+A booking is confirmed automatically when it is fully paid through ECPay. The AI Travel admin pages are view-only, so staff cannot approve, cancel or refund there. A fully paid AI Travel booking has no cancel button.
+
+### Who can do what in Sanpu Travel
+
+| Action | Roles |
+|---|---|
+| Approve or reject a booking | System admin, Director, Operations manager |
+| Act on the Approval inbox | System admin, Director, Operations manager, Finance |
+| Cancel a booking | System admin, Operations manager, Reservations agent |
+| Issue a refund | System admin, Finance |
+
+## 6. Major database tables
 
 ### Sanpu Travel (`SanpuErp`)
 
@@ -152,7 +213,7 @@ If it stalls, say: "This is ECPay's sandbox. The booking stays unconfirmed until
 | AI quality and cost | PromptTemplates, AiUsageLogs, EvalCases, EvalRuns, EvalResults | Prompts, usage tracking and accuracy tests |
 | System | AuditLogs, DevOutbox, NewsletterSubscribers, SchemaVersions | Audit trail, email log, subscribers, database versions |
 
-## 6. Architecture answers
+## 7. Architecture answers
 
 | Question | Answer |
 |---|---|
@@ -165,7 +226,7 @@ If it stalls, say: "This is ECPay's sandbox. The booking stays unconfirmed until
 | AI safety | The AI can prepare a booking but can never pay or confirm it |
 | Payments | ECPay sandbox. The signature is checked, then the trade is confirmed with ECPay server to server |
 
-## 7. Known limits
+## 8. Known limits
 
 Say these plainly if asked:
 
