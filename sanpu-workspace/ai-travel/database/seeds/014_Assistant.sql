@@ -47,3 +47,17 @@ IF NOT EXISTS (SELECT 1 FROM dbo.SchemaVersions WHERE ScriptName = '014_Assistan
 IF NOT EXISTS (SELECT 1 FROM dbo.AppSettings WHERE SettingKey = 'Assistant.ProviderOrder')
     INSERT dbo.AppSettings(SettingKey, SettingValue, ValueType, Category, Description, ValidationJson, IsPublic, IsEditable)
     VALUES ('Assistant.ProviderOrder', N'Gemini,OpenAI,Anthropic', 'String', 'Ai', N'Which AI answers first; the next one takes over when the first is unavailable', N'{"maxLength":40}', 0, 1);
+
+-- visitors see the assistant (the page asks them to sign in) and an Explore group linking to Sanpu Travel
+DELETE mp FROM dbo.MenuPermissions mp JOIN dbo.Menus m ON m.MenuId = mp.MenuId WHERE m.MenuKey = 'cust.assistant';
+DECLARE @E TABLE (K varchar(100), PK varchar(100), T nvarchar(100), R varchar(200), I varchar(50), S int, X bit, D nvarchar(300));
+INSERT @E VALUES
+ ('cust.grp.explore', NULL, N'Explore', NULL, 'globe', 60, 0, NULL),
+ ('cust.ext.tours', 'cust.grp.explore', N'Guided tours', 'https://sanpu-travel.vercel.app/tours', 'map', 10, 1, N'Tours across Taiwan on Sanpu Travel'),
+ ('cust.ext.news', 'cust.grp.explore', N'Travel news', 'https://sanpu-travel.vercel.app/news', 'file', 20, 1, N'Taiwan travel industry and Sanpu updates'),
+ ('cust.ext.blog', 'cust.grp.explore', N'Travel blog', 'https://sanpu-travel.vercel.app/blog', 'file', 30, 1, N'Guides and stories from our team');
+INSERT dbo.Menus(MenuKey, Title, RoutePath, IconKey, SortOrder, ApplicationArea, IsExternal, Description)
+SELECT K, T, R, I, S, 'Customer', X, D FROM @E e WHERE NOT EXISTS (SELECT 1 FROM dbo.Menus x WHERE x.MenuKey = e.K);
+UPDATE c SET ParentMenuId = p.MenuId FROM dbo.Menus c JOIN @E e ON e.K = c.MenuKey JOIN dbo.Menus p ON p.MenuKey = e.PK WHERE c.ParentMenuId IS NULL AND e.PK IS NOT NULL;
+UPDATE dbo.AppSettings SET SettingValue = N'An AI travel assistant for Taiwan: plan trips, compare tours, hotels and transport with live prices, and book with a deposit or in full. You confirm every payment.'
+WHERE SettingKey = 'Ui.FooterAbout';

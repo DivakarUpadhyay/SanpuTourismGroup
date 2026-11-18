@@ -449,7 +449,7 @@ export function CopilotHome() {
           <Async state={show}>{(d) => (
             <div className="cp-regions">{d.regions.map((r) => (
               <button key={r.code} className="cp-region" style={r.imageUrl ? { backgroundImage: `url(${r.imageUrl})` } : undefined} onClick={() => start(`Plan a trip to ${r.name} for 2 people`)}>
-                <span><b>{r.name}</b><small>{r.placeCount} places · plan with AI →</small></span>
+                <span><b>{r.name}</b><small>{r.placeCount > 0 ? `${r.placeCount} places · ` : ""}Plan with AI →</small></span>
               </button>))}</div>
           )}</Async>
         </div>

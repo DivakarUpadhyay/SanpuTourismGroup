@@ -225,3 +225,12 @@ main.auth-main { padding: 0 !important; }
 .auth-screen .auth-visual { padding: 36px; }
 @media (max-width: 900px) { .auth-screen, .auth-screen.staff { height: auto; overflow: visible; } .auth-screen .pair { grid-template-columns: 1fr; } }
 .auth-form select { height: 40px; border-radius: 9px; }
+
+/* AI home flows straight into the footer; newsletter controls share one height */
+main.page.wide:has(.cp-home), main.page.wide:has(.st-page), main.page.wide:has(.st-article) { padding-bottom: 0 !important; }
+.cp-home .cp-band:has(+ .cp-cta) { padding-bottom: 48px; }
+.cp-home .cp-band + .cp-cta { margin-top: 0; }
+.st-page { padding-bottom: 56px; }
+.nl-form input, .nl-form .btn, .nl-form button { height: 42px; box-sizing: border-box; }
+.nl-form .btn, .nl-form button { display: inline-flex; align-items: center; padding: 0 18px; }
+.site:has(.cp-home) .site-footer, .site:has(.st-page) .site-footer, .site:has(.st-article) .site-footer { margin-top: 0; }
