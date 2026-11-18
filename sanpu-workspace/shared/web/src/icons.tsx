@@ -1,5 +1,7 @@
 /** Small outline icon set (Fluent-like, 20px grid). The key comes from dbo.Menus.IconKey, so menus stay data-driven. */
 const P: Record<string, string> = {
+  info: "M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM10 9v5M10 6.5v.01",
+  send: "M3 10l14-7-5 14-2.5-5.5zM9.5 11.5L17 3",
   image: "M3 4h14v12H3zM3 13l4-4 3 3 2-2 5 5M12.5 7.5a1 1 0 1 0 0 .01",
   upload: "M10 13V3M6 7l4-4 4 4M3 13v4h14v-4",
   dashboard: "M3 3h6v8H3zM11 3h6v5h-6zM11 10h6v7h-6zM3 13h6v4H3z",

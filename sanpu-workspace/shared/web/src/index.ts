@@ -12,3 +12,4 @@ export * from "./logo";
 export * from "./datepicker";
 export * from "./params";
 export * from "./image-picker";
+export * from "./password";

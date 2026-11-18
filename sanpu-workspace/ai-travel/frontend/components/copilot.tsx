@@ -25,10 +25,8 @@ export function CopilotDashboard() {
           <AiBanner ai={x.ai} />
           <div style={{ height: 12 }} />
           <div className="kpis">
-            <Kpi label="Active trips" value={x.kpis.activeTrips} /><Kpi label="Disrupted trips" value={x.kpis.disruptedTrips} testId="kpi-disrupted" />
-            <Kpi label="Proposals awaiting review" value={x.kpis.pendingProposals} testId="kpi-proposals" /><Kpi label="Documents to review" value={x.kpis.documentsToReview} />
-            <Kpi label="AI cost (30 days)" value={`USD ${Number(x.kpis.aiCost30d).toFixed(4)}`} /><Kpi label="AI fallbacks (30 days)" value={x.kpis.aiFallbacks30d} />
-            <Kpi label="Last eval" value={x.kpis.lastEvalResult ?? "—"} /><Kpi label="Grounding score" value={x.kpis.lastGroundingScore ?? "—"} />
+            <Kpi label="Active trips" value={x.kpis.activeTrips} href="/admin/trips" /><Kpi label="Disrupted trips" value={x.kpis.disruptedTrips} testId="kpi-disrupted" href="/admin/trips" />
+            <Kpi label="Proposals awaiting review" value={x.kpis.pendingProposals} testId="kpi-proposals" href="/admin/proposals" /><Kpi label="Documents to review" value={x.kpis.documentsToReview} href="/admin/documents" />
           </div>
           <div className="grid two">
             <Card title="Recent proposals"><DataTable rows={x.recentProposals} rowKey={(p: any) => p.proposalId} columns={[

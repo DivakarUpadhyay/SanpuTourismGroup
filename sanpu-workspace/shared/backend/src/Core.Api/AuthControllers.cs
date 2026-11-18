@@ -12,11 +12,17 @@ using Microsoft.IdentityModel.Tokens;
 namespace Divakar.Sanpu.Core.Api;
 
 /// <summary>Refresh token lives in an HttpOnly, Secure, SameSite=Strict cookie scoped to /api/v1/auth.
-/// Cookie-authenticated calls (refresh, logout) need the double-submit CSRF header X-CSRF-Token.</summary>
-public sealed class AuthCookies(SanpuAppOptions options)
+/// Cookie-authenticated calls (refresh, logout) need the double-submit CSRF header X-CSRF-Token.
+/// The admin panel and the customer site are separate session realms (header X-Session-Realm: admin | site), each with
+/// its own cookies, so a staff sign-in and a customer sign-in in the same browser never replace each other.</summary>
+public sealed class AuthCookies(SanpuAppOptions options, string realm)
 {
-    private string RefreshName => options.CookiePrefix + "_rt";
-    public string CsrfName => options.CookiePrefix + "_csrf";
+    public const string AdminRealm = "admin", SiteRealm = "site";
+    public static string RealmOf(HttpRequest request) => request.Headers["X-Session-Realm"].ToString() == AdminRealm ? AdminRealm : SiteRealm;
+    /// <summary>Staff use the admin panel; customers use the customer site.</summary>
+    public static string UserTypeFor(string realm) => realm == AdminRealm ? "Staff" : "Customer";
+    private string RefreshName => $"{options.CookiePrefix}_{realm}_rt";
+    public string CsrfName => $"{options.CookiePrefix}_{realm}_csrf";
 
     public void Set(HttpResponse response, LoginResult result)
     {
@@ -52,14 +58,19 @@ public sealed record TokenResponse(string AccessToken, DateTime ExpiresAtUtc, Au
 [ApiController, Route("api/v1/auth"), Tags("Auth")]
 public sealed class AuthController(AuthService auth, SanpuAppOptions options) : ControllerBase
 {
-    private AuthCookies Cookies => new(options);
+    private string Realm => AuthCookies.RealmOf(Request);
+    private AuthCookies Cookies => new(options, Realm);
+
+    private AppException WrongPortal() => Realm == AuthCookies.AdminRealm
+        ? new(403, "wrong_portal", "This sign-in is for staff. Customers sign in on the customer site.")
+        : new(403, "wrong_portal", "This sign-in is for customers. Staff sign in at /admin/login.");
 
     /// <summary>Verify email + password and issue a short-lived JWT; the rotating refresh token is set as an HttpOnly cookie.</summary>
     [HttpPost("login"), AllowAnonymous, EnableRateLimiting("auth")]
     [ProducesResponseType<TokenResponse>(200)]
     public async Task<TokenResponse> Login(LoginRequest request, CancellationToken ct)
     {
-        var result = await auth.LoginAsync(request, ct);
+        var result = await auth.LoginAsync(request, AuthCookies.UserTypeFor(Realm), ct);
         Cookies.Set(Response, result);
         return new TokenResponse(result.AccessToken, result.ExpiresAtUtc, result.User);
     }
@@ -68,12 +79,25 @@ public sealed class AuthController(AuthService auth, SanpuAppOptions options) : 
     [HttpPost("register"), AllowAnonymous, EnableRateLimiting("auth")]
     public async Task<TokenResponse> Register(RegisterRequest request, CancellationToken ct)
     {
+        if (Realm != AuthCookies.SiteRealm) throw WrongPortal();
         var result = await auth.RegisterAsync(request, ct);
         Cookies.Set(Response, result);
         return new TokenResponse(result.AccessToken, result.ExpiresAtUtc, result.User);
     }
 
     /// <summary>Rotate the refresh cookie and get a new access token. Reusing an old refresh token revokes the whole family.</summary>
+    /// <summary>Roles a new staff member can ask for on the staff sign-up page.</summary>
+    [HttpGet("staff-roles"), AllowAnonymous]
+    public Task<IReadOnlyList<StaffRoleRow>> StaffRoles([FromServices] AccessRequestService requests, CancellationToken ct) => requests.StaffRolesAsync(ct);
+
+    /// <summary>Staff sign-up: email, name, own password and the role needed. The account stays inactive until an administrator approves it.</summary>
+    [HttpPost("staff-request"), AllowAnonymous, EnableRateLimiting("auth")]
+    public async Task<IActionResult> StaffRequest(StaffAccessRequest request, [FromServices] AccessRequestService requests, CancellationToken ct)
+    {
+        await requests.RequestAsync(request, ct);
+        return Accepted();
+    }
+
     [HttpPost("refresh"), AllowAnonymous]
     public async Task<TokenResponse> Refresh(CancellationToken ct)
     {
@@ -81,6 +105,11 @@ public sealed class AuthController(AuthService auth, SanpuAppOptions options) : 
         try
         {
             var result = await auth.RefreshAsync(Cookies.Refresh(Request), ct);
+            if (result.User.UserType != AuthCookies.UserTypeFor(Realm))   // a cookie can only ever hold its own realm's user
+            {
+                await auth.LogoutAsync(result.RefreshToken, ct);
+                throw new AppException(401, "unauthorized", "Please sign in.");
+            }
             Cookies.Set(Response, result);
             return new TokenResponse(result.AccessToken, result.ExpiresAtUtc, result.User);
         }

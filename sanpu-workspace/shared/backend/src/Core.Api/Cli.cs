@@ -9,7 +9,8 @@ namespace Divakar.Sanpu.Core.Api;
 
 /// <summary>One-time operations run from the command line instead of public endpoints:
 ///   dotnet Api.dll bootstrap-admin            (reads SANPU_BOOTSTRAP_EMAIL / _PASSWORD / _NAME from the environment)
-///   dotnet Api.dll provision-demo-users --out LOGINS.local.txt   (Development only: random passwords for seeded DEMO users)</summary>
+///   dotnet Api.dll provision-demo-users --out LOGINS.local.txt [--password &lt;one shared password&gt;]
+///       (Development only: random passwords for seeded DEMO users, or one easy-to-remember password for all of them)</summary>
 public static class SanpuCli
 {
     public static async Task<bool> TryRunAsync(WebApplication app, string[] args)
@@ -35,10 +36,14 @@ public static class SanpuCli
         if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("provision-demo-users only runs in Development.");
         var outIndex = Array.IndexOf(args, "--out");
         var outFile = outIndex >= 0 && outIndex + 1 < args.Length ? args[outIndex + 1] : "LOGINS.local.txt";
+        var pwIndex = Array.IndexOf(args, "--password");
+        var shared = pwIndex >= 0 && pwIndex + 1 < args.Length ? args[pwIndex + 1] : null;
         var lines = new List<string> { "# Local demo logins (fictional accounts). Generated " + DateTime.UtcNow.ToString("u") + ". Never commit this file.", "email,password,roles" };
         foreach (var user in await repo.ListDemoUsersAsync(CancellationToken.None))
         {
-            var password = GeneratePassword();
+            var password = shared ?? GeneratePassword();
+            var problems = PasswordPolicy.Check(password, user.Email);
+            if (problems.Count > 0) throw new InvalidOperationException($"--password for {user.Email}: " + string.Join(" ", problems));
             await repo.SetDemoPasswordAsync(user.UserId, hasher.Hash(password), hasher.Algorithm, CancellationToken.None);
             lines.Add($"{user.Email},{password},{user.Roles}");
         }

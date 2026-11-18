@@ -45,7 +45,7 @@ export function EntityPage<T>({ tagline, title, lead, load, columns, rowKey, fie
 
   return (
     <>
-      <PageHeader tagline={tagline} title={title} lead={lead} actions={<>{extraActions}{canEdit && <button className="btn primary" data-testid={`${testId}-new`} onClick={() => { action.clear(); setEditing({ row: null, form: toForm(null) }); }}>{newLabel}</button>}</>} />
+      <PageHeader tagline={tagline} title={title} lead={lead} actions={<>{extraActions}{canEdit && newLabel && <button className="btn primary" data-testid={`${testId}-new`} onClick={() => { action.clear(); setEditing({ row: null, form: toForm(null) }); }}>{newLabel}</button>}</>} />
       <Async state={state}>{(rows) => <DataTable rows={rows} columns={cols} rowKey={rowKey} testId={`${testId}-table`} />}</Async>
       {editing && (
         <Modal title={editing.row ? `Edit ${title.toLowerCase()}` : newLabel} onClose={() => setEditing(null)} testId={`${testId}-modal`}

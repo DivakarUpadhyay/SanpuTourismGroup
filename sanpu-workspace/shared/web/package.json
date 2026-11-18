@@ -3,6 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "Shared Next.js UI, API client, auth and admin pages for both Sanpu apps (source package, compiled by each app).",
-  "exports": { ".": "./src/index.ts", "./styles.css": "./src/styles.css" },
-  "peerDependencies": { "next": "*", "react": "*", "react-dom": "*" }
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*",
+    "react-dom": "*"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "jspdf": "2.5.2",
+    "jspdf-autotable": "3.8.4"
+  }
 }

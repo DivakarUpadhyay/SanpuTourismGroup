@@ -12,7 +12,7 @@ public sealed class TravelerController(TripService trips, CopilotAdminService ad
     [HttpGet("public/showcase"), Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<PublicShowcase> Showcase(CancellationToken ct) { var l = await admin.LookupsAsync(ct); return new PublicShowcase(l.Regions, l.Templates); }
 
-    [HttpGet("trip-options"), HasPermission("Trip.Create|Trip.View")]
+    [HttpGet("trip-options"), HasPermission("Trip.Create|Trip.View|Scenario.View|Scenario.Edit")]
     public Task<AiLookups> Options(CancellationToken ct) => admin.LookupsAsync(ct);
 
     /// <summary>Create a trip and build version 1 from the chosen DB template (deterministic rules; the model may only write the summary).</summary>
@@ -138,4 +138,34 @@ public sealed class RulesController(CopilotAdminService admin, EvalService evals
 
     [HttpGet("ai-usage"), HasPermission("Ai.Usage.View")]
     public Task<UsageReport> Usage([FromQuery] DateTime? from, [FromQuery] DateTime? to, CancellationToken ct) => admin.UsageAsync(from, to, ct);
+}
+
+[ApiController, Route("api/v1"), Tags("AI assistant")]
+public sealed class AssistantController(AssistantService assistant) : ControllerBase
+{
+    /// <summary>One chat turn. Send the conversation so far (user/assistant text). The reply comes with cards (tours, options, comparisons, a booking to confirm).</summary>
+    [HttpPost("assistant/chat"), HasPermission("Assistant.Use"), Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("public")]
+    public Task<ChatReply> Chat(ChatRequest r, CancellationToken ct) => assistant.ChatAsync(r, ct);
+
+    [HttpGet("my/bookings"), HasPermission("Reservation.ViewOwn")]
+    public Task<IReadOnlyList<ReservationRow>> MyBookings(CancellationToken ct) => assistant.MineAsync(ct);
+
+    /// <summary>The traveler pays (sandbox): Deposit, Full or Balance. Confirms the booking when fully paid.</summary>
+    [HttpPost("my/bookings/{id:int}/pay"), HasPermission("Reservation.ViewOwn")]
+    public Task<ReservationRow> Pay(int id, PayRequest r, CancellationToken ct) => assistant.PayAsync(id, r, ct);
+
+    [HttpPost("my/bookings/{id:int}/cancel"), HasPermission("Reservation.ViewOwn")]
+    public Task<ReservationRow> Cancel(int id, CancellationToken ct) => assistant.CancelAsync(id, ct);
+
+    /// <summary>Staff: every booking made through the assistant.</summary>
+    [HttpGet("aiops/reservations"), HasPermission("Reservation.View")]
+    public Task<IReadOnlyList<ReservationRow>> All([FromQuery] string? status, CancellationToken ct) => assistant.AllAsync(status, ct);
+}
+
+[ApiController, Route("api/v1/assistant"), Tags("AI assistant")]
+public sealed class AssistantDirectController(AssistantService assistant) : ControllerBase
+{
+    /// <summary>"Book this" on an option card: prepares the booking at the live price without a model call. The traveler still confirms and pays.</summary>
+    [HttpPost("prepare"), HasPermission("Assistant.Use")]
+    public Task<ChatReply> Prepare(System.Text.Json.JsonElement input, CancellationToken ct) => assistant.PrepareDirectAsync(input, ct);
 }

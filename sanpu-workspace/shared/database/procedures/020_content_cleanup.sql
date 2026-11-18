@@ -26,5 +26,5 @@ UPDATE dbo.ContentTemplates SET Body = REPLACE(Body, N' All trips and places her
 UPDATE dbo.ContentTemplates SET Subject = N'Privacy notice', Body = REPLACE(Body, N' Demo text: a real deployment needs review under Taiwan''s Personal Data Protection Act.', N'') WHERE TemplateKey = 'privacy.notice' AND Subject = N'Privacy notice (demo)';
 UPDATE dbo.AppSettings SET SettingValue = N'support@sanpu.test' WHERE SettingKey = 'Ui.SupportEmail' AND SettingValue = N'support@demo.sanpu.test';
 UPDATE dbo.AppSettings SET SettingValue = N'Sanpu Travel' WHERE SettingKey = 'Ui.BrandName' AND SettingValue = N'Sanpu Tour Ops ERP';
-UPDATE dbo.AppSettings SET SettingValue = N'Sanpu Trip Copilot' WHERE SettingKey = 'Ui.BrandName' AND SettingValue = N'Sanpu AI Operations Copilot';
+UPDATE dbo.AppSettings SET SettingValue = N'Sanpu AI Travel' WHERE SettingKey = 'Ui.BrandName' AND SettingValue = N'Sanpu AI Operations Copilot';
 UPDATE dbo.Users SET DisplayName = N'System Administrator' WHERE DisplayName = N'Demo Admin';

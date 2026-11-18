@@ -28,7 +28,7 @@ public sealed class CatalogService(IErpRepository repo)
 }
 
 /// <summary>Customer self-service booking. Ownership is enforced inside the procedures (other customers' bookings look "not found").</summary>
-public sealed class CustomerBookingService(IErpRepository repo, ISettings settings, ICurrentUser current, IPiiProtector pii)
+public sealed class CustomerBookingService(IErpRepository repo, ISettings settings, ICurrentUser current, IPiiProtector pii, Mailer mail, AppLinks links)
 {
     public async Task<HoldRow> HoldAsync(HoldRequest request, CancellationToken ct)
     {
@@ -52,9 +52,17 @@ public sealed class CustomerBookingService(IErpRepository repo, ISettings settin
             .Check(r.AcceptTerms, "acceptTerms", "Please accept the terms and privacy notice.")
             .ThrowIfAny();
         var passport = string.IsNullOrWhiteSpace(r.PassportNo) ? null : r.PassportNo.Trim().ToUpperInvariant();
-        return await repo.CreateBookingFromHoldAsync(r.HoldId, current.RequireUserId(), r.LeadName.Trim(), pii.Protect(r.LeadPhone.Trim()), Mask.Phone(r.LeadPhone),
+        var created = await repo.CreateBookingFromHoldAsync(r.HoldId, current.RequireUserId(), r.LeadName.Trim(), pii.Protect(r.LeadPhone.Trim()), Mask.Phone(r.LeadPhone),
             pii.Protect(passport), passport is null ? null : Mask.Document(passport), string.IsNullOrWhiteSpace(r.SpecialRequests) ? null : r.SpecialRequests.Trim(), current.CorrelationId, ct,
             string.IsNullOrWhiteSpace(r.CouponCode) ? null : r.CouponCode.Trim().ToUpperInvariant());
+        var (b, _) = await repo.GetMyBookingAsync(created.BookingId, current.RequireUserId(), ct);
+        if (b is not null)
+            await mail.ToMeAsync("email.booking_created", new()
+            {
+                ["ref"] = b.BookingRef, ["item"] = b.TourTitle, ["date"] = b.DepartureDate.ToString("ddd d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture), ["pax"] = b.Pax.ToString(),
+                ["total"] = Mailer.Money(b.TotalAmount, b.Currency), ["status"] = b.Status, ["link"] = $"{links.PublicBaseUrl}/my/bookings/{b.BookingId}"
+            }, ct);
+        return created;
     }
 
     public Task<IReadOnlyList<MyBookingRow>> MineAsync(CancellationToken ct) => repo.ListMyBookingsAsync(current.RequireUserId(), ct);
@@ -72,6 +80,8 @@ public sealed class CustomerBookingService(IErpRepository repo, ISettings settin
         if (!await settings.GetBoolAsync("Feature.CustomerCancellation", true, ct)) throw AppException.Forbidden("feature_disabled", "Online cancellation is turned off. Please contact us.");
         if (string.IsNullOrWhiteSpace(r.Reason) || r.Reason.Length > 300) throw AppException.Validation("reason", "Tell us why (up to 300 characters).");
         await repo.RequestCancelAsync(id, current.RequireUserId(), r.Reason.Trim(), current.CorrelationId, ct);
+        var (b, _) = await repo.GetMyBookingAsync(id, current.RequireUserId(), ct);
+        await mail.ToMeAsync("email.booking_cancel_requested", new() { ["ref"] = b?.BookingRef ?? id.ToString(), ["reason"] = r.Reason.Trim(), ["link"] = $"{links.PublicBaseUrl}/my/bookings/{id}" }, ct);
     }
 }
 

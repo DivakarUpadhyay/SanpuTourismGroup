@@ -3,6 +3,8 @@ namespace Divakar.Sanpu.Erp.Application;
 /// <summary>Customer experience data access: every call is one stored procedure (Dapper, no EF).</summary>
 public interface ICustomerRepository
 {
+    Task<IReadOnlyList<PaymentTxRow>> PaymentsAsync(string? status, string? orderType, string? search, int page, int pageSize, CancellationToken ct);
+
     // media
     Task<MediaInsertRow> InsertMediaAsync(string fileName, string originalName, string contentType, int sizeBytes, string sha256, Guid uploadedBy, string correlationId, CancellationToken ct);
     Task<IReadOnlyList<MediaRow>> ListMediaAsync(CancellationToken ct);

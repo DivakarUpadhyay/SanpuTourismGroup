@@ -168,3 +168,12 @@ public sealed record OpsServiceBookingRow
     public string Status { get; init; } = ""; public string PaymentStatus { get; init; } = ""; public string LeadName { get; init; } = ""; public string? LeadPhoneMasked { get; init; } public string? PickupAddress { get; init; }
     public TimeSpan? PickupTime { get; init; } public DateTime CreatedAtUtc { get; init; }
 }
+
+public sealed record PaymentTxRow
+{
+    public int IntentId { get; init; } public string MerchantTradeNo { get; init; } = ""; public string OrderType { get; init; } = ""; public int OrderId { get; init; } public string OrderRef { get; init; } = "";
+    public string Mode { get; init; } = ""; public decimal Amount { get; init; } public string Currency { get; init; } = "TWD"; public string Provider { get; init; } = ""; public string Status { get; init; } = "";
+    public string? ProviderTradeNo { get; init; } public string? ProviderMessage { get; init; } public string? PaymentMethod { get; init; } public DateTime CreatedAtUtc { get; init; } public DateTime? CompletedAtUtc { get; init; }
+    public string CustomerName { get; init; } = ""; public string CustomerEmail { get; init; } = ""; public string? ItemName { get; init; }
+    public int TotalCount { get; init; } public decimal PaidTotal { get; init; } public int PendingCount { get; init; } public int FailedCount { get; init; }
+}

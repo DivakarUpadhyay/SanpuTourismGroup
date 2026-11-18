@@ -1,4 +1,5 @@
 @import "./landing.css";
+@import "./copilot.css";
 /* Sanpu UI · Windows 11 (Fluent) styling with the sanpu.tw palette.
    Accent = sanpu deep blue; ink = sanpu navy; gold tagline; lavender secondary. Light + dark (follows the OS). */
 :root {
@@ -300,3 +301,18 @@ details summary { cursor: pointer; color: var(--accent); }
 .ip-lib button > span { aspect-ratio: 4 / 3; border-radius: 6px; background: center / cover no-repeat; }
 .ip-lib small { font-size: 11px; color: var(--muted); text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 560px) { .ip-box { flex-direction: column; align-items: stretch; } .ip-preview { width: 100%; } }
+
+/* clickable dashboard numbers */
+a.kpi.link { display: block; color: inherit; transition: transform .15s, box-shadow .15s; }
+a.kpi.link:hover { transform: translateY(-2px); box-shadow: var(--shadow-2, 0 8px 24px rgba(15, 23, 42, .12)); color: inherit; }
+a.kpi.link i { position: absolute; right: 14px; top: 12px; font-style: normal; color: var(--muted); opacity: 0; transition: opacity .15s, transform .15s; }
+a.kpi.link:hover i { opacity: 1; transform: translateX(2px); color: var(--accent); }
+
+/* online preview: a calm note instead of an error */
+.alert.info.offline-note { display: grid; gap: 4px; background: var(--info-bg); border-color: transparent; color: var(--ink); }
+.alert.info.offline-note::before { display: none; }
+.alert.info.offline-note .form-actions { margin-top: 6px; }
+
+/* report downloads above admin tables */
+.report-bar { display: flex; justify-content: flex-end; gap: 4px; padding: 6px 8px 0; }
+.report-bar .btn::before { content: "↓"; margin-right: 4px; font-weight: 700; }

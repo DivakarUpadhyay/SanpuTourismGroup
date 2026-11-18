@@ -194,3 +194,16 @@ public sealed class AdminRepository(Db db) : IAdminRepository
                 return new PagedResult<AuditRow>((await g.ReadAsync<AuditRow>()).AsList(), (int)total, page, pageSize);
             }, ct);
 }
+
+public sealed class AccessRequestRepository(Db db) : IAccessRequestRepository
+{
+    public Task<IReadOnlyList<StaffRoleRow>> StaffRolesAsync(CancellationToken ct) => db.QueryAsync<StaffRoleRow>("dbo.usp_Auth_StaffRoles", null, ct);
+
+    public async Task<Guid> RequestStaffAccessAsync(string email, string normalizedEmail, string displayName, string passwordHash, string algorithm, string roleKey, string? note, string correlationId, CancellationToken ct) =>
+        await db.QuerySingleAsync<Guid>("dbo.usp_Auth_RequestStaffAccess", new { Email = email, NormalizedEmail = normalizedEmail, DisplayName = displayName, PasswordHash = passwordHash, PasswordHashAlgorithm = algorithm, RoleKey = roleKey, Note = note, CorrelationId = correlationId }, ct);
+
+    public Task<IReadOnlyList<AccessRequestRow>> ListAsync(CancellationToken ct) => db.QueryAsync<AccessRequestRow>("dbo.usp_Admin_ListAccessRequests", null, ct);
+
+    public Task DecideAsync(Guid userId, bool approve, string? roleKey, Guid actorId, string correlationId, CancellationToken ct) =>
+        db.ExecuteAsync("dbo.usp_Admin_DecideAccessRequest", new { UserId = userId, Approve = approve, RoleKey = roleKey, ActorId = actorId, CorrelationId = correlationId }, ct);
+}

@@ -41,6 +41,7 @@ public interface IAiOpsRepository
     Task EvalFeedbackAsync(int resultId, string feedback, Guid actor, string correlationId, CancellationToken ct);
     Task<(DashKpiRow Kpis, IReadOnlyList<DashProposalRow> Recent, IReadOnlyList<DashRegionRow> ByRegion)> DashboardAsync(CancellationToken ct);
     Task<Guid?> UserIdByEmailAsync(string normalizedEmail, CancellationToken ct);
+    Task<string?> UserDisplayNameAsync(Guid userId, CancellationToken ct);
 }
 
 /// <summary>LLM provider abstraction. The only implementation calls Claude through the official Anthropic SDK;

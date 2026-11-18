@@ -5,24 +5,54 @@
    Dates in the snapshot are shifted forward by the days since capture, so calendars and departures stay current.
    A few harmless actions are simulated (coupon check, contact, newsletter, feedback); anything that would change
    shared data returns a clear "not saved" message. */
-import { ApiError } from "./api";
+import { ApiError, currentRealm, type Realm } from "./api";
+import { createReset, decideStaffRequest, idOf, localUsers, registerCustomer, requestStaffAccess, resetPassword, setPassword, verify, type LocalUser, type SnapshotUser } from "./standalone-auth";
 
-export const STANDALONE = process.env.NEXT_PUBLIC_STANDALONE === "1";
+/* NEXT_PUBLIC_STANDALONE: "1" = always the preview; "auto" = live API, falling back to the preview while the API is unreachable;
+   anything else = live only (local development). */
+const MODE = process.env.NEXT_PUBLIC_STANDALONE ?? "";
+let offline = MODE === "1";
+const OFFLINE_KEY = "sanpu.offline.until";
+if (MODE === "auto" && typeof window !== "undefined") { try { offline = Number(sessionStorage.getItem(OFFLINE_KEY) ?? 0) > Date.now(); } catch { /* ignore */ } }
+/** True while answers come from the bundled preview. */
+export const isStandalone = () => offline;
+export const STANDALONE_POSSIBLE = MODE === "1" || MODE === "auto";
+/** Called when the live API cannot be reached: switch this tab to the preview for 2 minutes, then try live again. */
+export function goOffline() {
+  if (MODE !== "auto") return false;
+  offline = true;
+  try { sessionStorage.setItem(OFFLINE_KEY, String(Date.now() + 120_000)); } catch { /* ignore */ }
+  setTimeout(() => { offline = false; }, 120_000);
+  return true;
+}
 const APP = process.env.NEXT_PUBLIC_COOKIE_PREFIX ?? "app";
-const ROLE_KEY = `sanpu.sa.${APP}.account`;
+const roleKey = (realm: Realm) => `sanpu.sa.${APP}.${realm}.account`;
 
 interface Snapshot {
   capturedAt: string;
-  users: { email: string; displayName: string; userType: string; roles: string[] }[];
+  users: SnapshotUser[];
   responses: Record<string, Record<string, unknown>>;   // account ("anon" or email) -> key -> body
 }
 let snap: Snapshot | null = null;
 let loading: Promise<Snapshot> | null = null;
 const load = () => (loading ??= fetch(`/snapshot/${APP}.json`, { cache: "force-cache" }).then((r) => r.json() as Promise<Snapshot>).then((s) => (snap = s)));
 
-export const standaloneAccount = () => { try { return localStorage.getItem(ROLE_KEY); } catch { return null; } };
-const setAccount = (email: string | null) => { try { if (email) localStorage.setItem(ROLE_KEY, email); else localStorage.removeItem(ROLE_KEY); } catch { /* ignore */ } };
+export const standaloneAccount = (realm: Realm = currentRealm()) => { try { return localStorage.getItem(roleKey(realm)); } catch { return null; } };
+const setAccount = (email: string | null, realm: Realm = currentRealm()) => { try { if (email) localStorage.setItem(roleKey(realm), email); else localStorage.removeItem(roleKey(realm)); } catch { /* ignore */ } };
 export async function standaloneUsers() { return (await load()).users; }
+
+// ---- accounts made in this browser borrow the screens of a similar account in the snapshot (same role), minus personal data ----
+const norm = (e: string) => e.trim().toLowerCase();
+function personaOf(s: Snapshot, account: string): { pool: string; local?: LocalUser } {
+  if (account === "anon" || s.users.some((u) => norm(u.email) === norm(account))) return { pool: account };
+  const local = localUsers().find((u) => norm(u.email) === norm(account) && u.status === "Active");
+  if (!local) return { pool: "anon" };
+  const like = local.userType === "Customer"
+    ? s.users.find((u) => u.userType === "Customer")
+    : s.users.find((u) => u.userType === "Staff" && u.roles.includes(local.roleKey ?? "")) ?? s.users.find((u) => u.userType === "Staff" && !u.roles.includes("system_admin"));
+  return { pool: like?.email ?? "anon", local };
+}
+const PERSONAL = /^\/(my|account)\//;
 
 // ---- dates: shift every ISO date by the days since capture ----
 const DAY = 864e5;
@@ -59,30 +89,54 @@ function lookup(s: Snapshot, account: string, path: string, qs: URLSearchParams)
   return undefined;
 }
 
-const notSaved = () => new ApiError(409, "not_saved", "This online version shows real content but does not save changes, so bookings, payments and edits are not kept. Browsing, sign-in and dashboards work as usual.");
+const notSaved = () => new ApiError(503, "offline_only", "This online preview does not save changes. Booking, paying and editing open during live sessions; everything else works as usual.");
 
 /** Answers an API call from the snapshot (or a small simulation). */
 export async function standaloneApi<T>(method: string, path: string, qs: URLSearchParams, body: unknown): Promise<T> {
   const s = await load();
-  const account = standaloneAccount() ?? "anon";
+  const signedIn = standaloneAccount() ?? "anon";
+  const { pool: account, local } = personaOf(s, signedIn);
   const days = offsetDays(s);
   const b = (body instanceof FormData ? {} : body ?? {}) as Record<string, unknown>;
   if (method === "GET") {
     if (path === "/ops/media") return [] as T;
-    if (path === "/auth/me" && account === "anon") throw new ApiError(401, "unauthorized", "Please sign in.");
+    if (path === "/auth/me" && account === "anon") { setAccount(null); throw new ApiError(401, "unauthorized", "Please sign in."); }
+    if (path === "/auth/staff-roles") { const r = lookup(s, "anon", path, qs); if (r) return r as T; }
+    if (path === "/admin/users/access-requests") return localUsers().filter((u) => u.userType === "Staff" && u.status !== "Active").map((u) => ({
+      userId: idOf(u), email: u.email, displayName: u.displayName, approvalStatus: u.status, requestNote: u.note ?? null, requestedAtUtc: u.createdAtUtc, requestedRoleKey: u.requestedRoleKey,
+      requestedRoleName: (lookup(s, "anon", "/auth/staff-roles", new URLSearchParams()) as { roleKey: string; roleName: string }[] | undefined)?.find((r) => r.roleKey === u.requestedRoleKey)?.roleName ?? u.requestedRoleKey })) as T;
+    if (local) {   // an account made in this browser: own identity, no borrowed personal data
+      if (path === "/auth/me") {
+        const base = lookup(s, account, path, qs) as Record<string, unknown>;
+        return { ...base, user: { id: idOf(local), email: local.email, displayName: local.displayName, userType: local.userType, mustChangePassword: false }, phoneMasked: null, lastLoginAtUtc: null } as T;
+      }
+      if (PERSONAL.test(path)) { if (/\/\d+$/.test(path)) throw new ApiError(404, "not_found", "Not found."); return [] as T; }
+    }
     const hit = lookup(s, account, path, qs);
-    if (hit === undefined) throw new ApiError(404, "not_found", "This page has no saved content in the online version.");
+    if (hit === undefined) throw new ApiError(503, "offline_only", "This online preview shows our tours, travel options and dashboards. Booking, paying and saving open during live sessions.");
     return shift(hit, days) as T;
   }
   // ---- simulated actions ----
   if (path === "/auth/login" || path === "/auth/register") {
-    const email = String(b.email ?? "").toLowerCase();
-    const user = s.users.find((u) => u.email.toLowerCase() === email) ?? (path === "/auth/register" ? s.users.find((u) => u.userType === "Customer") : undefined);
-    if (!user) throw new ApiError(401, "invalid_credentials", "Use one of the accounts listed below to sign in to the online version.");
+    if (path === "/auth/register" && currentRealm() !== "site") throw new ApiError(403, "wrong_portal", "Staff ask for access on the staff sign-up page.");
+    const user = path === "/auth/register" ? await registerCustomer(s.users, b) : await verify(s.users, b.email, b.password);
+    if (user.userType !== (currentRealm() === "admin" ? "Staff" : "Customer"))
+      throw new ApiError(403, "wrong_portal", currentRealm() === "admin" ? "This sign-in is for staff. Customers sign in on the customer site." : "This sign-in is for customers. Staff sign in at /admin/login.");
     setAccount(user.email);
     return { accessToken: "standalone" } as T;
   }
   if (path === "/auth/logout" || path === "/auth/logout-all") { setAccount(null); return null as T; }
+  if (path === "/auth/staff-request") {
+    const roles = ((lookup(s, "anon", "/auth/staff-roles", new URLSearchParams()) ?? []) as { roleKey: string }[]).map((r) => r.roleKey);
+    await requestStaffAccess(s.users, roles, b); return null as T;
+  }
+  if (/^\/admin\/users\/access-requests\/[^/]+$/.test(path)) { decideStaffRequest(path.split("/").pop()!, !!b.approve, b.roleKey as string | null); return null as T; }
+  if (path === "/auth/forgot-password") return { previewLink: createReset(s.users, b.email) } as T;
+  if (path === "/auth/reset-password") { await resetPassword(b.token, b.password); return null as T; }
+  if (path === "/account/change-password" && signedIn !== "anon") {
+    await verify(s.users, signedIn, b.currentPassword).catch(() => { throw new ApiError(422, "validation_failed", "Some fields are not valid.", { currentPassword: ["Current password is incorrect."] }); });
+    await setPassword(signedIn, String(b.newPassword ?? "")); return null as T;
+  }
   if (path === "/marketing/coupons/check") {
     const list = (lookup(s, "anon", "/marketing/coupons", new URLSearchParams()) ?? []) as { code: string; description: string; discountType: string; discountValue: number; maxDiscount?: number; minAmount: number; appliesTo: string }[];
     const code = String(b.code ?? "").trim().toUpperCase(), amount = Number(b.amount ?? 0), kind = String(b.kind ?? "");
@@ -105,4 +159,4 @@ export async function standaloneApi<T>(method: string, path: string, qs: URLSear
 }
 
 /** Standalone sessions: signed in whenever an account is remembered in this browser. */
-export const standaloneRefresh = () => !!standaloneAccount();
+export const standaloneRefresh = (realm: Realm = currentRealm()) => !!standaloneAccount(realm);

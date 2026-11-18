@@ -1,0 +1,1696 @@
+[
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/calendar",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/compare",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/hotels",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/flights",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/buses",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/taxis",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/deals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/help",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/contact",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/credits",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/legal/privacy.notice",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/legal/terms",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/legal/cookies",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/login",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/register",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/forgot-password",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/admin/login",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/admin/register",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours/sun-moon-lake-lodge-2d1n",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours/alishan-sunrise-2d1n",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours/tainan-food-weekend-2d1n",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours/east-rift-valley-3d2n",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/tours/kinmen-heritage-3d2n",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/alishan",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/sun-moon-lake",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/hualien-taitung",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/kinmen",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/taipei",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/destinations/tainan",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/kinmen-courtyard-inn-courtyard-room",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/rift-valley-inn-garden-double",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/old-capital-house-heritage-double",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/cypress-lodge-mountain-twin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/lakeside-hotel-lake-view-twin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/xinyi-skyline-hotel-deluxe-king",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/xinyi-skyline-hotel-family-suite",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/formosa-sky-fs101",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/formosa-sky-fs102",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/island-hopper-ih501",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/island-hopper-ih701",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/island-hopper-ih601",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/formosa-sky-fs201",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/formosa-sky-fs301",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/formosa-sky-fs302",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/lake-line-l2",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/mountain-line-m1",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/central-line-c1-express",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/central-line-c1-express-b-c1-tnn-tpe",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/city-transfer-sedan-up-to-4",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/airport-transfer-sedan-up-to-4-t-tpe-zs-sed",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/airport-transfer-sedan-up-to-4",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/airport-transfer-sedan-up-to-4-t-khh-tnn-sed",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/airport-transfer-van-up-to-7",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "visitor",
+    "path": "/services/airport-transfer-accessible-van",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/approvals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/departures",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/tasks",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/group-sim",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/services",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/service-bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/suppliers",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/reconciliation",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/business-units",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/cost-assumptions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/promotions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/coupons",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/contacts",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/help",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/users",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/departures",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/tasks",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/group-sim",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/services",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/service-bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/business-units",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/contacts",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin/approvals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/approvals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/tasks",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/services",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/service-bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/suppliers",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/reconciliation",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/promotions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/coupons",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/services",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/service-bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/business-units",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/promotions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/coupons",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/contacts",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/help",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/approvals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/departures",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/tasks",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/group-sim",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/services",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/service-bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/suppliers",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/business-units",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/cost-assumptions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/promotions",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/coupons",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/contacts",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/destinations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/calendar",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/compare",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/hotels",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/flights",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/buses",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/taxis",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/deals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/help",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/contact",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/for-you",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/for-you",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/tours",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/destinations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/calendar",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/compare",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/hotels",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/flights",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/buses",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/taxis",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/deals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/help",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/contact",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/for-you",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/for-you",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/assistant",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/credits",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/legal/privacy.notice",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/legal/terms",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/legal/cookies",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/login",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/register",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/forgot-password",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/admin/login",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "visitor",
+    "path": "/admin/register",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/search",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/reservations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/proposals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/documents",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/scenarios",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/templates",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/constraints",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/users",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "system_admin",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ai_engineer",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ai_engineer",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ai_engineer",
+    "path": "/admin/proposals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ai_engineer",
+    "path": "/admin/scenarios",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ai_engineer",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/search",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/reservations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/proposals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/documents",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/scenarios",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_agent",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/search",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/reservations",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/proposals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/documents",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/scenarios",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/templates",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/constraints",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "ops_supervisor",
+    "path": "/admin/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/assistant",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/new",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/assistant",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/new",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/1",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/4",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/assistant",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/new",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/account",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/bookings",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/my/trips",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/assistant",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/new",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/2",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "ai",
+    "who": "traveler",
+    "path": "/trips/3",
+    "ok": true,
+    "errs": []
+  }
+]

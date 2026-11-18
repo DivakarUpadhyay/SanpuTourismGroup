@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, get, post, refreshSession, session } from "./api";
+import { api, get, post, refreshSession, session, type Realm } from "./api";
 
 export interface AuthUser { id: string; email: string; displayName: string; userType: "Staff" | "Customer"; mustChangePassword: boolean }
 export interface Me { user: AuthUser; permissions: string[]; roles: string[]; phoneMasked?: string | null; preferredLanguage: string; lastLoginAtUtc?: string | null }
@@ -19,7 +19,8 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+/** Session of one area (realm): "admin" for /admin/..., "site" for the customer site. */
+export function AuthProvider({ children, realm = "site" }: { children: ReactNode; realm?: Realm }) {
   const [status, setStatus] = useState<AuthState["status"]>("loading");
   const [me, setMe] = useState<Me | null>(null);
 
@@ -29,35 +30,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMe(m); setStatus("authenticated");
       return m;
     } catch {
-      session.set(null); setMe(null); setStatus("anonymous");
+      session.set(null, realm); setMe(null); setStatus("anonymous");
       return null;
     }
-  }, []);
+  }, [realm]);
 
   useEffect(() => {
     (async () => {
-      if (await refreshSession()) await reload();
+      if (await refreshSession(realm)) await reload();
       else setStatus("anonymous");
     })();
     return session.onExpired(() => { setMe(null); setStatus("anonymous"); });
-  }, [reload]);
+  }, [reload, realm]);
 
   const login = useCallback(async (email: string, password: string) => {
     const r = await post<{ accessToken: string }>("/auth/login", { email, password });
-    session.set(r.accessToken);
+    session.set(r.accessToken, realm);
     return (await reload())!;
-  }, [reload]);
+  }, [reload, realm]);
 
   const register = useCallback(async (email: string, displayName: string, password: string) => {
     const r = await post<{ accessToken: string }>("/auth/register", { email, displayName, password });
-    session.set(r.accessToken);
+    session.set(r.accessToken, realm);
     return (await reload())!;
-  }, [reload]);
+  }, [reload, realm]);
 
   const logout = useCallback(async () => {
     try { await api("/auth/logout", { method: "POST", body: {} }); } catch { /* already signed out */ }
-    session.set(null); setMe(null); setStatus("anonymous");
-  }, []);
+    session.set(null, realm); setMe(null); setStatus("anonymous");
+  }, [realm]);
 
   const value = useMemo<AuthState>(() => ({
     status, me, login, register, logout, reload,

@@ -16,12 +16,17 @@ public sealed class Db(DbOptions options)
         [50001] = 404, [50009] = 409, [50010] = 422, [50011] = 409, [50012] = 409, [50013] = 422, [50020] = 409, [50021] = 409,
         [50022] = 409, [50030] = 409, [50031] = 409, [50032] = 403, [50033] = 409, [50034] = 403, [50035] = 422, [50036] = 409,
         [50037] = 409, [50038] = 409, [50039] = 429, [50040] = 400, [50041] = 422, [50090] = 409,
-        [50060] = 422, [50061] = 422, [50062] = 422, [50063] = 409, [50064] = 422, [50065] = 422, [50066] = 409, [50067] = 409
+        [50060] = 422, [50061] = 422, [50062] = 422, [50063] = 409, [50064] = 422, [50065] = 422, [50066] = 409, [50067] = 409,
+        [50070] = 422, [50071] = 409, [50072] = 409, [50073] = 422
     };
 
     private static readonly Dictionary<string, string> Messages = new()
     {
         ["not_found"] = "The record was not found.",
+        ["past_date"] = "That date has already passed. Choose a future date.",
+        ["quote_expired"] = "This price was held for 30 minutes and has expired. Ask the assistant for a fresh quote.",
+        ["not_payable"] = "This booking cannot be paid or changed any more.",
+        ["bad_amount"] = "That amount is more than what is left to pay.",
         ["coupon_not_found"] = "That coupon code is not valid.",
         ["coupon_expired"] = "That coupon code is not active on these dates.",
         ["coupon_min_amount"] = "Your total is below the minimum for this coupon.",

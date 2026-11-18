@@ -34,7 +34,7 @@ BEGIN
     ORDER BY x.NextDeparture, t.Title;
 END;
 GO
-CREATE OR ALTER PROCEDURE dbo.usp_Catalog_GetTour @Code varchar(30) AS
+CREATE OR ALTER PROCEDURE dbo.usp_Catalog_GetTour @Code varchar(150) AS
 BEGIN
     SET NOCOUNT ON;
     SELECT t.TourId, t.Code, t.Slug, t.Title, t.Slogan, t.Days, t.BasePrice, t.Currency, t.Summary, t.IsDemo,

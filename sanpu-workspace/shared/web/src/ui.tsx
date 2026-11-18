@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { ApiError } from "./api";
 import { DatePickerInput } from "./datepicker";
 
@@ -82,7 +83,14 @@ export function Card({ title, children, actions }: { title?: string; children: R
   );
 }
 
-export function Kpi({ label, value, testId }: { label: string; value: ReactNode; testId?: string }) {
+/** Admin routes the signed-in staff member may open (filled by AdminShell from their menu). */
+export const AdminRoutesContext = createContext<string[] | null>(null);
+
+/** A dashboard number. With href it opens the page behind the number (only if the viewer may open that page). */
+export function Kpi({ label, value, testId, href, hint }: { label: string; value: ReactNode; testId?: string; href?: string; hint?: string }) {
+  const routes = useContext(AdminRoutesContext);
+  const allowed = href && (!routes || routes.some((r) => href === r || href.split("?")[0] === r || (r !== "/admin" && href.startsWith(r + "/"))));
+  if (allowed) return <Link className="kpi link" href={href!} data-testid={testId} title={hint ?? `Open ${label.toLowerCase()}`}><b>{value}</b><span>{label}</span><i aria-hidden="true">→</i></Link>;
   return <div className="kpi" data-testid={testId}><b>{value}</b><span>{label}</span></div>;
 }
 
@@ -100,12 +108,19 @@ export const Demo = (_: { show?: boolean }) => null;
 
 export function ErrorBox({ error, retry }: { error: unknown; retry?: () => void }) {
   if (!error) return null;
+  // the online preview (no booking service) explains calmly instead of showing an error
+  if (error instanceof ApiError && error.code === "offline_only") return (
+    <div className="alert info offline-note" role="status" data-testid="offline-note">
+      <b>Opens when our booking service is live</b>
+      <span>{error.message}</span>
+      <div className="form-actions"><button className="btn small" onClick={() => history.back()}>Go back</button><a className="btn small subtle" href="/">Home</a></div>
+    </div>
+  );
   const forbidden = error instanceof ApiError && error.status === 403;
   return (
     <div className="alert error" role="alert" data-testid="error-box">
       {forbidden ? "You do not have permission to see this." : errorText(error)}
-      {error instanceof ApiError && error.correlationId && <span className="cid">Correlation ID: {error.correlationId}</span>}
-      {retry && !forbidden && <div style={{ marginTop: 6 }}><button className="btn small" onClick={retry}>Retry</button></div>}
+      {retry && !forbidden && <div style={{ marginTop: 6 }}><button className="btn small" onClick={retry}>Try again</button></div>}
     </div>
   );
 }
@@ -235,11 +250,36 @@ export function Tabs({ tabs, value, onChange }: { tabs: { key: string; label: st
 
 // ---------------- table ----------------
 export interface Column<T> { key: string; header: string; render?: (row: T) => ReactNode; className?: string }
-export function DataTable<T>({ rows, columns, rowKey, onRowClick, caption, testId }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; onRowClick?: (r: T) => void; caption?: string; testId?: string }) {
+/** Excel / PDF download for a table (admin area only; uses the page title as the report name). */
+function ReportButtons({ table }: { table: React.RefObject<HTMLTableElement | null> }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const run = async (kind: "xlsx" | "pdf") => {
+    if (!table.current) return;
+    setBusy(kind);
+    try {
+      const { readTable, downloadExcel, downloadPdf } = await import("./reports");
+      const title = (document.querySelector("main h1")?.textContent ?? "Report").trim();
+      const brand = (document.querySelector(".brand-name")?.textContent ?? "Sanpu").trim();
+      const data = { title, brand, ...readTable(table.current) };
+      await (kind === "xlsx" ? downloadExcel(data) : downloadPdf(data));
+    } finally { setBusy(null); }
+  };
+  return (
+    <div className="report-bar" role="group" aria-label="Download this table">
+      <button type="button" className="btn small subtle" onClick={() => run("xlsx")} disabled={!!busy} data-testid="export-xlsx">{busy === "xlsx" ? "Preparing…" : "Excel"}</button>
+      <button type="button" className="btn small subtle" onClick={() => run("pdf")} disabled={!!busy} data-testid="export-pdf">{busy === "pdf" ? "Preparing…" : "PDF"}</button>
+    </div>
+  );
+}
+
+export function DataTable<T>({ rows, columns, rowKey, onRowClick, caption, testId, exportable }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; onRowClick?: (r: T) => void; caption?: string; testId?: string; exportable?: boolean }) {
+  const ref = useRef<HTMLTableElement>(null);
+  const inAdmin = useContext(AdminRoutesContext) !== null;
   if (rows.length === 0) return <Empty />;
   return (
     <div className="table-wrap">
-      <table className="data" data-testid={testId}>
+      {(exportable ?? inAdmin) && rows.length > 0 && <ReportButtons table={ref} />}
+      <table className="data" data-testid={testId} ref={ref}>
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead><tr>{columns.map((c) => <th key={c.key} scope="col">{c.header}</th>)}</tr></thead>
         <tbody>

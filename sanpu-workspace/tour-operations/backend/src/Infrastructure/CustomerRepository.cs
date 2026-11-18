@@ -11,6 +11,9 @@ public sealed class CustomerRepository(Db db) : ICustomerRepository
 {
     private static IReadOnlyList<T> L<T>(IEnumerable<T> x) => x.AsList();
 
+    public Task<IReadOnlyList<PaymentTxRow>> PaymentsAsync(string? status, string? orderType, string? search, int page, int pageSize, CancellationToken ct) =>
+        db.QueryAsync<PaymentTxRow>("dbo.usp_Payment_ListAll", new { Status = status, OrderType = orderType, Search = search, Page = page, PageSize = pageSize }, ct);
+
     // ---------- media ----------
     public async Task<MediaInsertRow> InsertMediaAsync(string fileName, string originalName, string contentType, int sizeBytes, string sha256, Guid uploadedBy, string correlationId, CancellationToken ct) =>
         (await db.QuerySingleAsync<MediaInsertRow>("dbo.usp_Media_Insert", new { FileName = fileName, OriginalName = originalName, ContentType = contentType, SizeBytes = sizeBytes, Sha256 = sha256, UploadedBy = uploadedBy, CorrelationId = correlationId }, ct))!;

@@ -107,7 +107,7 @@ WHERE s.value <> '' AND NOT EXISTS (SELECT 1 FROM dbo.MenuPermissions x WHERE x.
 
 DECLARE @S TABLE (K varchar(150), V nvarchar(max), T varchar(20), C varchar(50), D nvarchar(500), Vj nvarchar(1000), Pub bit, Ed bit);
 INSERT @S VALUES
- ('Ui.BrandName', N'Sanpu Trip Copilot', 'String', 'Content', N'Product name in the header', N'{"maxLength":60}', 1, 1),
+ ('Ui.BrandName', N'Sanpu AI Travel', 'String', 'Content', N'Product name in the header', N'{"maxLength":60}', 1, 1),
  ('Ui.HeroTagline', N'Energetic, with big ambitions', 'String', 'Content', N'Gold tagline above the home title', N'{"maxLength":60}', 1, 1),
  ('Ui.HeroTitle', N'Trips that recover on their own, with a human saying yes', 'String', 'Content', N'Home page title', N'{"maxLength":120}', 1, 1),
  ('Ui.DemoLabel', N'', 'String', 'Content', N'Badge shown on seeded demo records', N'{"maxLength":40}', 1, 1),

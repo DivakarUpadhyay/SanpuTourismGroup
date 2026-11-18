@@ -15,7 +15,7 @@ public sealed class AnthropicProvider(ISecretStore secrets) : IAiProvider
 {
     private readonly string? _key = secrets.Get("ANTHROPIC_API_KEY");
     public string Name => "Anthropic";
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(_key);
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(_key) && _key!.StartsWith("sk-", StringComparison.Ordinal);   // a placeholder is not a key
 
     public async Task<AiCompletion> CompleteAsync(string model, string system, string user, int maxTokens, TimeSpan timeout, CancellationToken ct)
     {
@@ -200,6 +200,8 @@ public sealed class AiOpsRepository(Db db) : IAiOpsRepository
 
     public Task<(DashKpiRow Kpis, IReadOnlyList<DashProposalRow> Recent, IReadOnlyList<DashRegionRow> ByRegion)> DashboardAsync(CancellationToken ct) =>
         db.MultipleAsync("dbo.usp_AiOps_Dashboard", null, async g => (await g.ReadFirstAsync<DashKpiRow>(), L(await g.ReadAsync<DashProposalRow>()), L(await g.ReadAsync<DashRegionRow>())), ct);
+
+    public async Task<string?> UserDisplayNameAsync(Guid userId, CancellationToken ct) => (await db.QueryAsync<string>("dbo.usp_User_DisplayName", new { UserId = userId }, ct)).FirstOrDefault();
 
     public async Task<Guid?> UserIdByEmailAsync(string normalizedEmail, CancellationToken ct) =>
         (await db.QuerySingleAsync<UserAuthRow>("dbo.usp_Auth_GetUserByEmail", new { NormalizedEmail = normalizedEmail }, ct))?.UserId;

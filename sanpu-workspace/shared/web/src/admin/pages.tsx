@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ImagePicker } from "../image-picker";
+import { Icon } from "../icons";
 import { get, post, put, del } from "../api";
 import { useAuth, type MenuNode } from "../auth";
 import {
@@ -54,6 +55,37 @@ function AuditTable({ rows }: { rows: Audit[] }) {
 }
 
 // ---------------- users & onboarding ----------------
+interface AccessRequest { userId: string; email: string; displayName: string; approvalStatus: string; requestNote?: string | null; requestedAtUtc?: string | null; requestedRoleKey?: string | null; requestedRoleName?: string | null }
+
+/** Staff sign-up requests waiting for a decision (shown above the user list). */
+function AccessRequests({ canEdit, roles, onDone }: { canEdit: boolean; roles: Role[]; onDone: () => void }) {
+  const list = useAsync(() => get<AccessRequest[]>("/admin/users/access-requests"), []);
+  const [pick, setPick] = useState<Record<string, string>>({});
+  const a = useAction();
+  const pending = (list.data ?? []).filter((r) => r.approvalStatus === "Pending");
+  if (!pending.length) return null;
+  const decide = async (r: AccessRequest, approve: boolean) => {
+    const roleKey = pick[r.userId] ?? r.requestedRoleKey;
+    if (await a.run(() => post(`/admin/users/access-requests/${r.userId}`, { approve, roleKey }), approve ? `${r.displayName} can now sign in` : "Request rejected") !== undefined) { list.reload(); onDone(); }
+  };
+  return (
+    <section className="access-req" data-testid="access-requests" aria-label="Access requests">
+      <h2><Icon name="users" size={18} /> Access requests <span className="pill warn">{pending.length} waiting</span></h2>
+      <FormError error={a.error} />
+      <ul>{pending.map((r) => (
+        <li key={r.userId} data-testid={`ar-${r.email}`}>
+          <span className="who"><b>{r.displayName}</b><small>{r.email}{r.requestedAtUtc ? ` · ${fmtDateTime(r.requestedAtUtc)}` : ""}</small>{r.requestNote && <em>“{r.requestNote}”</em>}</span>
+          {canEdit ? <span className="act">
+            <SelectInput label="Role" value={pick[r.userId] ?? r.requestedRoleKey ?? ""} onChange={(v) => setPick({ ...pick, [r.userId]: v })}
+              options={roles.filter((x) => x.isActive !== false).map((x) => ({ value: x.roleKey, label: x.roleName }))} testId={`ar-role-${r.email}`} />
+            <button className="btn primary small" disabled={a.busy} onClick={() => decide(r, true)} data-testid={`ar-approve-${r.email}`}>Approve</button>
+            <button className="btn small subtle" disabled={a.busy} onClick={() => decide(r, false)} data-testid={`ar-reject-${r.email}`}>Reject</button>
+          </span> : <span className="pill">{r.requestedRoleName ?? r.requestedRoleKey}</span>}
+        </li>))}</ul>
+    </section>
+  );
+}
+
 export function UsersPage() {
   const { has, me } = useAuth();
   const canEdit = has("Admin.Users.Edit");
@@ -64,7 +96,8 @@ export function UsersPage() {
   const [selected, setSelected] = useState<string | null>(null);
   return (
     <>
-      <PageHeader tagline="People" title="Users & onboarding" lead="Invite people, give them roles, and control their access. Admins never set or see passwords: invitees choose their own through a one-time link."
+      <AccessRequests canEdit={canEdit} roles={roles.data?.roles ?? []} onDone={users.reload} />
+      <PageHeader tagline="People" title="Users & onboarding" lead="Invite people, give them roles, and control their access. Admins never set or see passwords: people choose their own when they sign up or accept an invitation."
         actions={canEdit && <button className="btn primary" onClick={() => setInviting(true)} data-testid="invite-open">Invite user</button>} />
       <div className="toolbar">
         <TextInput label="Search" value={filter.search} onChange={(v) => setFilter({ ...filter, search: v, page: 1 })} placeholder="name or email" data-testid="users-search" />

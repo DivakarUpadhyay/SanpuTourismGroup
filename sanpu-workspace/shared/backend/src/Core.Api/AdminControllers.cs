@@ -28,6 +28,18 @@ public sealed class AdminUsersController(AdminService admin) : ControllerBase
     public Task<PagedResult<UserListRow>> List([FromQuery] string? search, [FromQuery] string? status, [FromQuery] string? userType, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct) =>
         admin.ListUsersAsync(search, status, userType, page, pageSize, ct);
 
+    /// <summary>Staff sign-up requests (pending first).</summary>
+    [HttpGet("access-requests"), HasPermission("Admin.Users.View")]
+    public Task<IReadOnlyList<AccessRequestRow>> AccessRequests([FromServices] AccessRequestService requests, CancellationToken ct) => requests.ListAsync(ct);
+
+    /// <summary>Approve (activate + grant a role, the requested one by default) or reject a staff sign-up request.</summary>
+    [HttpPost("access-requests/{id:guid}"), HasPermission("Admin.Users.Edit")]
+    public async Task<IActionResult> DecideAccessRequest(Guid id, DecideAccessRequest request, [FromServices] AccessRequestService requests, CancellationToken ct)
+    {
+        await requests.DecideAsync(id, request, ct);
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}"), HasPermission("Admin.Users.View")]
     public Task<UserDetail> Get(Guid id, CancellationToken ct) => admin.GetUserAsync(id, ct);
 

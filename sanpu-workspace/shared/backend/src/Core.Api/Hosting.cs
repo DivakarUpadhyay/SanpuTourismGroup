@@ -76,9 +76,12 @@ public static class SanpuHosting
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<ISettings, CachedSettings>();
-        services.AddScoped<IEmailSender, DevOutboxEmailSender>();
+        services.AddScoped<IEmailSender, SmtpOrOutboxEmailSender>();
         services.AddScoped<NotificationService>();
+        services.AddScoped<Mailer>();
         services.AddScoped<AuthService>();
+        services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
+        services.AddScoped<AccessRequestService>();
         services.AddScoped<AdminService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<AccountService>();

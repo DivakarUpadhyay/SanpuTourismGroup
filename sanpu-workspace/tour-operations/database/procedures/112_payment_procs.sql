@@ -118,3 +118,30 @@ BEGIN
     WHERE OrderType = @OrderType AND OrderId = @OrderId AND CustomerUserId = @UserId AND Status IN ('Paid','Failed') ORDER BY CreatedAtUtc DESC;
 END;
 GO
+/* Staff: every payment transaction (tour and service bookings), newest first, with filters and totals. */
+CREATE OR ALTER PROCEDURE dbo.usp_Payment_ListAll
+    @Status varchar(20) = NULL, @OrderType varchar(10) = NULL, @Search nvarchar(100) = NULL, @Page int = 1, @PageSize int = 50
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @S nvarchar(102) = CASE WHEN @Search IS NULL OR LTRIM(@Search) = '' THEN NULL ELSE N'%' + LTRIM(RTRIM(@Search)) + N'%' END;
+    ;WITH x AS (
+        SELECT p.IntentId, p.MerchantTradeNo, p.OrderType, p.OrderId, p.OrderRef, p.Mode, p.Amount, p.Currency, p.Provider, p.Status,
+               p.ProviderTradeNo, p.ProviderMessage, p.PaymentMethod, p.CreatedAtUtc, p.CompletedAtUtc, u.DisplayName AS CustomerName, u.Email AS CustomerEmail,
+               COALESCE(t.Title, s.Name) AS ItemName
+        FROM dbo.PaymentIntents p
+        JOIN dbo.Users u ON u.UserId = p.CustomerUserId
+        LEFT JOIN dbo.Bookings b ON p.OrderType = 'Tour' AND b.BookingId = p.OrderId
+        LEFT JOIN dbo.Departures d ON d.DepartureId = b.DepartureId
+        LEFT JOIN dbo.Tours t ON t.TourId = d.TourId
+        LEFT JOIN dbo.ServiceBookings sb ON p.OrderType = 'Service' AND sb.ServiceBookingId = p.OrderId
+        LEFT JOIN dbo.TravelServices s ON s.ServiceId = sb.ServiceId
+        WHERE (@Status IS NULL OR p.Status = @Status) AND (@OrderType IS NULL OR p.OrderType = @OrderType)
+          AND (@S IS NULL OR p.OrderRef LIKE @S OR p.MerchantTradeNo LIKE @S OR u.Email LIKE @S OR u.DisplayName LIKE @S))
+    SELECT *, COUNT(*) OVER () AS TotalCount,
+           SUM(CASE WHEN Status = 'Paid' THEN Amount ELSE 0 END) OVER () AS PaidTotal,
+           SUM(CASE WHEN Status = 'Pending' THEN 1 ELSE 0 END) OVER () AS PendingCount,
+           SUM(CASE WHEN Status = 'Failed' THEN 1 ELSE 0 END) OVER () AS FailedCount
+    FROM x ORDER BY CreatedAtUtc DESC OFFSET (@Page - 1) * @PageSize ROWS FETCH NEXT @PageSize ROWS ONLY;
+END;
+GO

@@ -24,14 +24,14 @@ export function OpsDashboard() {
       <Async state={d}>{(x) => (
         <>
           <div className="kpis">
-            <Kpi label="Bookings today" value={x.kpis.bookingsToday} testId="kpi-bookings-today" />
-            <Kpi label="Pending approvals" value={x.kpis.pendingApprovals} testId="kpi-pending" />
-            <Kpi label="Seats on hold" value={x.kpis.seatsOnHold} />
-            <Kpi label="Load factor (60 days)" value={pct(x.kpis.loadFactorPct)} />
-            <Kpi label="Open tasks / overdue" value={`${x.kpis.openTasks} / ${x.kpis.overdueTasks}`} />
-            <Kpi label="Unreconciled" value={money(x.kpis.unreconciledAmount)} />
-            <Kpi label="Failed integrations" value={x.kpis.failedIntegrations} />
-            <Kpi label="Confirmed revenue" value={money(x.kpis.confirmedRevenue)} />
+            <Kpi label="Bookings today" value={x.kpis.bookingsToday} testId="kpi-bookings-today" href="/admin/bookings" />
+            <Kpi label="Pending approvals" value={x.kpis.pendingApprovals} testId="kpi-pending" href="/admin/approvals" />
+            <Kpi label="Seats on hold" value={x.kpis.seatsOnHold} href="/admin/departures" />
+            <Kpi label="Load factor (60 days)" value={pct(x.kpis.loadFactorPct)} href="/admin/departures" />
+            <Kpi label="Open tasks / overdue" value={`${x.kpis.openTasks} / ${x.kpis.overdueTasks}`} href="/admin/tasks" />
+            <Kpi label="Unreconciled" value={money(x.kpis.unreconciledAmount)} href="/admin/reconciliation" />
+            <Kpi label="Supplier issues" value={x.kpis.failedIntegrations} href="/admin/suppliers" hint="Suppliers with messages that need attention" />
+            <Kpi label="Confirmed revenue" value={money(x.kpis.confirmedRevenue)} href="/admin/bookings" />
           </div>
           <div className="grid two">
             <Card title="Upcoming departures">

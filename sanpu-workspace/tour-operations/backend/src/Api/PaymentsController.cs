@@ -42,3 +42,13 @@ public sealed class PaymentsController(PaymentService payments, ILogger<Payments
         return intent;
     }
 }
+
+[ApiController, Route("api/v1/ops/payments"), Tags("Payments (staff)")]
+public sealed class OpsPaymentsController(Divakar.Sanpu.Erp.Application.ICustomerRepository repo) : ControllerBase
+{
+    /// <summary>Every payment transaction (gateway or simulated): deposits, balances and full payments, paid, pending or failed.</summary>
+    [HttpGet, HasPermission("Finance.Payment|Finance.Reconcile|Booking.View")]
+    public Task<IReadOnlyList<Divakar.Sanpu.Erp.Application.PaymentTxRow>> List([FromQuery] string? status, [FromQuery] string? orderType, [FromQuery] string? search, [FromQuery] int? page, CancellationToken ct) =>
+        repo.PaymentsAsync(status is "Paid" or "Pending" or "Failed" ? status : null, orderType is "Tour" or "Service" ? orderType : null,
+            string.IsNullOrWhiteSpace(search) ? null : search.Trim()[..Math.Min(100, search.Trim().Length)], Math.Max(1, page ?? 1), 50, ct);
+}

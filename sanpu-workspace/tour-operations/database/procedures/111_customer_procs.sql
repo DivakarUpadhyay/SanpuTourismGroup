@@ -266,7 +266,7 @@ END;
 GO
 
 /* ================= DISCOVERY: views, recommendations, calendar, compare, destination guide ================= */
-CREATE OR ALTER PROCEDURE dbo.usp_Tour_RecordView @TourCode varchar(30), @UserId uniqueidentifier = NULL AS
+CREATE OR ALTER PROCEDURE dbo.usp_Tour_RecordView @TourCode varchar(150), @UserId uniqueidentifier = NULL AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @TourId int = (SELECT TourId FROM dbo.Tours WHERE (Code = @TourCode OR Slug = @TourCode) AND IsPublished = 1);
@@ -348,7 +348,7 @@ BEGIN
     ORDER BY CAST(j.[key] AS int);
 END;
 GO
-CREATE OR ALTER PROCEDURE dbo.usp_Destinations_Get @Code varchar(20) AS
+CREATE OR ALTER PROCEDURE dbo.usp_Destinations_Get @Code varchar(150) AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Id int = (SELECT DestinationId FROM dbo.Destinations WHERE (Code = @Code OR Slug = @Code) AND IsActive = 1);
@@ -401,7 +401,7 @@ GO
 /* Atomic booking (no separate hold): locks every inventory row it needs, checks capacity, applies a coupon, confirms instantly.
    Idempotent per (customer, key): a retry returns the same booking. */
 CREATE OR ALTER PROCEDURE dbo.usp_ServiceBooking_Create
-    @UserId uniqueidentifier, @ServiceCode varchar(30), @Date date, @EndDate date = NULL, @Units int, @Travelers int, @LeadName nvarchar(100),
+    @UserId uniqueidentifier, @ServiceCode varchar(150), @Date date, @EndDate date = NULL, @Units int, @Travelers int, @LeadName nvarchar(100),
     @LeadPhoneEnc varbinary(512) = NULL, @LeadPhoneMasked nvarchar(30) = NULL, @PickupAddress nvarchar(200) = NULL, @PickupTime time(0) = NULL,
     @Notes nvarchar(500) = NULL, @CouponCode varchar(30) = NULL, @IdempotencyKey varchar(64), @CorrelationId varchar(64) = NULL
 AS
@@ -563,7 +563,7 @@ END;
 GO
 /* Detail page: the service, a 45-day price/availability calendar from @From, and up to 4 similar options
    (same type, same city for hotels or same route/destination city for transport). */
-CREATE OR ALTER PROCEDURE dbo.usp_Services_Get @Code varchar(30), @From date AS
+CREATE OR ALTER PROCEDURE dbo.usp_Services_Get @Code varchar(150), @From date AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Sid int, @Kind varchar(10), @FromPlace int, @ToPlace int;

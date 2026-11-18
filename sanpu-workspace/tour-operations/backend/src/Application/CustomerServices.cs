@@ -160,7 +160,7 @@ public sealed class MarketingService(ICustomerRepository repo, ICurrentUser curr
     public Task<IReadOnlyList<RedemptionRow>> RedemptionsAsync(int couponId, CancellationToken ct) => repo.RedemptionsAsync(couponId, ct);
 }
 
-public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser current, IPiiProtector pii)
+public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser current, IPiiProtector pii, Mailer mail, AppLinks links)
 {
     public Task<IReadOnlyList<PlaceRow>> PlacesAsync(string? kind, CancellationToken ct) =>
         repo.PlacesAsync(CustomerRules.ServiceKinds.Contains(kind) ? kind : null, ct);
@@ -187,7 +187,7 @@ public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser
             sort is "rating" or "time" ? sort : "price", ct);
     }
 
-    public Task<ServiceBookedRow> BookAsync(ServiceBookRequest r, CancellationToken ct)
+    public async Task<ServiceBookedRow> BookAsync(ServiceBookRequest r, CancellationToken ct)
     {
         TimeSpan? pickup = null;
         new FieldErrors()
@@ -204,12 +204,26 @@ public sealed class TravelServicesService(ICustomerRepository repo, ICurrentUser
             .Check(r.AcceptTerms, "acceptTerms", "Please accept the terms and privacy notice.")
             .Check(Regex.IsMatch(r.IdempotencyKey ?? "", "^[A-Za-z0-9\\-]{8,64}$"), "idempotencyKey", "Send an 8–64 character idempotency key.")
             .ThrowIfAny();
-        return repo.BookServiceAsync(current.RequireUserId(), r with { LeadName = r.LeadName.Trim(), CouponCode = r.CouponCode?.Trim().ToUpperInvariant() },
+        var booked = await repo.BookServiceAsync(current.RequireUserId(), r with { LeadName = r.LeadName.Trim(), CouponCode = r.CouponCode?.Trim().ToUpperInvariant() },
             pii.Protect(r.LeadPhone.Trim()), Mask.Phone(r.LeadPhone), pickup, current.CorrelationId, ct);
+        var row = (await repo.MyServiceBookingsAsync(current.RequireUserId(), ct)).FirstOrDefault(x => x.ServiceBookingId == booked.ServiceBookingId);
+        if (row is not null)
+            await mail.ToMeAsync("email.service_booked", new()
+            {
+                ["kind"] = row.Kind, ["kindLower"] = row.Kind.ToLowerInvariant(), ["ref"] = row.BookingRef, ["item"] = row.ServiceName,
+                ["date"] = row.StartDate.ToString("ddd d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) + (row.Kind == "Hotel" ? " – " + row.EndDate.ToString("ddd d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture) : ""), ["pax"] = row.Travelers.ToString(),
+                ["total"] = Mailer.Money(row.TotalAmount, row.Currency), ["status"] = row.Status, ["link"] = $"{links.PublicBaseUrl}/my/bookings"
+            }, ct);
+        return booked;
     }
 
     public Task<IReadOnlyList<MyServiceBookingRow>> MineAsync(CancellationToken ct) => repo.MyServiceBookingsAsync(current.RequireUserId(), ct);
-    public Task CancelAsync(int id, CancellationToken ct) => repo.CancelServiceBookingAsync(id, current.RequireUserId(), current.CorrelationId, ct);
+    public async Task CancelAsync(int id, CancellationToken ct)
+    {
+        await repo.CancelServiceBookingAsync(id, current.RequireUserId(), current.CorrelationId, ct);
+        var row = (await repo.MyServiceBookingsAsync(current.RequireUserId(), ct)).FirstOrDefault(x => x.ServiceBookingId == id);
+        await mail.ToMeAsync("email.booking_cancelled", new() { ["ref"] = row?.BookingRef ?? id.ToString(), ["item"] = row?.ServiceName ?? "", ["link"] = links.PublicBaseUrl }, ct);
+    }
 
     public Task<IReadOnlyList<OpsServiceRow>> OpsServicesAsync(string? kind, string? search, CancellationToken ct) =>
         repo.OpsServicesAsync(CustomerRules.ServiceKinds.Contains(kind) ? kind : null, string.IsNullOrWhiteSpace(search) ? null : search.Trim(), ct);

@@ -3,6 +3,7 @@ namespace Divakar.Sanpu.Core.Application;
 // ---------- rows returned by stored procedures (property names = column names) ----------
 public sealed record UserAuthRow
 {
+    public string? ApprovalStatus { get; init; }   // Pending / Rejected for staff sign-up requests
     public Guid UserId { get; init; }
     public string Email { get; init; } = "";
     public string DisplayName { get; init; } = "";

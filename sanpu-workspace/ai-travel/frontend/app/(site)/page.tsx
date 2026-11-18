@@ -1,3 +1,3 @@
 "use client";
-import { AiHome } from "@/components/traveler";
-export default function Page() { return <AiHome />; }
+import { CopilotHome } from "@/components/assistant";
+export default function Page() { return <CopilotHome />; }

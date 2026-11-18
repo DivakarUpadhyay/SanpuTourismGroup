@@ -9,7 +9,7 @@ namespace Divakar.Sanpu.Core.UnitTests;
 public class PasswordAndEmailTests
 {
     [Theory]
-    [InlineData("Short1A", "Use at least 12 characters.")]
+    [InlineData("Short1A", "Use at least 8 characters.")]
     [InlineData("alllowercase123", "Add an upper-case letter.")]
     [InlineData("ALLUPPERCASE123", "Add a lower-case letter.")]
     [InlineData("NoDigitsHereAtAll", "Add a digit.")]

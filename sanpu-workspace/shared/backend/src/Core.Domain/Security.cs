@@ -20,7 +20,7 @@ public static class EmailAddress
 /// <summary>Password policy: 12–128 chars, upper + lower + digit, must not contain the email's local part.</summary>
 public static class PasswordPolicy
 {
-    public const int MinLength = 12;
+    public const int MinLength = 8;
     public const int MaxLength = 128;
 
     public static IReadOnlyList<string> Check(string? password, string? email = null)

@@ -3,12 +3,16 @@
 // Needs the local stack running (web 3101/3102 + APIs). Usage: node tools/snapshot.mjs erp|ai
 import { chromium } from "playwright";
 import fs from "node:fs";
+import crypto from "node:crypto";
 
 const app = process.argv[2] ?? "erp";
 const cfg = app === "erp"
-  ? { base: "http://localhost:3101", logins: "tour-operations/LOGINS.local.txt", out: "tour-operations/frontend/public/snapshot/erp.json" }
-  : { base: "http://localhost:3102", logins: "ai-travel/LOGINS.local.txt", out: "ai-travel/frontend/public/snapshot/ai.json" };
-const accounts = fs.readFileSync(cfg.logins, "utf8").split(/\r?\n/).filter((l) => l && !l.startsWith("#") && !l.startsWith("email,")).map((l) => { const [email, password] = l.split(","); return { email, password }; });
+  ? { api: "http://localhost:5101/api/v1", base: "http://localhost:3101", logins: "tour-operations/LOGINS.local.txt", out: "tour-operations/frontend/public/snapshot/erp.json" }
+  : { api: "http://localhost:5102/api/v1", base: "http://localhost:3102", logins: "ai-travel/LOGINS.local.txt", out: "ai-travel/frontend/public/snapshot/ai.json" };
+const accounts = fs.readFileSync(cfg.logins, "utf8").split(/\r?\n/).filter((l) => l && !l.startsWith("#") && !l.startsWith("email,"))
+  .map((l) => { const [email, password, roles] = l.split(","); return { email, password, staff: !/^(customer|traveler)$/.test(roles ?? "") }; });
+// the same hash the browser checks (standalone-auth.ts): PBKDF2-SHA256, 120k rounds; only the hash is published
+const hashOf = (password) => { const salt = crypto.randomBytes(16).toString("hex"); return { salt, hash: crypto.pbkdf2Sync(password, salt, 120000, 32, "sha256").toString("hex") }; };
 
 const responses = {};       // account -> key -> body
 const users = [];
@@ -34,7 +38,7 @@ async function crawl(account) {
   const got = (key) => bucket[key] ?? responses.anon?.[key];
 
   if (account) {
-    await visit("/login", 600);
+    await visit(account.staff ? "/admin/login" : "/login", 600);
     await page.getByTestId("login-email").fill(account.email); await page.getByTestId("login-password").fill(account.password);
     await page.getByTestId("login-submit").click(); await page.waitForTimeout(2500);
   }
@@ -57,7 +61,13 @@ async function crawl(account) {
   }
   if (account) {
     const me = bucket["/auth/me"];
-    if (me) users.push({ email: me.user.email, displayName: me.user.displayName, userType: me.user.userType, roles: me.roles });
+    if (me) users.push({ email: me.user.email, displayName: me.user.displayName, userType: me.user.userType, roles: me.roles, ...hashOf(account.password) });
+    // booking pages of every departure (customers)
+    if (app === "erp" && !account.staff)
+      for (const t of responses.anon["/catalog/tours?pax=1"] ?? []) {
+        const d = responses.anon[`/catalog/tours/${t.code}`];
+        for (const dep of (d?.departures ?? []).slice(0, 8)) await visit(`/book/${dep.departureId}`, 900);
+      }
     // own bookings / trips
     if (app === "erp") {
       await visit("/my/bookings"); await visit("/for-you"); await visit("/account");
@@ -80,6 +90,25 @@ async function crawl(account) {
   await ctx.close();
 }
 
+// public data straight from the API: every departure and every hotel / flight / bus / taxi detail page
+async function apiData() {
+  responses.anon ??= {};
+  const j = async (p, headers = {}) => { const r = await fetch(cfg.api + p, { headers }); return r.ok ? r.json() : null; };
+  if (app === "erp") {
+    const admin = accounts.find((a) => /^admin@/.test(a.email));
+    const login = await fetch(cfg.api + "/auth/login", { method: "POST", headers: { "Content-Type": "application/json", "X-Session-Realm": "admin" }, body: JSON.stringify({ email: admin.email, password: admin.password }) }).then((r) => r.json());
+    const services = (await j("/ops/services", { Authorization: `Bearer ${login.accessToken}`, "X-Session-Realm": "admin" })) ?? [];
+    for (const s of services.items ?? services)
+      for (const key of [s.slug, s.code].filter(Boolean)) { const d = await j(`/travel/services/${key}`); if (d) responses.anon[`/travel/services/${key}`] = d; }
+    for (const t of (await j("/catalog/tours?pax=1")) ?? []) {
+      const d = await j(`/catalog/tours/${t.code}`); if (!d) continue;
+      responses.anon[`/catalog/tours/${t.code}`] = d; if (t.slug) responses.anon[`/catalog/tours/${t.slug}`] = d;
+      for (const dep of d.departures ?? []) { const x = await j(`/catalog/departures/${dep.departureId}`); if (x) responses.anon[`/catalog/departures/${dep.departureId}`] = x; }
+    }
+  }
+  const roles = await j("/auth/staff-roles"); if (roles) responses.anon["/auth/staff-roles"] = roles;
+}
+await apiData();
 await crawl(null);
 for (const a of accounts) { console.log("crawling as", a.email); await crawl(a); }
 await browser.close();

@@ -14,7 +14,8 @@ public sealed class AuthService(
     // Same message for unknown email, wrong password and inactive account: no user enumeration.
     private static AppException InvalidCredentials() => new(401, "invalid_credentials", "Email or password is incorrect.");
 
-    public async Task<LoginResult> LoginAsync(LoginRequest request, CancellationToken ct)
+    /// <param name="requiredUserType">"Staff" for the admin panel, "Customer" for the customer site; null = any.</param>
+    public async Task<LoginResult> LoginAsync(LoginRequest request, string? requiredUserType, CancellationToken ct)
     {
         Validation.Ensure(new LoginValidator(), request);
         var user = await repo.GetUserByEmailAsync(EmailAddress.Normalize(request.Email), ct);
@@ -33,7 +34,15 @@ public sealed class AuthService(
             await repo.RecordLoginResultAsync(user.UserId, false, maxFailed, lockout, current.IpAddress, current.CorrelationId, ct);
             throw InvalidCredentials();
         }
+        if (!user.IsActive && user.ApprovalStatus == "Pending")
+            throw new AppException(403, "pending_approval", "Your access request is waiting for an administrator. You can sign in once it is approved.");
+        if (!user.IsActive && user.ApprovalStatus == "Rejected")
+            throw new AppException(403, "request_rejected", "Your access request was not approved. Contact an administrator if you think this is a mistake.");
         if (!user.IsActive) throw InvalidCredentials();
+        if (requiredUserType is not null && user.UserType != requiredUserType)
+            throw requiredUserType == "Staff"
+                ? new AppException(403, "wrong_portal", "This sign-in is for staff. Customers sign in on the customer site.")
+                : new AppException(403, "wrong_portal", "This sign-in is for customers. Staff sign in at /admin/login.");
 
         await repo.RecordLoginResultAsync(user.UserId, true, maxFailed, lockout, current.IpAddress, current.CorrelationId, ct);
         return await IssueAsync(user.UserId, user.Email, user.DisplayName, user.UserType, user.MustChangePassword, user.SecurityStamp, user.PermissionVersion, Guid.NewGuid(), ct);
@@ -102,6 +111,8 @@ public sealed class AuthService(
         var email = request.Email.Trim();
         var id = await repo.RegisterCustomerAsync(email, EmailAddress.Normalize(email), request.DisplayName.Trim(), hasher.Hash(request.Password), hasher.Algorithm, current.CorrelationId, ct);
         var state = await repo.GetSecurityStateAsync(id, ct) ?? throw AppException.NotFound("User");
+        try { await notifications.SendAsync("email.welcome", state.Email, new() { ["displayName"] = state.DisplayName, ["link"] = links.PublicBaseUrl }, ct); }
+        catch (Exception ex) when (ex is not OperationCanceledException) { /* the account exists; email is best effort */ }
         return await IssueAsync(id, state.Email, state.DisplayName, state.UserType, false, state.SecurityStamp, state.PermissionVersion, Guid.NewGuid(), ct);
     }
 
@@ -138,12 +149,15 @@ public sealed class AuthService(
 }
 
 /// <summary>Renders a ContentTemplates notification and hands it to the configured sender.</summary>
-public sealed class NotificationService(IAuthRepository repo, IEmailSender sender)
+public sealed class NotificationService(IAuthRepository repo, IEmailSender sender, ISettings settings, AppLinks links)
 {
     public async Task SendAsync(string templateKey, string to, Dictionary<string, string> values, CancellationToken ct, string locale = "en")
     {
         var template = await repo.GetContentAsync(templateKey, locale, ct) ?? throw new AppException(500, "template_missing", $"Notification template {templateKey} is missing.");
+        values.TryAdd("site", links.PublicBaseUrl);
+        values.TryAdd("brand", await settings.GetAsync("Ui.BrandName", ct) ?? "Sanpu");
         string Render(string text) => values.Aggregate(text, (acc, kv) => acc.Replace("{{" + kv.Key + "}}", kv.Value));
-        await sender.SendAsync(to, Render(template.Subject), Render(template.Body), ct);
+        var subject = Render(template.Subject);
+        await sender.SendAsync(to, subject, Mailer.Html(values["brand"], subject, Render(template.Body), links.PublicBaseUrl), ct);
     }
 }

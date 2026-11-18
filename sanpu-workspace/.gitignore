@@ -35,3 +35,4 @@ artifacts/newman/
 .vercel/
 
 storage/
+.live.local.json

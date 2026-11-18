@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { get, post } from "./api";
+import { get, post, realmOf, currentRealm } from "./api";
 import { allowedRoutes, isRouteAllowed, useAuth, type MenuNode } from "./auth";
 import { AuthProvider } from "./auth";
 import { Icon } from "./icons";
 import { BrandMark } from "./logo";
-import { ErrorBox, Loading, ToastProvider, useAsync } from "./ui";
+import { ErrorBox, Loading, ToastProvider, useAsync, AdminRoutesContext } from "./ui";
 
 /** Public, non-secret settings (IsPublic) and content blocks from SQL. Changing them in admin updates the UI without a rebuild. */
 interface PublicConfig { settings: Record<string, string>; content: { templateKey: string; locale: string; subject: string; body: string }[]; loaded?: boolean }
@@ -30,7 +30,9 @@ function ConfigProvider({ children }: { children: ReactNode }) {
 }
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <ToastProvider><ConfigProvider><AuthProvider>{children}</AuthProvider></ConfigProvider></ToastProvider>;
+  // admin and customer site keep separate sessions: crossing between them switches to that area's own sign-in
+  const realm = realmOf(usePathname() ?? "/");
+  return <ToastProvider><ConfigProvider><AuthProvider key={realm} realm={realm}>{children}</AuthProvider></ConfigProvider></ToastProvider>;
 }
 
 function useNavigation(area: "Admin" | "Customer") {
@@ -47,6 +49,9 @@ function Brand({ href }: { href: string }) {
 
 const initials = (name?: string) => (name ?? "?").replace(/\(.*?\)/g, "").trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 
+/** Sign-in page of the area the visitor is in. */
+export const loginPath = () => (currentRealm() === "admin" ? "/admin/login" : "/login");
+
 function UserMenu({ adminLink }: { adminLink?: boolean }) {
   const { status, me, logout } = useAuth();
   const router = useRouter();
@@ -57,8 +62,8 @@ function UserMenu({ adminLink }: { adminLink?: boolean }) {
     <div className="user-menu">
       {adminLink && (admin.data?.length ?? 0) > 0 && <Link className="btn small subtle" href="/admin" data-testid="nav-admin"><Icon name="settings" size={16} /><span className="hide-sm">Admin</span></Link>}
       <span className="avatar" aria-hidden="true">{initials(me?.user.displayName)}</span>
-      <span className="user-chip" data-testid="user-name" title={me?.user.email}>{me?.user.displayName}</span>
-      <button className="btn small subtle" data-testid="logout" aria-label="Sign out" onClick={async () => { await logout(); router.push("/login"); }}>
+      <Link className="user-chip" data-testid="user-name" title={`${me?.user.email} · My account`} href={currentRealm() === "admin" ? "/admin/account" : "/account"}>{me?.user.displayName}</Link>
+      <button className="btn small subtle" data-testid="logout" aria-label="Sign out" onClick={async () => { await logout(); router.push(loginPath()); }}>
         <Icon name="signout" size={16} /><span className="hide-sm">Sign out</span>
       </button>
     </div>
@@ -129,7 +134,7 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
   const newsletter = useSetting("Feature.Newsletter", "false") === "true";
   const { status } = useAuth();
   // landing and detail pages run edge to edge (full-width hero); every other page keeps the reading width
-  const bleed = path === "/" || /^\/(tours|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))(\/|$)?/.test(path);
+  const bleed = path === "/" || /^\/(login|register|assistant|tours|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))(\/|$)?/.test(path);
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
   // on pages that start with a photo hero the header floats over it, then turns solid once the page scrolls
@@ -199,7 +204,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const nav = useNavigation("Admin");
   const [open, setOpen] = useState(false);
-  useEffect(() => { if (status === "anonymous") router.replace(`/login?next=${encodeURIComponent(path)}`); }, [status, router, path]);
+  const isLogin = path === "/admin/login" || path === "/admin/register";
+  useEffect(() => { if (status === "anonymous" && !isLogin) router.replace(`/admin/login?next=${encodeURIComponent(path)}`); }, [status, router, path, isLogin]);
   useEffect(() => setOpen(false), [path]);
   useEffect(() => {
     if (!open) return;
@@ -207,11 +213,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
+  if (isLogin) return <main id="content">{children}</main>;   // staff sign-in page: no admin chrome
   if (status !== "authenticated" || (nav.loading && !nav.data)) return <div className="page"><Loading lines={5} /></div>;
   if (nav.error) return <div className="page"><ErrorBox error={nav.error} retry={nav.reload} /></div>;
   const tree = nav.data ?? [];
   const routes = allowedRoutes(tree);
-  const allowed = isRouteAllowed(path, routes) || (path === "/admin" && routes.length > 0);
+  const allowed = isRouteAllowed(path, routes) || (path === "/admin" && routes.length > 0) || path === "/admin/account";
   return (
     <>
       <a className="skip" href="#content">Skip to content</a>
@@ -236,7 +243,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
           ) : <NavLink key={n.key} node={n} path={path} />)}
         </nav>
-        <main id="content" className="main">{allowed ? children : <Forbidden />}</main>
+        <main id="content" className="main"><AdminRoutesContext.Provider value={routes}>{allowed ? children : <Forbidden />}</AdminRoutesContext.Provider></main>
       </div>
     </>
   );
@@ -256,7 +263,7 @@ export function Forbidden() {
       <p className="tagline">Access</p>
       <h1 style={{ fontSize: 22, marginBottom: 8 }}>403 · No access</h1>
       <p className="muted">Your roles do not include this page. If you need it, ask an administrator to add the permission to one of your roles.</p>
-      <div className="form-actions"><Link className="btn primary" href="/">Go to my home</Link><Link className="btn" href="/login">Sign in as someone else</Link></div>
+      <div className="form-actions"><Link className="btn primary" href="/">Go to my home</Link><Link className="btn" href={loginPath()}>Sign in as someone else</Link></div>
     </div>
   );
 }

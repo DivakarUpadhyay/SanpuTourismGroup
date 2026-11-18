@@ -37,8 +37,27 @@ public interface IPaymentGateway
     Task<GatewayTradeStatus> QueryAsync(string merchantTradeNo, CancellationToken ct);
 }
 
-public sealed class PaymentService(ICustomerRepository repo, ISettings settings, ICurrentUser current, IPaymentGateway gateway, PaymentOptions options)
+public sealed class PaymentService(ICustomerRepository repo, ISettings settings, ICurrentUser current, IPaymentGateway gateway, PaymentOptions options, Mailer mail)
 {
+    /// <summary>Emails the customer the outcome of a completed or failed payment.</summary>
+    private async Task<PaymentIntentRow> NotifyAsync(PaymentIntentRow intent, CancellationToken ct)
+    {
+        if (intent.Status is not ("Paid" or "Failed")) return intent;
+        var site = options.PublicBaseUrl.TrimEnd('/');
+        var link = intent.OrderType == "Tour" ? $"{site}/my/bookings/{intent.OrderId}" : $"{site}/my/bookings";
+        decimal? balance = null;
+        try { var (deposit, due) = await RulesAsync(ct); balance = (await repo.PaymentSummaryAsync(intent.OrderType, intent.OrderId, intent.CustomerUserId, deposit, due, ct)).Summary.Balance; }
+        catch (AppException) { /* summary not available: leave the balance out */ }
+        await mail.ToUserAsync(intent.CustomerUserId, intent.Status == "Paid" ? "email.payment_received" : "email.payment_failed", new()
+        {
+            ["ref"] = intent.OrderRef, ["item"] = intent.ItemName ?? intent.OrderRef, ["amount"] = Mailer.Money(intent.Amount, intent.Currency),
+            ["method"] = intent.PaymentMethod ?? "Card", ["paymentRef"] = intent.ProviderTradeNo ?? intent.MerchantTradeNo,
+            ["balance"] = balance is null ? "-" : balance == 0 ? "Nothing, fully paid" : Mailer.Money(balance.Value, intent.Currency),
+            ["reason"] = string.IsNullOrWhiteSpace(intent.ProviderMessage) ? "The payment was declined or cancelled." : intent.ProviderMessage!, ["link"] = link
+        }, ct);
+        return intent;
+    }
+
     private async Task<(int Deposit, int DueDays)> RulesAsync(CancellationToken ct)
     {
         var partial = await settings.GetBoolAsync("Feature.PartialPayment", true, ct);
@@ -69,7 +88,7 @@ public sealed class PaymentService(ICustomerRepository repo, ISettings settings,
             backUrl: $"{site}/my/bookings");
         if (form is null)
         {
-            var done = await repo.CompleteIntentAsync(intent.MerchantTradeNo, true, intent.Amount, "SIM-" + intent.MerchantTradeNo, "Simulated payment", "Card", due, current.CorrelationId, ct);
+            var done = await NotifyAsync(await repo.CompleteIntentAsync(intent.MerchantTradeNo, true, intent.Amount, "SIM-" + intent.MerchantTradeNo, "Simulated payment", "Card", due, current.CorrelationId, ct), ct);
             return new CheckoutResponse(gateway.Name, done.MerchantTradeNo, done.Amount, true, null, null);
         }
         return new CheckoutResponse(gateway.Name, intent.MerchantTradeNo, intent.Amount, false, form.Value.Action, form.Value.Fields);
@@ -87,7 +106,7 @@ public sealed class PaymentService(ICustomerRepository repo, ISettings settings,
         if (intent.Status != "Pending") return intent;
         var (_, due) = await RulesAsync(ct);
         var status = await gateway.QueryAsync(tradeNo, ct);
-        return await repo.CompleteIntentAsync(tradeNo, status.Paid && status.Amount == intent.Amount, status.Amount, status.ProviderTradeNo, status.Message, status.Method, due, current.CorrelationId, ct);
+        return await NotifyAsync(await repo.CompleteIntentAsync(tradeNo, status.Paid && status.Amount == intent.Amount, status.Amount, status.ProviderTradeNo, status.Message, status.Method, due, current.CorrelationId, ct), ct);
     }
 
     /// <summary>Lets the customer re-check a checkout they returned from (for example when the browser post-back was lost).</summary>
@@ -99,6 +118,6 @@ public sealed class PaymentService(ICustomerRepository repo, ISettings settings,
         var (_, due) = await RulesAsync(ct);
         var status = await gateway.QueryAsync(tradeNo, ct);
         if (!status.Paid) return intent;   // still waiting (for example an ATM transfer not made yet)
-        return await repo.CompleteIntentAsync(tradeNo, status.Amount == intent.Amount, status.Amount, status.ProviderTradeNo, status.Message, status.Method, due, current.CorrelationId, ct);
+        return await NotifyAsync(await repo.CompleteIntentAsync(tradeNo, status.Amount == intent.Amount, status.Amount, status.ProviderTradeNo, status.Message, status.Method, due, current.CorrelationId, ct), ct);
     }
 }
