@@ -86,3 +86,28 @@ BEGIN
     SELECT TOP 60 Kind, Title FROM dbo.Articles ORDER BY CreatedAtUtc DESC;
 END;
 GO
+CREATE OR ALTER PROCEDURE dbo.usp_ArticleBot_List AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT s.Kind, s.IsEnabled, s.Days, s.TimeLocal, s.AutoPublish, s.Topics, s.LastRunUtc, s.LastResult, s.UpdatedAtUtc,
+           (SELECT COUNT(*) FROM dbo.Articles a WHERE a.Kind = s.Kind AND a.WrittenBy = 'AI') AS AiArticles
+    FROM dbo.ArticleBotSchedules s ORDER BY s.Kind DESC;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.usp_ArticleBot_Save
+    @Kind varchar(10), @IsEnabled bit, @Days varchar(40), @TimeLocal char(5), @AutoPublish bit, @Topics nvarchar(2000) = NULL, @ActorUserId uniqueidentifier = NULL, @CorrelationId varchar(64) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON; SET XACT_ABORT ON;
+    UPDATE dbo.ArticleBotSchedules SET IsEnabled = @IsEnabled, Days = @Days, TimeLocal = @TimeLocal, AutoPublish = @AutoPublish, Topics = NULLIF(LTRIM(RTRIM(@Topics)), N''),
+           UpdatedAtUtc = SYSUTCDATETIME(), UpdatedBy = @ActorUserId WHERE Kind = @Kind;
+    IF @@ROWCOUNT = 0 THROW 50001, 'not_found', 1;
+    EXEC dbo.usp_Audit_Write @ActorUserId, 'ArticleBot.Saved', 'ArticleBot', @Kind, NULL, @CorrelationId, NULL;
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.usp_ArticleBot_MarkRun @Kind varchar(10), @Result nvarchar(300) AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.ArticleBotSchedules SET LastRunUtc = SYSUTCDATETIME(), LastResult = LEFT(@Result, 300) WHERE Kind = @Kind;
+END;
+GO

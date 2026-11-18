@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+const B = process.argv[2] ?? "http://localhost:3101";
+const b = await chromium.launch({ channel: "chrome", headless: true });
+const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+p.on("response", (r) => { if (r.url().includes("/api/") && r.status() >= 400) console.log("API", r.status(), r.url().replace(/^https?:\/\/[^/]+/, "")); });
+await p.goto(B + "/login"); await p.getByTestId("login-email").fill("traveler.lee@demo.sanpu.test"); await p.getByTestId("login-password").fill("Welcome@Sanpu2026"); await p.getByTestId("login-submit").click(); await p.waitForTimeout(2500);
+await p.goto(B + "/tours/east-rift-valley-3d2n"); await p.locator("[data-testid=departures-table] tbody tr").first().waitFor();
+await p.locator("[data-testid=departures-table] a, [data-testid=departures-table] button").filter({ hasText: /book/i }).first().click();
+await p.waitForTimeout(4000); console.log("url after Book:", p.url());
+console.log("hold-submit:", await p.getByTestId("hold-submit").count(), "| text:", (await p.locator("main").innerText()).slice(0, 300).replace(/\s+/g, " "));
+await p.screenshot({ path: "artifacts/visible/tour-debug.png" });
+await b.close();

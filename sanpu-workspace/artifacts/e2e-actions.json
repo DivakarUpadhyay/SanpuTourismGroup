@@ -1,37 +1,37 @@
 {
-  "at": "2026-11-18T02:36:57.817Z",
+  "at": "2026-11-18T02:42:59.435Z",
   "erp": "https://sanpu-travel.vercel.app",
   "ai": "https://sanpu-trip-copilot.vercel.app",
   "results": [
     {
       "name": "ERP: customer signs up with own email and password",
       "ok": true,
-      "info": "guest190607@example.com"
+      "info": "guest738603@example.com"
     },
     {
       "name": "ERP: tour booking (hold seats, traveler details, confirm)",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "/my/bookings/15"
     },
     {
       "name": "ERP: payment summary on the booking",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "TWD 12,800 / TWD 0 / TWD 12,800"
     },
     {
       "name": "ERP: pay deposit through the ECPay sandbox gateway",
-      "ok": false,
-      "info": "locator.click: Timeout 30000ms exceeded."
+      "ok": true,
+      "info": "ECPay sandbox checkout opened: payment-stage.ecpay.com.tw"
     },
     {
       "name": "ERP: hotel booking (search, detail, book)",
-      "ok": false,
-      "info": "locator.fill: Timeout 30000ms exceeded."
+      "ok": true,
+      "info": "SB-000029 · Hotel | Confirmed"
     },
     {
       "name": "ERP admin: sign in (separate session) and open Payments & transactions",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "18 Nov 2026, 10:42 BK-000015 East Rift Valley 3D2N Guest Traveler guest738603@example.com Deposit TWD 3,840 Pending ECPay SP2611180242275707"
     },
     {
       "name": "ERP admin: customer session still signed in (no mixing)",
@@ -40,13 +40,13 @@
     },
     {
       "name": "ERP admin: Excel and PDF downloads",
-      "ok": false,
-      "info": "page.waitForEvent: Timeout 30000ms exceeded while waiting for event \"download\""
+      "ok": true,
+      "info": "payments-transactions-2026-11-18.xlsx, payments-transactions-2026-11-18.pdf"
     },
     {
       "name": "ERP admin: dashboard numbers open their pages",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "8 clickable numbers; first opened /admin/bookings"
     },
     {
       "name": "ERP: News and blog pages",
@@ -56,7 +56,7 @@
     {
       "name": "AI: customer signs up",
       "ok": true,
-      "info": "guest190607@example.com"
+      "info": "guest738603@example.com"
     },
     {
       "name": "AI: assistant finds hotels and Book this prepares a booking",
@@ -70,8 +70,8 @@
     },
     {
       "name": "AI admin: booking shows in Assistant bookings",
-      "ok": false,
-      "info": "locator.waitFor: Timeout 20000ms exceeded."
+      "ok": true,
+      "info": "AI-000006 Guest Traveler guest738603@example.com Kinmen Courtyard Inn · Courtyard Room Wed 2 Dec – Fri 4 Dec · 2 pax TWD"
     }
   ],
   "pageErrors": []

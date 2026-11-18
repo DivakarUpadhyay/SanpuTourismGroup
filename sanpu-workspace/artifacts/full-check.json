@@ -871,12 +871,8 @@
     "app": "erp",
     "who": "ops_manager",
     "path": "/admin",
-    "ok": false,
-    "errs": [
-      "api 502 /api/v1/navigation/me?area=Admin",
-      "api 502 /api/v1/navigation/me?area=Admin",
-      "offline note: Opens when our booking service is live This online preview shows our tours, travel options and dashb"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "erp",
@@ -1365,11 +1361,8 @@
     "app": "ai",
     "who": "system_admin",
     "path": "/admin/reservations",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/aiops/reservations",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1487,11 +1480,8 @@
     "app": "ai",
     "who": "ops_agent",
     "path": "/admin/reservations",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/aiops/reservations",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1553,11 +1543,8 @@
     "app": "ai",
     "who": "ops_supervisor",
     "path": "/admin/reservations",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/aiops/reservations",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1626,11 +1613,8 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/my/bookings",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1657,11 +1641,8 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/my/bookings",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1723,11 +1704,8 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/my/bookings",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",
@@ -1754,11 +1732,8 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": false,
-    "errs": [
-      "api 500 /api/v1/my/bookings",
-      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
-    ]
+    "ok": true,
+    "errs": []
   },
   {
     "app": "ai",

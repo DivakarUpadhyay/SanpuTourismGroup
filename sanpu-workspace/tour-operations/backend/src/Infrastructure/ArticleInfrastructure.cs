@@ -36,6 +36,11 @@ public sealed class ArticleRepository(Db db) : IArticleRepository
     public Task SetStatusAsync(int id, string status, Guid? actor, string correlationId, CancellationToken ct) =>
         db.ExecuteAsync("dbo.usp_Article_SetStatus", new { ArticleId = id, Status = status, ActorUserId = actor, CorrelationId = correlationId }, ct);
 
+    public Task<IReadOnlyList<BotSchedule>> SchedulesAsync(CancellationToken ct) => db.QueryAsync<BotSchedule>("dbo.usp_ArticleBot_List", null, ct);
+    public Task SaveScheduleAsync(string kind, BotScheduleSave s, Guid? actor, string correlationId, CancellationToken ct) =>
+        db.ExecuteAsync("dbo.usp_ArticleBot_Save", new { Kind = kind, s.IsEnabled, s.Days, s.TimeLocal, s.AutoPublish, s.Topics, ActorUserId = actor, CorrelationId = correlationId }, ct);
+    public Task MarkRunAsync(string kind, string result, CancellationToken ct) => db.ExecuteAsync("dbo.usp_ArticleBot_MarkRun", new { Kind = kind, Result = result }, ct);
+
     public Task<(IReadOnlyList<BotKindState> State, IReadOnlyList<BotTitle> Recent)> BotStateAsync(CancellationToken ct) =>
         db.MultipleAsync("dbo.usp_Articles_BotState", null, async g => ((IReadOnlyList<BotKindState>)(await g.ReadAsync<BotKindState>()).AsList(), (IReadOnlyList<BotTitle>)(await g.ReadAsync<BotTitle>()).AsList()), ct);
 }

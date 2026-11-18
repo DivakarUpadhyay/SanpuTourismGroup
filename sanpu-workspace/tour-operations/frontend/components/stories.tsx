@@ -48,7 +48,22 @@ function StoryCard({ a, big }: { a: Card; big?: boolean }) {
   );
 }
 
-/** /news and /blog: featured story, category filter, grid, load more. */
+/** Big image card with the text over the photo (lead stories). */
+function FeatureCard({ a, size }: { a: Card; size: "lead" | "side" }) {
+  const href = `${META[a.kind].base}/${a.slug}`;
+  return (
+    <Link href={href} className={`st-feature is-${size}`} style={a.imageUrl ? { backgroundImage: `url(${a.imageUrl})` } : undefined} aria-label={a.title}>
+      <span className="st-feature-in">
+        <span className="st-cat">{a.category}</span>
+        <b>{a.title}</b>
+        {size === "lead" && <span className="st-sum">{a.summary}</span>}
+        <small>{date(a.publishedAtUtc)} · {a.readMinutes} min read</small>
+      </span>
+    </Link>
+  );
+}
+
+/** /news and /blog: magazine front page (lead story + two side stories), category filter, grid, load more. */
 export function StoriesPage({ kind }: { kind: Kind }) {
   const m = META[kind];
   const [cat, setCat] = useState("");
@@ -57,30 +72,41 @@ export function StoriesPage({ kind }: { kind: Kind }) {
   const list = useAsync(() => get<List>("/content/articles", { kind, category: cat, page }), [kind, cat, page]);
   useEffect(() => { if (list.data) setItems((prev) => (page === 1 ? list.data!.items : [...prev, ...list.data!.items.filter((x) => !prev.some((p) => p.articleId === x.articleId))])); }, [list.data, page]);
   const more = list.data ? items.length < list.data.total : false;
+  const other = kind === "News" ? { href: "/blog", label: "Read the travel blog" } : { href: "/news", label: "Latest news" };
+  const body = (
+    <>
+      {items.length >= 3 ? (
+        <div className="st-front">
+          <FeatureCard a={items[0]} size="lead" />
+          <div className="st-front-side">{items.slice(1, 3).map((a) => <FeatureCard key={a.articleId} a={a} size="side" />)}</div>
+        </div>
+      ) : items[0] ? <StoryCard a={items[0]} big /> : null}
+      {items.length > 3 && <h2 className="st-h2">More {kind === "News" ? "news" : "stories"}</h2>}
+      <div className="st-grid">{items.slice(items.length >= 3 ? 3 : 1).map((a) => <StoryCard key={a.articleId} a={a} />)}</div>
+    </>
+  );
   return (
     <div className="st-page">
-      <section className="st-hero"><div className="st-wrap">
-        <p className="tagline">{m.tagline}</p><h1>{m.title}</h1><p className="lead">{m.lead}</p>
+      <section className={`st-hero ${kind === "News" ? "news" : "blog"}`}><div className="st-wrap">
+        <div className="st-hero-top">
+          <div>
+            <p className="st-kicker"><Icon name={kind === "News" ? "file" : "map"} size={14} /> {m.tagline}</p>
+            <h1>{m.title}</h1><p className="lead">{m.lead}</p>
+          </div>
+          <Link className="btn glass" href={other.href}>{other.label} →</Link>
+        </div>
         <div className="st-cats" role="tablist">
           <button role="tab" aria-selected={!cat} className={!cat ? "on" : ""} onClick={() => { setCat(""); setPage(1); }}>All</button>
           {(list.data?.categories ?? []).map((c) => <button key={c.category} role="tab" aria-selected={cat === c.category} className={cat === c.category ? "on" : ""} onClick={() => { setCat(c.category); setPage(1); }}>{c.category} <i>{c.articles}</i></button>)}
         </div>
       </div></section>
-      <div className="st-wrap">
-        {page === 1 ? (
-          <Async state={list}>{() => items.length === 0 ? <p className="muted">No articles yet.</p> : (
-            <>
-              <StoryCard a={items[0]} big />
-              <div className="st-grid">{items.slice(1).map((a) => <StoryCard key={a.articleId} a={a} />)}</div>
-            </>
-          )}</Async>
-        ) : (
-          <>
-            <StoryCard a={items[0]} big />
-            <div className="st-grid">{items.slice(1).map((a) => <StoryCard key={a.articleId} a={a} />)}</div>
-          </>
-        )}
+      <div className="st-wrap st-body-wrap">
+        {page === 1 ? <Async state={list}>{() => (items.length === 0 ? <p className="muted">No articles yet.</p> : body)}</Async> : body}
         {more && <div className="st-load"><button className="btn" disabled={list.loading} onClick={() => setPage(page + 1)} data-testid="stories-more">{list.loading ? "Loading…" : "Load more"}</button><small className="muted">Showing {items.length} of {list.data?.total}</small></div>}
+        <section className="st-cta">
+          <div><b>Plan the trip you just read about</b><span>Tours, hotels, flights, buses and taxis across Taiwan, with a deposit option.</span></div>
+          <div><Link className="btn gold" href="/tours">Browse tours</Link><Link className="btn glass" href="/deals">See deals</Link></div>
+        </section>
       </div>
     </div>
   );
@@ -124,6 +150,48 @@ export function ArticlePage({ kind }: { kind: Kind }) {
 }
 
 // ------------------------------------------------------------------ admin
+interface BotSchedule { kind: Kind; isEnabled: boolean; days: string; timeLocal: string; autoPublish: boolean; topics?: string | null; lastRunUtc?: string | null; lastResult?: string | null; aiArticles: number }
+const WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/** The writer bot's schedule, one card per section: on/off, days, time (Taiwan time), publish or draft, own topics, run now. */
+function BotSchedules({ onRun }: { onRun: () => void }) {
+  const list = useAsync(() => get<BotSchedule[]>("/ops/articles/bot"), []);
+  return (
+    <section className="bot-panel" data-testid="bot-schedules">
+      <h2><Icon name="sparkle" size={18} /> AI writer schedule</h2>
+      <p className="muted">Choose when the writer publishes for each section (Taiwan time). Each run writes one original article with a real photo from our library.</p>
+      <Async state={list}>{(rows) => <div className="bot-grid">{rows.map((r) => <BotCard key={r.kind} initial={r} onSaved={list.reload} onRun={onRun} />)}</div>}</Async>
+    </section>
+  );
+}
+
+function BotCard({ initial, onSaved, onRun }: { initial: BotSchedule; onSaved: () => void; onRun: () => void }) {
+  const [f, setF] = useState({ ...initial, days: initial.days.split(",").filter(Boolean) as string[], topics: initial.topics ?? "" });
+  const save = useAction(); const run = useAction();
+  const toggleDay = (d: string) => setF({ ...f, days: f.days.includes(d) ? f.days.filter((x) => x !== d) : [...f.days, d] });
+  return (
+    <div className={`bot-card${f.isEnabled ? "" : " off"}`} data-testid={`bot-${initial.kind}`}>
+      <div className="bot-head">
+        <b>{initial.kind === "News" ? "News" : "Travel blog"}</b>
+        <Checkbox label={f.isEnabled ? "On" : "Off"} checked={f.isEnabled} onChange={(v) => setF({ ...f, isEnabled: v })} />
+      </div>
+      <div className="bot-days" role="group" aria-label="Days">{WEEK.map((d) => <button type="button" key={d} className={f.days.includes(d) ? "on" : ""} onClick={() => toggleDay(d)} aria-pressed={f.days.includes(d)}>{d}</button>)}</div>
+      {save.fieldError("days") && <div className="error">{save.fieldError("days")}</div>}
+      <div className="bot-row">
+        <TextInput label="Time (Taiwan)" type="time" value={f.timeLocal} onChange={(v) => setF({ ...f, timeLocal: v.slice(0, 5) })} error={save.fieldError("timeLocal")} />
+        <Checkbox label="Publish at once (off = save as draft)" checked={f.autoPublish} onChange={(v) => setF({ ...f, autoPublish: v })} />
+      </div>
+      <TextArea label="Topics, one per line (optional; the writer takes them in turn)" value={f.topics} onChange={(v) => setF({ ...f, topics: v })} rows={3} error={save.fieldError("topics")} />
+      <p className="small muted">{initial.lastRunUtc ? <>Last run {fmtDateTime(initial.lastRunUtc)}: {initial.lastResult}</> : "Not run yet."} · {initial.aiArticles} AI articles so far</p>
+      {run.error ? <div className="alert error" role="alert">{run.error instanceof ApiError ? run.error.message : "The writer could not finish."}</div> : null}
+      <div className="form-actions">
+        <button className="btn primary small" disabled={save.busy} onClick={async () => { if (await save.run(() => put(`/ops/articles/bot/${initial.kind}`, { isEnabled: f.isEnabled, days: f.days.join(","), timeLocal: f.timeLocal, autoPublish: f.autoPublish, topics: f.topics }), "Schedule saved") !== undefined) onSaved(); }} data-testid={`bot-save-${initial.kind}`}>Save schedule</button>
+        <button className="btn small" disabled={run.busy} onClick={async () => { if (await run.run(() => post(`/ops/articles/bot/${initial.kind}/run`), "Article written") !== undefined) { onSaved(); onRun(); } }}>{run.busy ? "Writing…" : "Run now"}</button>
+      </div>
+    </div>
+  );
+}
+
 interface AdminRow extends Full { status: string; aiModel?: string | null; createdAtUtc: string; rowVersion?: string }
 const empty = { kind: "Blog", title: "", summary: "", body: "", category: "", tags: "", imageUrl: "/images/photos/hualien.jpg", imageAlt: "", status: "Draft" };
 
@@ -141,6 +209,7 @@ export function ArticlesAdminPage() {
         lead="Articles for the News and Travel blog pages. The AI writer publishes original articles on its own schedule using real photos from our library; you can edit, unpublish or ask it for a topic."
         actions={<><button className="btn" onClick={() => { write.clear(); setAi({ kind: "News", topic: "", publish: true }); }} data-testid="ai-write-open"><Icon name="sparkle" size={16} /> Write with AI</button>
           <button className="btn primary" onClick={() => { save.clear(); setEdit({ id: null, form: { ...empty } }); }} data-testid="article-new">New article</button></>} />
+      <BotSchedules onRun={list.reload} />
       <div className="toolbar">
         <TextInput label="Search" value={f.search} onChange={(v) => setF({ ...f, search: v })} placeholder="Title or category" />
         <SelectInput label="Section" value={f.kind} onChange={(v) => setF({ ...f, kind: v })} placeholder="Any" options={[{ value: "News", label: "News" }, { value: "Blog", label: "Blog" }]} />

@@ -31,6 +31,13 @@ public sealed record ArticleAdminRow
 public sealed record ArticleSaveRequest(string Kind, string Title, string Summary, string Body, string Category, string? Tags, string? ImageUrl, string? ImageAlt, string Status, string? RowVersion);
 public sealed record ArticleSavedRow { public int ArticleId { get; init; } public string Slug { get; init; } = ""; public string Status { get; init; } = ""; }
 public sealed record ArticleWriteRequest(string Kind, string? Topic, bool Publish);
+public sealed record BotSchedule
+{
+    public string Kind { get; init; } = ""; public bool IsEnabled { get; init; } public string Days { get; init; } = ""; public string TimeLocal { get; init; } = "09:00";
+    public bool AutoPublish { get; init; } public string? Topics { get; init; } public DateTime? LastRunUtc { get; init; } public string? LastResult { get; init; }
+    public DateTime? UpdatedAtUtc { get; init; } public int AiArticles { get; init; }
+}
+public sealed record BotScheduleSave(bool IsEnabled, string Days, string TimeLocal, bool AutoPublish, string? Topics);
 public sealed record BotKindState { public string Kind { get; init; } = ""; public DateTime LastAtUtc { get; init; } public int Articles { get; init; } }
 public sealed record BotTitle { public string Kind { get; init; } = ""; public string Title { get; init; } = ""; }
 
@@ -42,6 +49,9 @@ public interface IArticleRepository
     Task<ArticleSavedRow> SaveAsync(int? id, ArticleSaveRequest r, string writtenBy, string? aiModel, Guid? actor, byte[]? rowVersion, string correlationId, CancellationToken ct);
     Task SetStatusAsync(int id, string status, Guid? actor, string correlationId, CancellationToken ct);
     Task<(IReadOnlyList<BotKindState> State, IReadOnlyList<BotTitle> Recent)> BotStateAsync(CancellationToken ct);
+    Task<IReadOnlyList<BotSchedule>> SchedulesAsync(CancellationToken ct);
+    Task SaveScheduleAsync(string kind, BotScheduleSave s, Guid? actor, string correlationId, CancellationToken ct);
+    Task MarkRunAsync(string kind, string result, CancellationToken ct);
 }
 
 /// <summary>Draft written by the AI: original wording, one photo chosen from the site's own library.</summary>
@@ -122,6 +132,44 @@ public sealed class ArticleService(IArticleRepository repo, IArticleWriter write
         if (!Kinds.Contains(r.Kind)) throw AppException.Validation("kind", "Choose News or Blog.");
         if ((r.Topic?.Length ?? 0) > 200) throw AppException.Validation("topic", "Use at most 200 characters.");
         return await WriteAndSaveAsync(r.Kind, string.IsNullOrWhiteSpace(r.Topic) ? null : r.Topic.Trim(), r.Publish, current.UserId, current.CorrelationId, ct);
+    }
+
+    public static readonly string[] WeekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    public static DateTime TaiwanNow(DateTime utc) => utc.AddHours(8);
+
+    public Task<IReadOnlyList<BotSchedule>> SchedulesAsync(CancellationToken ct) => repo.SchedulesAsync(ct);
+
+    public Task SaveScheduleAsync(string kind, BotScheduleSave s, CancellationToken ct)
+    {
+        var days = (s.Days ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+        new FieldErrors()
+            .Check(Kinds.Contains(kind), "kind", "Choose News or Blog.")
+            .Check(days.Length > 0 && days.All(WeekDays.Contains), "days", "Choose at least one day.")
+            .Check(System.Text.RegularExpressions.Regex.IsMatch(s.TimeLocal ?? "", @"^([01]\d|2[0-3]):[0-5]\d$"), "timeLocal", "Use a time like 09:00.")
+            .Check((s.Topics?.Length ?? 0) <= 2000, "topics", "Use at most 2000 characters.")
+            .ThrowIfAny();
+        var ordered = string.Join(',', WeekDays.Where(days.Contains));
+        return repo.SaveScheduleAsync(kind, s with { Days = ordered }, current.UserId, current.CorrelationId, ct);
+    }
+
+    /// <summary>Topic for the next scheduled article: the admin's own list in turn, otherwise the built-in list.</summary>
+    public static string? NextTopic(BotSchedule s)
+    {
+        var mine = (s.Topics ?? "").Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return mine.Length == 0 ? null : mine[s.AiArticles % mine.Length];
+    }
+
+    /// <summary>Run now from the schedule panel: one article for that section right away.</summary>
+    public async Task<ArticleSavedRow> RunNowAsync(string kind, CancellationToken ct)
+    {
+        var s = (await repo.SchedulesAsync(ct)).FirstOrDefault(x => x.Kind == kind) ?? throw AppException.NotFound("Schedule");
+        try
+        {
+            var saved = await WriteAndSaveAsync(kind, NextTopic(s), s.AutoPublish, current.UserId, current.CorrelationId, ct);
+            await repo.MarkRunAsync(kind, $"Wrote {saved.Slug} ({saved.Status})", ct);
+            return saved;
+        }
+        catch (AppException ex) { await repo.MarkRunAsync(kind, ex.Message, ct); throw; }
     }
 
     /// <summary>Shared by staff requests and the scheduled bot.</summary>

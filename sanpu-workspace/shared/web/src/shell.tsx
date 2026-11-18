@@ -139,7 +139,7 @@ export function CustomerShell({ children, search }: { children: ReactNode; searc
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
   // on pages that start with a photo hero the header floats over it, then turns solid once the page scrolls
-  const overHero = path === "/" || /^\/((news|blog)\/[^/]+|tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))/.test(path);
+  const overHero = path === "/" || /^\/((news|blog)(\/[^/]+)?$|tours\/[^/]+|destinations|hotels|flights|buses|taxis|deals|help|services\/(?!book))/.test(path);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
