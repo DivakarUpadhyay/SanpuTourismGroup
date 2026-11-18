@@ -96,6 +96,24 @@ Reason: {{reason}}
 Your booking {{ref}} ({{item}}) is cancelled. Any refund due goes back to the original payment method.
 
 [Book something new]({{link}})'),
+ ('email.contact_received', N'We received your message ({{ref}})', N'Hello {{displayName}},
+
+Thank you for contacting {{brand}}. Our team will reply to this email address within one working day.
+
+Reference: {{ref}}
+Topic: {{topic}}
+
+[Visit {{brand}}]({{site}})'),
+ ('email.contact_team', N'New contact request {{ref}}: {{topic}}', N'A customer sent a message through the contact form.
+
+Reference: {{ref}}
+Name: {{name}}
+Email: {{email}}
+Topic: {{topic}}
+Booking: {{bookingRef}}
+Message: {{message}}
+
+[Open contact requests]({{site}}/admin/contacts)'),
  ('email.reservation_paid', N'{{status}}: {{item}} ({{ref}})', N'Hello {{displayName}},
 
 Thank you, your payment is in.

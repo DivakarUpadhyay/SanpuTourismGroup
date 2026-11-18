@@ -18,7 +18,7 @@ public static class CustomerRules
     public static bool IsCouponCode(string? v) => !string.IsNullOrWhiteSpace(v) && Regex.IsMatch(v.Trim(), "^[A-Za-z0-9-]{3,30}$");
 }
 
-public sealed class HelpContactService(ICustomerRepository repo, ISettings settings, ICurrentUser current)
+public sealed class HelpContactService(ICustomerRepository repo, ISettings settings, ICurrentUser current, Mailer mail)
 {
     public Task<IReadOnlyList<HelpArticleRow>> HelpAsync(string? search, CancellationToken ct) =>
         repo.HelpAsync(string.IsNullOrWhiteSpace(search) ? null : search.Trim()[..Math.Min(search.Trim().Length, 100)], ct);
@@ -35,8 +35,19 @@ public sealed class HelpContactService(ICustomerRepository repo, ISettings setti
             .Check(!string.IsNullOrWhiteSpace(r.Message) && r.Message.Trim().Length is >= 10 and <= 2000, "message", "Write 10–2000 characters.")
             .ThrowIfAny();
         var sla = await settings.GetIntAsync("Contact.SlaHours", 24, ct);
-        return await repo.CreateContactAsync(current.UserId, r with { Name = r.Name.Trim(), Email = r.Email!.Trim(), BookingRef = r.BookingRef?.Trim().ToUpperInvariant(), Message = r.Message.Trim() },
+        var created = await repo.CreateContactAsync(current.UserId, r with { Name = r.Name.Trim(), Email = r.Email!.Trim(), BookingRef = r.BookingRef?.Trim().ToUpperInvariant(), Message = r.Message.Trim() },
             sla, current.CorrelationId, ct);
+        static string Flat(string? s) => Regex.Replace(s ?? "", @"\s+", " ").Trim();   // visitor text stays on one line, so it cannot form a button in the email
+        // the visitor's copy leaves out their message, so the form cannot be used to send text to someone else
+        await mail.ToAsync(r.Email.Trim(), "email.contact_received", new() { ["displayName"] = Flat(r.Name), ["ref"] = created.ContactRef, ["topic"] = r.Topic }, ct);
+        var inbox = await settings.GetAsync("Contact.InboxEmail", ct);
+        if (EmailAddress.IsValid(inbox ?? ""))
+            await mail.ToAsync(inbox!, "email.contact_team", new()
+            {
+                ["ref"] = created.ContactRef, ["name"] = Flat(r.Name), ["email"] = r.Email.Trim(), ["topic"] = r.Topic,
+                ["bookingRef"] = string.IsNullOrWhiteSpace(r.BookingRef) ? "None" : Flat(r.BookingRef).ToUpperInvariant(), ["message"] = Flat(r.Message)
+            }, ct);
+        return created;
     }
 
     public Task<IReadOnlyList<OpsHelpArticleRow>> OpsHelpAsync(CancellationToken ct) => repo.OpsHelpAsync(ct);

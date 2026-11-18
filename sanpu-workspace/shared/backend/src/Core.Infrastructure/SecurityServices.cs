@@ -140,7 +140,7 @@ public sealed class DevOutboxEmailSender(IAuthRepository repo) : IEmailSender
 /// <summary>Real email over SMTP (Gmail app password, Microsoft 365, SendGrid SMTP, …) once SMTP_HOST, SMTP_USER and SMTP_PASSWORD
 /// secrets exist (SMTP_PORT default 587 with STARTTLS, SMTP_FROM defaults to SMTP_USER). Without them, mail goes to the local test inbox.
 /// Every message is also kept in the test inbox table so support can see what was sent.</summary>
-public sealed class SmtpOrOutboxEmailSender(IAuthRepository repo, ISecretStore secrets) : IEmailSender
+public sealed class SmtpOrOutboxEmailSender(IAuthRepository repo, ISecretStore secrets, Microsoft.Extensions.Logging.ILogger<SmtpOrOutboxEmailSender> log) : IEmailSender
 {
     public async Task SendAsync(string to, string subject, string body, CancellationToken ct)
     {
@@ -152,7 +152,15 @@ public sealed class SmtpOrOutboxEmailSender(IAuthRepository repo, ISecretStore s
             EnableSsl = true, Credentials = new System.Net.NetworkCredential(user, password), DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network, Timeout = 15000
         };
         using var message = new System.Net.Mail.MailMessage(secrets.Get("SMTP_FROM") ?? user, to, subject, body) { IsBodyHtml = body.TrimStart().StartsWith('<') };
-        try { await client.SendMailAsync(message, ct); }
-        catch (Exception ex) when (ex is System.Net.Mail.SmtpException or InvalidOperationException or IOException) { /* kept in the outbox; delivery retried by support */ }
+        var masked = to.Length > 3 ? to[..3] + "***" + to[to.IndexOf('@')..] : "***";
+        try
+        {
+            await client.SendMailAsync(message, ct);
+            Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(log, "SMTP accepted email to {To}: {Subject}", masked, subject);
+        }
+        catch (Exception ex) when (ex is System.Net.Mail.SmtpException or InvalidOperationException or IOException)
+        {
+            Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(log, "SMTP failed for email to {To}: {Subject}: {Error}", masked, subject, ex.Message);   // kept in the outbox; delivery retried by support
+        }
     }
 }
