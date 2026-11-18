@@ -171,5 +171,5 @@ CROSS APPLY (SELECT DATEADD(DAY, n, CAST(SYSUTCDATETIME() AS date)) AS D FROM @N
 WHERE (s.Code LIKE 'H-G%' OR s.Code LIKE 'F-FS4%' OR s.Code LIKE 'F-IH4%' OR s.Code LIKE 'B-FC3%' OR s.Code LIKE 'B-CL3%' OR s.Code LIKE 'T-G%')
   AND NOT EXISTS (SELECT 1 FROM dbo.ServiceInventory i WHERE i.ServiceId = s.ServiceId);
 `;
-fs.writeFileSync("tour-operations/database/seeds/024_MoreCatalog.sql", sql);
+fs.writeFileSync("tour-operations/database/seeds/024_MoreCatalog.sql", "FEFF" + sql);   // BOM: sqlcmd must read the file as UTF-8
 console.log(`tours ${tours.length}, hotels ${hotels.length}, flights ${flights.length}, buses ${buses.length}, taxis ${taxis.length}`);

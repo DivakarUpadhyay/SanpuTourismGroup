@@ -359,7 +359,7 @@ function Thinking() {
 /** Next steps that fit what was just shown. */
 function FollowUps({ cards, last, ask }: { cards?: Card[]; last: string; ask: (t: string) => void }) {
   const types = (cards ?? []).map((c) => c.type);
-  const clean = last.replace(/[.?!]+$/, "");
+  const clean = last.replace(/[.?!]+$/, "").replace(/s+for d+( people| persons?| guests?| travell?ers?)?(?=s|$)/i, "").replace(/s+(next weekend|this weekend|tomorrow( morning)?)/i, "").replace(/s+under (twd )?[d,]+/i, "");
   const ideas = types.includes("services") ? [`${clean} for 4 people`, `${clean} next weekend`, `${clean} under TWD 8000`]
     : types.includes("tours") ? [`${clean} under TWD 10000`, `${clean} for 2 people`, "Compare the East Rift Valley and Kinmen Heritage tours"]
     : types.includes("compare") ? ["3 day tours in Hualien", "Tours in Kinmen"]

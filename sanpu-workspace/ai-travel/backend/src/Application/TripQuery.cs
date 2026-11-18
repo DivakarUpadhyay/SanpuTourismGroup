@@ -31,7 +31,7 @@ public static partial class TripQueryParser
     ];
     public static readonly IReadOnlyDictionary<string, Regex> InterestWords = new Dictionary<string, Regex>
     {
-        ["food"] = new(@"food|cook|flavou?r|market|oyster", RegexOptions.IgnoreCase),
+        ["food"] = new(@"food|cook|flavou?r|market", RegexOptions.IgnoreCase),
         ["nature"] = new(@"hik|trail|forest|gorge|mountain|cliff|wetland|bird", RegexOptions.IgnoreCase),
         ["culture"] = new(@"temple|heritage|culture|histor|old town|craft|village|architecture", RegexOptions.IgnoreCase),
         ["cycling"] = new(@"cycl|bicycle|\bbike", RegexOptions.IgnoreCase),

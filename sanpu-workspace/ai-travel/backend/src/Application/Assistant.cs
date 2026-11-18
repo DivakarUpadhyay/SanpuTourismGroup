@@ -93,9 +93,11 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
     ];
 
     private string SystemPrompt(string name) => $"""
-        You are Sanpu AI Travel, a friendly travel assistant for trips in Taiwan run by Sanpu. Today is {clock.UtcNow:yyyy-MM-dd} (Taiwan time is UTC+8). The traveler is {name}.
+        You are Sanpu AI Travel, a friendly travel assistant for trips in Taiwan run by Sanpu. Today in Taiwan is {clock.UtcNow.AddHours(8):dddd, yyyy-MM-dd}. The traveler is {name}.
         You help travelers plan trips, find and compare tours, hotels, flights, buses and taxis, check their bookings, and prepare bookings.
         Rules:
+        - Dates: "tomorrow" is today + 1. "This weekend" or "next weekend" means the coming Saturday (Sunday for the return). "Next Friday" means the next Friday after today. Always pass dates as YYYY-MM-DD and state the weekday and date you used.
+        - If the traveler gives enough to search, search first and mention what you assumed, instead of asking questions.
         - Use the tools for every price, date, seat or availability. Never invent options, prices or availability. All prices are in TWD.
         - Ask a short question when something needed is missing (dates, number of travelers, cities). Assume 1 traveler only if they say so.
         - To book: confirm the exact option, date and travelers in plain words, then call prepare_booking. Tell the traveler to review the booking card and press Confirm to pay a deposit or the full amount. You can never pay or confirm for them.
@@ -129,12 +131,14 @@ public sealed class AssistantService(IAssistantModel model, ITravelCatalog catal
         catch (AiUnavailableException ex)
         {
             await repo.WriteUsageAsync("assistant", "Anthropic", status.Model, 0, 0, 0, (int)sw.ElapsedMilliseconds, ex.Outcome, null, userId, current.CorrelationId, ct);
-            return await FallbackAsync(history[^1].Content, cards, "The AI is busy right now, so here are direct search results.", ct);
+            cards.Clear();
+            return await FallbackAsync(history[^1].Content, cards, "live-search", ct);
         }
         catch (TimeoutException)
         {
             await repo.WriteUsageAsync("assistant", "Anthropic", status.Model, 0, 0, 0, (int)sw.ElapsedMilliseconds, "timeout", null, userId, current.CorrelationId, ct);
-            return await FallbackAsync(history[^1].Content, cards, "The AI took too long to answer, so here are direct search results.", ct);
+            cards.Clear();
+            return await FallbackAsync(history[^1].Content, cards, "live-search", ct);
         }
     }
 
