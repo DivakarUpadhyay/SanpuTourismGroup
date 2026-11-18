@@ -137,3 +137,18 @@
 
 /* brand symbol */
 .brand-glyph { flex: none; display: block; }
+
+/* filters: result counts and the tags above the results */
+.af-chips button { display: inline-flex; align-items: center; gap: 6px; }
+.af-chips button small { font-size: 11px; opacity: .7; }
+.af-chips button .n { min-width: 18px; padding: 0 5px; border-radius: 999px; background: var(--subtle); color: var(--muted); font-size: 11px; font-weight: 600; line-height: 16px; text-align: center; }
+.af-chips button.on .n { background: rgba(255, 255, 255, .22); color: #fff; }
+.af-chips button:disabled { opacity: .45; cursor: not-allowed; border-color: var(--stroke); }
+.af-chips button.af-all { border: 0; background: none; padding: 4px 2px; color: var(--accent); font-weight: 600; }
+.af-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 34px; margin-bottom: 14px; }
+.af-tags-count { margin-right: 6px; font-size: 14px; color: var(--muted); } .af-tags-count b { color: var(--ink); }
+.af-tag { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 8px 0 12px; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--accent) 9%, var(--card)); color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .12s; }
+.af-tag:hover { background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
+.af-tag span { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 16%, transparent); font-size: 14px; line-height: 1; }
+.af-tags-clear { border: 0; background: none; padding: 4px; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.af-tags-clear:hover { color: var(--accent); }
