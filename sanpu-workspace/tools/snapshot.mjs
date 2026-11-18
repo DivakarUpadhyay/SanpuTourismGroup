@@ -114,6 +114,17 @@ for (const a of accounts) { console.log("crawling as", a.email); await crawl(a);
 await browser.close();
 fs.mkdirSync(cfg.out.replace(/\/[^/]+$/, ""), { recursive: true });
 const snap = { capturedAt: new Date().toISOString(), users, responses };
-fs.writeFileSync(cfg.out, JSON.stringify(snap));
+// the preview is public: real people's emails and names never leave this computer (demo accounts use *.test)
+let text = JSON.stringify(snap);
+const realEmails = [...new Set(text.match(/[A-Za-z0-9._%+-]+@(?![A-Za-z0-9.-]*\.test\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) ?? [])];
+const realNames = new Set();
+for (const pool of Object.values(responses)) JSON.stringify(pool, (k, v) => {
+  if (v && typeof v === "object" && typeof v.email === "string" && realEmails.includes(v.email) && typeof v.displayName === "string") realNames.add(v.displayName);
+  return v;
+});
+realEmails.forEach((e, i) => { text = text.split(e).join(`member${i + 1}@sanpu.test`); });
+[...realNames].forEach((n, i) => { text = text.split(JSON.stringify(n)).join(JSON.stringify(`Sanpu Member ${i + 1}`)); });
+fs.writeFileSync(cfg.out, text);
+if (realEmails.length) console.log(`masked ${realEmails.length} real email(s) and ${realNames.size} name(s)`);
 const n = Object.values(responses).reduce((a, r) => a + Object.keys(r).length, 0);
 console.log(`snapshot ${cfg.out}: ${users.length} accounts, ${n} responses, ${(fs.statSync(cfg.out).size / 1024).toFixed(0)} KB`);
