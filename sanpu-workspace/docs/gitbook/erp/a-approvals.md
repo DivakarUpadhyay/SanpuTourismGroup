@@ -1,6 +1,6 @@
 # Approval inbox
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Approval inbox](../assets/a-approvals.png)
 

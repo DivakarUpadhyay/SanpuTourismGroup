@@ -1,6 +1,6 @@
 # Tour catalog (customer home)
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Tour catalog (customer home)](../assets/a-home.png)
 

@@ -1,6 +1,6 @@
 # Evaluation suite
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Evaluation suite](../assets/b-eval.png)
 

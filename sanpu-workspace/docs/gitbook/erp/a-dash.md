@@ -1,6 +1,6 @@
 # Operations dashboard
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Operations dashboard](../assets/a-dash.png)
 

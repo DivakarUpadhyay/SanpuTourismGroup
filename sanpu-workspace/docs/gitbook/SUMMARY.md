@@ -7,6 +7,14 @@
 * [Database & stored procedures](database-and-stored-procedures.md)
 * [API: Swagger & Postman](api-swagger-postman.md)
 * [Cross-screen workflows](workflows.md)
+* [What's new](whats-new.md)
+* [Accounts, sessions & sign-up](accounts-and-sessions.md)
+* [Emails & notifications](emails.md)
+* [Bookings & payments end to end](bookings-and-payments.md)
+* [AI Travel assistant](ai-assistant.md)
+* [News, blog & the AI writer](news-and-blog.md)
+* [Reports: Excel & PDF](reports.md)
+* [Going live for a presentation](going-live.md)
 * [Testing & evidence](testing-and-evidence.md)
 * [Troubleshooting](troubleshooting.md)
 * [Interview · 20 minutes](interview-20-minute.md)
@@ -29,8 +37,11 @@
 * [Settings](common/settings.md)
 * [Content & notification templates](common/content.md)
 * [Audit log](common/audit.md)
+* [Staff sign-in (admin panel)](common/admin-login.md)
+* [Request staff access](common/staff-register.md)
+* [People: access requests](common/access-requests.md)
 
-## App A · Tour Operations ERP
+## App A · Sanpu Travel
 
 * [Tour catalog (customer home)](erp/a-home.md)
 * [Tour detail & departures](erp/a-tour.md)
@@ -52,8 +63,15 @@
 * [Cost assumptions](erp/a-costs.md)
 * [Workflow designer](erp/a-workflow.md)
 * [Data retention & privacy](erp/a-retention.md)
+* [Hotels, flights, buses & taxis search](erp/a-services.md)
+* [Hotel / flight / bus / taxi detail](erp/a-service.md)
+* [Payments & transactions](erp/a-payments.md)
+* [News](erp/a-news.md)
+* [Travel blog](erp/a-blog.md)
+* [Article page](erp/a-article.md)
+* [News & blog (admin) and AI writer](erp/a-articles-admin.md)
 
-## App B · AI Operations Copilot
+## App B · Sanpu AI Travel
 
 * [My trips (traveler home)](ai-operations/b-home.md)
 * [Plan a trip (preferences)](ai-operations/b-plan.md)
@@ -71,3 +89,7 @@
 * [AI configuration & prompt templates](ai-operations/b-aicfg.md)
 * [Evaluation suite](ai-operations/b-eval.md)
 * [AI usage & cost](ai-operations/b-usage.md)
+* [AI Travel home](ai-operations/b-ai-home.md)
+* [AI assistant (chat)](ai-operations/b-assistant.md)
+* [My bookings (AI Travel)](ai-operations/b-mybookings.md)
+* [Assistant bookings (admin)](ai-operations/b-reservations.md)

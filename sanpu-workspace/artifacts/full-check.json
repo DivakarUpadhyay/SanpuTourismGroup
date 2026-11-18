@@ -478,6 +478,13 @@
   {
     "app": "erp",
     "who": "system_admin",
+    "path": "/admin/payments",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
     "path": "/admin/reconciliation",
     "ok": true,
     "errs": []
@@ -507,6 +514,13 @@
     "app": "erp",
     "who": "system_admin",
     "path": "/admin/coupons",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "system_admin",
+    "path": "/admin/articles",
     "ok": true,
     "errs": []
   },
@@ -604,6 +618,13 @@
   {
     "app": "erp",
     "who": "reservations_agent",
+    "path": "/admin/payments",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "reservations_agent",
     "path": "/admin/business-units",
     "ok": true,
     "errs": []
@@ -647,6 +668,13 @@
     "app": "erp",
     "who": "director",
     "path": "/admin/approvals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "director",
+    "path": "/admin/payments",
     "ok": true,
     "errs": []
   },
@@ -710,6 +738,13 @@
     "app": "erp",
     "who": "finance",
     "path": "/admin/suppliers",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "finance",
+    "path": "/admin/payments",
     "ok": true,
     "errs": []
   },
@@ -800,6 +835,13 @@
   {
     "app": "erp",
     "who": "marketing_manager",
+    "path": "/admin/articles",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "marketing_manager",
     "path": "/admin/contacts",
     "ok": true,
     "errs": []
@@ -829,8 +871,12 @@
     "app": "erp",
     "who": "ops_manager",
     "path": "/admin",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 502 /api/v1/navigation/me?area=Admin",
+      "api 502 /api/v1/navigation/me?area=Admin",
+      "offline note: Opens when our booking service is live This online preview shows our tours, travel options and dashb"
+    ]
   },
   {
     "app": "erp",
@@ -892,6 +938,13 @@
     "app": "erp",
     "who": "ops_manager",
     "path": "/admin/suppliers",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "ops_manager",
+    "path": "/admin/payments",
     "ok": true,
     "errs": []
   },
@@ -997,6 +1050,20 @@
     "app": "erp",
     "who": "customer",
     "path": "/deals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/news",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/blog",
     "ok": true,
     "errs": []
   },
@@ -1116,6 +1183,20 @@
     "app": "erp",
     "who": "customer",
     "path": "/deals",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/news",
+    "ok": true,
+    "errs": []
+  },
+  {
+    "app": "erp",
+    "who": "customer",
+    "path": "/blog",
     "ok": true,
     "errs": []
   },
@@ -1284,8 +1365,11 @@
     "app": "ai",
     "who": "system_admin",
     "path": "/admin/reservations",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/aiops/reservations",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1403,8 +1487,11 @@
     "app": "ai",
     "who": "ops_agent",
     "path": "/admin/reservations",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/aiops/reservations",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1466,8 +1553,11 @@
     "app": "ai",
     "who": "ops_supervisor",
     "path": "/admin/reservations",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/aiops/reservations",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1536,8 +1626,11 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/my/bookings",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1564,8 +1657,11 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/my/bookings",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1627,8 +1723,11 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/my/bookings",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",
@@ -1655,8 +1754,11 @@
     "app": "ai",
     "who": "traveler",
     "path": "/my/bookings",
-    "ok": true,
-    "errs": []
+    "ok": false,
+    "errs": [
+      "api 500 /api/v1/my/bookings",
+      "error box: Something went wrong. Quote the correlation ID when reporting this. Try again"
+    ]
   },
   {
     "app": "ai",

@@ -1,6 +1,6 @@
 # Data retention & privacy
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Data retention & privacy](../assets/a-retention.png)
 

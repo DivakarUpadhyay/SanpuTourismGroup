@@ -1,6 +1,6 @@
 # Cost assumptions
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Cost assumptions](../assets/a-costs.png)
 

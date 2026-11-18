@@ -1,6 +1,6 @@
 # AI configuration & prompt templates
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![AI configuration & prompt templates](../assets/b-aicfg.png)
 

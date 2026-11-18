@@ -1,6 +1,6 @@
 # Departures & capacity
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Departures & capacity](../assets/a-deps.png)
 

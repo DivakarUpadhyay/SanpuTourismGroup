@@ -1,6 +1,6 @@
 # Ask the copilot (NL search)
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Ask the copilot (NL search)](../assets/b-search.png)
 

@@ -1,6 +1,6 @@
 # Itinerary templates
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Itinerary templates](../assets/b-templates.png)
 

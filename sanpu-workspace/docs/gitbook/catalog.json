@@ -1,58 +1,859 @@
 {
-  "_about": "Screen catalog: drives tests/e2e/screens.spec.ts (screenshots) and tools/build-gitbook.mjs (pages). 'design' points at the form spec in ../../design/screens.html.",
-  "screens": [
-    { "id": "login", "design": "login", "app": "erp", "section": "common", "url": "/login", "role": null, "tests": ["A01", "A02"] },
-    { "id": "register", "design": null, "app": "erp", "section": "common", "url": "/register", "role": null, "tests": [], "title": "Create an account", "purpose": "Customer self sign-up (only when Feature.CustomerSignup is true). Creates a Customer user with the role named in Auth.DefaultCustomerRole.", "permission": "anonymous", "api": ["POST /api/v1/auth/register"], "procs": ["usp_Auth_RegisterCustomer"] },
-    { "id": "forgot", "design": "forgot", "app": "erp", "section": "common", "url": "/forgot-password", "role": null, "tests": ["A04"] },
-    { "id": "reset", "design": "reset", "app": "erp", "section": "common", "url": "/reset-password", "role": null, "tests": ["A04"] },
-    { "id": "invite-accept", "design": "invite-accept", "app": "erp", "section": "common", "url": "/accept-invitation", "role": null, "tests": ["B01"] },
-    { "id": "profile", "design": "profile", "app": "erp", "section": "common", "url": "/account", "role": "traveler.chen@demo.sanpu.test", "tests": [] },
-    { "id": "forbidden", "design": "forbidden", "app": "erp", "section": "common", "url": "/admin/users", "role": "agent@demo.sanpu.test", "tests": ["B01", "H03"] },
-    { "id": "adm-dash", "design": "adm-dash", "app": "erp", "section": "common", "url": "/admin/system", "role": "admin@demo.sanpu.test", "tests": [] },
-    { "id": "users", "design": "users", "app": "erp", "section": "common", "url": "/admin/users", "role": "admin@demo.sanpu.test", "tests": ["B01"] },
-    { "id": "roles", "design": "roles", "app": "erp", "section": "common", "url": "/admin/roles", "role": "admin@demo.sanpu.test", "tests": ["B04", "C03"] },
-    { "id": "perms", "design": "perms", "app": "erp", "section": "common", "url": "/admin/permissions", "role": "admin@demo.sanpu.test", "tests": [] },
-    { "id": "menus", "design": "menus", "app": "erp", "section": "common", "url": "/admin/menus", "role": "admin@demo.sanpu.test", "tests": ["B02"] },
-    { "id": "settings", "design": "settings", "app": "erp", "section": "common", "url": "/admin/settings", "role": "admin@demo.sanpu.test", "tests": ["B03", "H03"] },
-    { "id": "content", "design": "content", "app": "erp", "section": "common", "url": "/admin/content", "role": "admin@demo.sanpu.test", "tests": [] },
-    { "id": "audit", "design": "audit", "app": "erp", "section": "common", "url": "/admin/audit", "role": "admin@demo.sanpu.test", "tests": ["D06"] },
-
-    { "id": "a-home", "design": "a-home", "app": "erp", "section": "erp", "url": "/", "role": null, "tests": ["B03", "E01"] },
-    { "id": "a-tour", "design": "a-tour", "app": "erp", "section": "erp", "url": "/tours/TW-ERV-3D", "role": null, "tests": ["C01"] },
-    { "id": "a-book", "design": "a-book", "app": "erp", "section": "erp", "url": "/book/{erpOpenDeparture}", "role": "traveler.chen@demo.sanpu.test", "tests": ["C01", "C02"] },
-    { "id": "a-mybook", "design": "a-mybook", "app": "erp", "section": "erp", "url": "/my/bookings", "role": "traveler.chen@demo.sanpu.test", "tests": ["C01", "C03"] },
-    { "id": "a-mybook-detail", "design": null, "app": "erp", "section": "erp", "url": "/my/bookings/1", "role": "traveler.chen@demo.sanpu.test", "tests": ["C01"], "title": "My booking detail & cancellation", "purpose": "Customer view of one booking: status, payment, masked contact data, history timeline, and the withdraw / request-cancellation action.", "permission": "Booking.ViewOwn (own bookings only; other ids return 404)", "api": ["GET /api/v1/my/bookings/{id}", "POST /api/v1/my/bookings/{id}/cancel"], "procs": ["usp_Booking_GetForCustomer", "usp_Booking_RequestCancel"] },
-    { "id": "a-dash", "design": "a-dash", "app": "erp", "section": "erp", "url": "/admin", "role": "ops.manager@demo.sanpu.test", "tests": ["A01"] },
-    { "id": "a-bookings", "design": "a-bookings", "app": "erp", "section": "erp", "url": "/admin/bookings", "role": "ops.manager@demo.sanpu.test", "tests": ["E02"] },
-    { "id": "a-booking", "design": "a-booking", "app": "erp", "section": "erp", "url": "/admin/bookings/1", "role": "ops.manager@demo.sanpu.test", "tests": ["C01"] },
-    { "id": "a-approvals", "design": "a-approvals", "app": "erp", "section": "erp", "url": "/admin/approvals", "role": "ops.manager@demo.sanpu.test", "tests": ["D04"] },
-    { "id": "a-deps", "design": "a-deps", "app": "erp", "section": "erp", "url": "/admin/departures", "role": "ops.manager@demo.sanpu.test", "tests": [] },
-    { "id": "a-tours", "design": "a-tours", "app": "erp", "section": "erp", "url": "/admin/tours", "role": "ops.manager@demo.sanpu.test", "tests": [] },
-    { "id": "a-tasks", "design": "a-tasks", "app": "erp", "section": "erp", "url": "/admin/tasks", "role": "ops.manager@demo.sanpu.test", "tests": [] },
-    { "id": "a-group", "design": "a-group", "app": "erp", "section": "erp", "url": "/admin/group-sim", "role": "ops.manager@demo.sanpu.test", "tests": ["D04"] },
-    { "id": "a-suppliers", "design": "a-suppliers", "app": "erp", "section": "erp", "url": "/admin/suppliers", "role": "admin@demo.sanpu.test", "tests": [] },
-    { "id": "a-webhooks", "design": "a-webhooks", "app": "erp", "section": "erp", "url": "/admin/integrations", "role": "ops.manager@demo.sanpu.test", "tests": ["D01", "D02"] },
-    { "id": "a-recon", "design": "a-recon", "app": "erp", "section": "erp", "url": "/admin/reconciliation", "role": "finance@demo.sanpu.test", "tests": ["D03"] },
-    { "id": "a-units", "design": "a-units", "app": "erp", "section": "erp", "url": "/admin/business-units", "role": "admin@demo.sanpu.test", "tests": [] },
-    { "id": "a-costs", "design": null, "app": "erp", "section": "erp", "url": "/admin/cost-assumptions", "role": "ops.manager@demo.sanpu.test", "tests": [], "title": "Cost assumptions", "purpose": "Guide, meal, hotel, insurance and overhead rates used by the group simulation. Saved plans keep the values they used, so results stay reproducible.", "permission": "CostAssumption.Edit", "api": ["GET /api/v1/ops/cost-assumptions", "PUT /api/v1/ops/cost-assumptions/{key}"], "procs": ["usp_Ops_CostAssumptions_List", "usp_Ops_CostAssumptions_Update"] },
-    { "id": "a-workflow", "design": "a-workflow", "app": "erp", "section": "erp", "url": "/admin/workflows", "role": "admin@demo.sanpu.test", "tests": ["D05"] },
-    { "id": "a-retention", "design": "a-retention", "app": "erp", "section": "erp", "url": "/admin/privacy", "role": "admin@demo.sanpu.test", "tests": [] },
-
-    { "id": "b-home", "design": "b-home", "app": "ai", "section": "ai", "url": "/my/trips", "role": "traveler.chen@demo.sanpu.test", "tests": ["F01"] },
-    { "id": "b-plan", "design": "b-plan", "app": "ai", "section": "ai", "url": "/trips/new", "role": "traveler.chen@demo.sanpu.test", "tests": ["F01"] },
-    { "id": "b-itin", "design": "b-itin", "app": "ai", "section": "ai", "url": "/trips/1", "role": "traveler.chen@demo.sanpu.test", "tests": ["G01", "F02"] },
-    { "id": "b-ask", "design": null, "app": "ai", "section": "ai", "url": "/my/ask", "role": "traveler.lee@demo.sanpu.test", "tests": ["F02", "F03"], "title": "Ask about my trips (traveler)", "purpose": "Traveler-side copilot search. Same pipeline as staff search but always scoped to the caller's own trips; injection attempts are blocked before any model call.", "permission": "Ai.Search + Trip.ViewOwn", "api": ["POST /api/v1/aiops/search"], "procs": ["usp_Search_Trips", "usp_AiUsage_Write"] },
-    { "id": "b-dash", "design": "b-dash", "app": "ai", "section": "ai", "url": "/admin", "role": "supervisor@demo.sanpu.test", "tests": ["H04"] },
-    { "id": "b-search", "design": "b-search", "app": "ai", "section": "ai", "url": "/admin/search", "role": "ops.agent@demo.sanpu.test", "tests": ["G02"] },
-    { "id": "b-trips", "design": "b-trips", "app": "ai", "section": "ai", "url": "/admin/trips", "role": "ops.agent@demo.sanpu.test", "tests": [] },
-    { "id": "b-sim", "design": "b-sim", "app": "ai", "section": "ai", "url": "/admin/trips/1", "role": "ops.agent@demo.sanpu.test", "tests": ["G01"] },
-    { "id": "b-prop", "design": "b-prop", "app": "ai", "section": "ai", "url": "/admin/proposals/1", "role": "supervisor@demo.sanpu.test", "tests": ["G01"] },
-    { "id": "b-docs", "design": "b-docs", "app": "ai", "section": "ai", "url": "/admin/documents", "role": "supervisor@demo.sanpu.test", "tests": ["H01"] },
-    { "id": "b-scen", "design": "b-scen", "app": "ai", "section": "ai", "url": "/admin/scenarios", "role": "supervisor@demo.sanpu.test", "tests": [] },
-    { "id": "b-templates", "design": null, "app": "ai", "section": "ai", "url": "/admin/templates", "role": "supervisor@demo.sanpu.test", "tests": [], "title": "Itinerary templates", "purpose": "Templates the trip generator starts from: region, days, pace and the ordered items with dependencies.", "permission": "Template.Edit", "api": ["GET /api/v1/aiops/templates", "POST/PUT /api/v1/aiops/templates"], "procs": ["usp_Template_List", "usp_Template_Upsert"] },
-    { "id": "b-constraints", "design": null, "app": "ai", "section": "ai", "url": "/admin/constraints", "role": "supervisor@demo.sanpu.test", "tests": [], "title": "Travel constraints", "purpose": "Rules the proposal validator checks (max items per day, earliest start, latest hotel check-in, accessibility, opening hours).", "permission": "Constraint.Edit", "api": ["GET /api/v1/aiops/constraints", "PUT /api/v1/aiops/constraints/{id}"], "procs": ["usp_Constraints_List", "usp_Constraints_Update"] },
-    { "id": "b-aicfg", "design": "b-aicfg", "app": "ai", "section": "ai", "url": "/admin/ai", "role": "ai.engineer@demo.sanpu.test", "tests": ["H03"] },
-    { "id": "b-eval", "design": "b-eval", "app": "ai", "section": "ai", "url": "/admin/evals", "role": "ai.engineer@demo.sanpu.test", "tests": ["H02"] },
-    { "id": "b-usage", "design": "b-usage", "app": "ai", "section": "ai", "url": "/admin/ai-usage", "role": "ai.engineer@demo.sanpu.test", "tests": [] }
-  ]
+ "_about": "Screen catalog: drives tests/e2e/screens.spec.ts (screenshots) and tools/build-gitbook.mjs (pages). 'design' points at the form spec in ../../design/screens.html.",
+ "screens": [
+  {
+   "id": "login",
+   "design": "login",
+   "app": "erp",
+   "section": "common",
+   "url": "/login",
+   "role": null,
+   "tests": [
+    "A01",
+    "A02"
+   ]
+  },
+  {
+   "id": "register",
+   "design": null,
+   "app": "erp",
+   "section": "common",
+   "url": "/register",
+   "role": null,
+   "tests": [],
+   "title": "Create an account",
+   "purpose": "Customer self sign-up (only when Feature.CustomerSignup is true). Creates a Customer user with the role named in Auth.DefaultCustomerRole.",
+   "permission": "anonymous",
+   "api": [
+    "POST /api/v1/auth/register"
+   ],
+   "procs": [
+    "usp_Auth_RegisterCustomer"
+   ]
+  },
+  {
+   "id": "forgot",
+   "design": "forgot",
+   "app": "erp",
+   "section": "common",
+   "url": "/forgot-password",
+   "role": null,
+   "tests": [
+    "A04"
+   ]
+  },
+  {
+   "id": "reset",
+   "design": "reset",
+   "app": "erp",
+   "section": "common",
+   "url": "/reset-password",
+   "role": null,
+   "tests": [
+    "A04"
+   ]
+  },
+  {
+   "id": "invite-accept",
+   "design": "invite-accept",
+   "app": "erp",
+   "section": "common",
+   "url": "/accept-invitation",
+   "role": null,
+   "tests": [
+    "B01"
+   ]
+  },
+  {
+   "id": "profile",
+   "design": "profile",
+   "app": "erp",
+   "section": "common",
+   "url": "/account",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "forbidden",
+   "design": "forbidden",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/users",
+   "role": "agent@demo.sanpu.test",
+   "tests": [
+    "B01",
+    "H03"
+   ]
+  },
+  {
+   "id": "adm-dash",
+   "design": "adm-dash",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/system",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "users",
+   "design": "users",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/users",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "B01"
+   ]
+  },
+  {
+   "id": "roles",
+   "design": "roles",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/roles",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "B04",
+    "C03"
+   ]
+  },
+  {
+   "id": "perms",
+   "design": "perms",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/permissions",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "menus",
+   "design": "menus",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/menus",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "B02"
+   ]
+  },
+  {
+   "id": "settings",
+   "design": "settings",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/settings",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "B03",
+    "H03"
+   ]
+  },
+  {
+   "id": "content",
+   "design": "content",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/content",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "audit",
+   "design": "audit",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/audit",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "D06"
+   ]
+  },
+  {
+   "id": "a-home",
+   "design": "a-home",
+   "app": "erp",
+   "section": "erp",
+   "url": "/",
+   "role": null,
+   "tests": [
+    "B03",
+    "E01"
+   ]
+  },
+  {
+   "id": "a-tour",
+   "design": "a-tour",
+   "app": "erp",
+   "section": "erp",
+   "url": "/tours/TW-ERV-3D",
+   "role": null,
+   "tests": [
+    "C01"
+   ]
+  },
+  {
+   "id": "a-book",
+   "design": "a-book",
+   "app": "erp",
+   "section": "erp",
+   "url": "/book/{erpOpenDeparture}",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "C01",
+    "C02"
+   ]
+  },
+  {
+   "id": "a-mybook",
+   "design": "a-mybook",
+   "app": "erp",
+   "section": "erp",
+   "url": "/my/bookings",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "C01",
+    "C03"
+   ]
+  },
+  {
+   "id": "a-mybook-detail",
+   "design": null,
+   "app": "erp",
+   "section": "erp",
+   "url": "/my/bookings/1",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "C01"
+   ],
+   "title": "My booking detail & cancellation",
+   "purpose": "Customer view of one booking: status, payment, masked contact data, history timeline, and the withdraw / request-cancellation action.",
+   "permission": "Booking.ViewOwn (own bookings only; other ids return 404)",
+   "api": [
+    "GET /api/v1/my/bookings/{id}",
+    "POST /api/v1/my/bookings/{id}/cancel"
+   ],
+   "procs": [
+    "usp_Booking_GetForCustomer",
+    "usp_Booking_RequestCancel"
+   ]
+  },
+  {
+   "id": "a-dash",
+   "design": "a-dash",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "A01"
+   ]
+  },
+  {
+   "id": "a-bookings",
+   "design": "a-bookings",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/bookings",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "E02"
+   ]
+  },
+  {
+   "id": "a-booking",
+   "design": "a-booking",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/bookings/1",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "C01"
+   ]
+  },
+  {
+   "id": "a-approvals",
+   "design": "a-approvals",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/approvals",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "D04"
+   ]
+  },
+  {
+   "id": "a-deps",
+   "design": "a-deps",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/departures",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "a-tours",
+   "design": "a-tours",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/tours",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "a-tasks",
+   "design": "a-tasks",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/tasks",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "a-group",
+   "design": "a-group",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/group-sim",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "D04"
+   ]
+  },
+  {
+   "id": "a-suppliers",
+   "design": "a-suppliers",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/suppliers",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "a-webhooks",
+   "design": "a-webhooks",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/integrations",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [
+    "D01",
+    "D02"
+   ]
+  },
+  {
+   "id": "a-recon",
+   "design": "a-recon",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/reconciliation",
+   "role": "finance@demo.sanpu.test",
+   "tests": [
+    "D03"
+   ]
+  },
+  {
+   "id": "a-units",
+   "design": "a-units",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/business-units",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "a-costs",
+   "design": null,
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/cost-assumptions",
+   "role": "ops.manager@demo.sanpu.test",
+   "tests": [],
+   "title": "Cost assumptions",
+   "purpose": "Guide, meal, hotel, insurance and overhead rates used by the group simulation. Saved plans keep the values they used, so results stay reproducible.",
+   "permission": "CostAssumption.Edit",
+   "api": [
+    "GET /api/v1/ops/cost-assumptions",
+    "PUT /api/v1/ops/cost-assumptions/{key}"
+   ],
+   "procs": [
+    "usp_Ops_CostAssumptions_List",
+    "usp_Ops_CostAssumptions_Update"
+   ]
+  },
+  {
+   "id": "a-workflow",
+   "design": "a-workflow",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/workflows",
+   "role": "admin@demo.sanpu.test",
+   "tests": [
+    "D05"
+   ]
+  },
+  {
+   "id": "a-retention",
+   "design": "a-retention",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/privacy",
+   "role": "admin@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "b-home",
+   "design": "b-home",
+   "app": "ai",
+   "section": "ai",
+   "url": "/my/trips",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "F01"
+   ]
+  },
+  {
+   "id": "b-plan",
+   "design": "b-plan",
+   "app": "ai",
+   "section": "ai",
+   "url": "/trips/new",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "F01"
+   ]
+  },
+  {
+   "id": "b-itin",
+   "design": "b-itin",
+   "app": "ai",
+   "section": "ai",
+   "url": "/trips/1",
+   "role": "traveler.chen@demo.sanpu.test",
+   "tests": [
+    "G01",
+    "F02"
+   ]
+  },
+  {
+   "id": "b-ask",
+   "design": null,
+   "app": "ai",
+   "section": "ai",
+   "url": "/my/ask",
+   "role": "traveler.lee@demo.sanpu.test",
+   "tests": [
+    "F02",
+    "F03"
+   ],
+   "title": "Ask about my trips (traveler)",
+   "purpose": "Traveler-side copilot search. Same pipeline as staff search but always scoped to the caller's own trips; injection attempts are blocked before any model call.",
+   "permission": "Ai.Search + Trip.ViewOwn",
+   "api": [
+    "POST /api/v1/aiops/search"
+   ],
+   "procs": [
+    "usp_Search_Trips",
+    "usp_AiUsage_Write"
+   ]
+  },
+  {
+   "id": "b-dash",
+   "design": "b-dash",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": [
+    "H04"
+   ]
+  },
+  {
+   "id": "b-search",
+   "design": "b-search",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/search",
+   "role": "ops.agent@demo.sanpu.test",
+   "tests": [
+    "G02"
+   ]
+  },
+  {
+   "id": "b-trips",
+   "design": "b-trips",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/trips",
+   "role": "ops.agent@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "b-sim",
+   "design": "b-sim",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/trips/1",
+   "role": "ops.agent@demo.sanpu.test",
+   "tests": [
+    "G01"
+   ]
+  },
+  {
+   "id": "b-prop",
+   "design": "b-prop",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/proposals/1",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": [
+    "G01"
+   ]
+  },
+  {
+   "id": "b-docs",
+   "design": "b-docs",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/documents",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": [
+    "H01"
+   ]
+  },
+  {
+   "id": "b-scen",
+   "design": "b-scen",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/scenarios",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "id": "b-templates",
+   "design": null,
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/templates",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": [],
+   "title": "Itinerary templates",
+   "purpose": "Templates the trip generator starts from: region, days, pace and the ordered items with dependencies.",
+   "permission": "Template.Edit",
+   "api": [
+    "GET /api/v1/aiops/templates",
+    "POST/PUT /api/v1/aiops/templates"
+   ],
+   "procs": [
+    "usp_Template_List",
+    "usp_Template_Upsert"
+   ]
+  },
+  {
+   "id": "b-constraints",
+   "design": null,
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/constraints",
+   "role": "supervisor@demo.sanpu.test",
+   "tests": [],
+   "title": "Travel constraints",
+   "purpose": "Rules the proposal validator checks (max items per day, earliest start, latest hotel check-in, accessibility, opening hours).",
+   "permission": "Constraint.Edit",
+   "api": [
+    "GET /api/v1/aiops/constraints",
+    "PUT /api/v1/aiops/constraints/{id}"
+   ],
+   "procs": [
+    "usp_Constraints_List",
+    "usp_Constraints_Update"
+   ]
+  },
+  {
+   "id": "b-aicfg",
+   "design": "b-aicfg",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/ai",
+   "role": "ai.engineer@demo.sanpu.test",
+   "tests": [
+    "H03"
+   ]
+  },
+  {
+   "id": "b-eval",
+   "design": "b-eval",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/evals",
+   "role": "ai.engineer@demo.sanpu.test",
+   "tests": [
+    "H02"
+   ]
+  },
+  {
+   "id": "b-usage",
+   "design": "b-usage",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/ai-usage",
+   "role": "ai.engineer@demo.sanpu.test",
+   "tests": []
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "admin-login",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/login",
+   "role": null,
+   "title": "Staff sign-in (admin panel)",
+   "purpose": "Staff sign in here, separately from the customer site. The admin panel has its own session (cookies and token), so a staff member and a customer can be signed in at the same time in one browser. Customers who try this page are refused with a pointer to the customer sign-in.",
+   "api": [
+    "POST /api/v1/auth/login (header X-Session-Realm: admin) → 200 token; 403 wrong_portal for customer accounts; 403 pending_approval / request_rejected for staff requests"
+   ],
+   "procs": [
+    "usp_Auth_GetUserByEmail (returns ApprovalStatus)",
+    "usp_Auth_RecordLoginResult"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "staff-register",
+   "app": "ai",
+   "section": "common",
+   "url": "/admin/register",
+   "role": null,
+   "title": "Request staff access",
+   "purpose": "A new staff member enters name, work email, the role they need, an optional note and their own password. The account waits as Pending until an administrator approves it on People; an email confirms the request and the decision.",
+   "api": [
+    "GET /api/v1/auth/staff-roles",
+    "POST /api/v1/auth/staff-request → 202"
+   ],
+   "procs": [
+    "usp_Auth_StaffRoles",
+    "usp_Auth_RequestStaffAccess"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "access-requests",
+   "app": "erp",
+   "section": "common",
+   "url": "/admin/users",
+   "role": "admin@demo.sanpu.test",
+   "title": "People: access requests",
+   "purpose": "Pending staff requests appear above the user list. Approve (optionally with a different role) or reject; the person gets an email either way and can sign in once approved.",
+   "api": [
+    "GET /api/v1/admin/users/access-requests",
+    "POST /api/v1/admin/users/access-requests/{id} {approve, roleKey}"
+   ],
+   "procs": [
+    "usp_Admin_ListAccessRequests",
+    "usp_Admin_DecideAccessRequest"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-services",
+   "app": "erp",
+   "section": "erp",
+   "url": "/hotels",
+   "role": null,
+   "title": "Hotels, flights, buses & taxis search",
+   "purpose": "Live availability and total prices from the database for each kind of travel, with filters, sorting, load more and detail pages.",
+   "api": [
+    "GET /api/v1/travel/search?kind&from&to&date&endDate&units&travelers&sort"
+   ],
+   "procs": [
+    "usp_Services_Search"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-service",
+   "app": "erp",
+   "section": "erp",
+   "url": "/services/lakeside-hotel-lake-view-twin",
+   "role": null,
+   "title": "Hotel / flight / bus / taxi detail",
+   "purpose": "Description, facts, photo gallery, 45-day price and availability calendar, similar options and the booking button.",
+   "api": [
+    "GET /api/v1/travel/services/{slug-or-code}?from"
+   ],
+   "procs": [
+    "usp_Services_Get (slug or code, up to 150 characters)"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-payments",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/payments",
+   "role": "admin@demo.sanpu.test",
+   "title": "Payments & transactions",
+   "purpose": "Every deposit, balance and full payment for tours and travel services with the payment gateway's result (Paid, Pending, Failed), method and reference. Totals at the top; Excel and PDF download.",
+   "api": [
+    "GET /api/v1/ops/payments?status&orderType&search&page"
+   ],
+   "procs": [
+    "usp_Payment_ListAll"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-news",
+   "app": "erp",
+   "section": "erp",
+   "url": "/news",
+   "role": null,
+   "title": "News",
+   "purpose": "Taiwan travel industry and Sanpu updates: featured story, category filter, load more.",
+   "api": [
+    "GET /api/v1/content/articles?kind=News&category&page"
+   ],
+   "procs": [
+    "usp_Articles_Public"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-blog",
+   "app": "erp",
+   "section": "erp",
+   "url": "/blog",
+   "role": null,
+   "title": "Travel blog",
+   "purpose": "Guides, food and culture and Sanpu stories, written by staff or the AI writer in original words with real photos.",
+   "api": [
+    "GET /api/v1/content/articles?kind=Blog&category&page"
+   ],
+   "procs": [
+    "usp_Articles_Public"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-article",
+   "app": "erp",
+   "section": "erp",
+   "url": "/blog/three-slow-days-in-the-east-rift-valley",
+   "role": null,
+   "title": "Article page",
+   "purpose": "Photo header, article body, tags, photo credit, share and related articles.",
+   "api": [
+    "GET /api/v1/content/articles/{slug}"
+   ],
+   "procs": [
+    "usp_Article_GetPublic"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "a-articles-admin",
+   "app": "erp",
+   "section": "erp",
+   "url": "/admin/articles",
+   "role": "admin@demo.sanpu.test",
+   "title": "News & blog (admin) and AI writer",
+   "purpose": "Edit, publish or unpublish articles; Write with AI asks the writer for an original article on a topic (or the next unused one) with a real photo from the library. The hourly bot publishes one news and one blog article per interval.",
+   "api": [
+    "GET/POST/PUT /api/v1/ops/articles",
+    "POST /api/v1/ops/articles/{id}/status",
+    "POST /api/v1/ops/articles/write {kind, topic, publish}"
+   ],
+   "procs": [
+    "usp_Articles_Admin",
+    "usp_Article_Save",
+    "usp_Article_SetStatus",
+    "usp_Articles_BotState"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "b-ai-home",
+   "app": "ai",
+   "section": "ai",
+   "url": "/",
+   "role": null,
+   "title": "AI Travel home",
+   "purpose": "Describe a trip in one sentence and the assistant plans, compares and books it. Capabilities, how it works, regions.",
+   "api": [
+    "GET /api/v1/public/showcase"
+   ],
+   "procs": [
+    "usp_AiOps_Lookups"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "b-assistant",
+   "app": "ai",
+   "section": "ai",
+   "url": "/assistant",
+   "role": "traveler.chen@demo.sanpu.test",
+   "title": "AI assistant (chat)",
+   "purpose": "Conversation with tool use over Sanpu Travel's live catalog: tours, hotels, flights, buses, taxis, comparisons, plans and bookings prepared for the traveler to confirm. Book this on a card prepares a booking without AI. Gemini, ChatGPT and Claude in order, with keyword search when no AI is available.",
+   "api": [
+    "POST /api/v1/assistant/chat {messages}",
+    "POST /api/v1/assistant/prepare {kind, code, date, end_date, travelers, departure_id}"
+   ],
+   "procs": [
+    "usp_Reservation_Prepare",
+    "usp_AiUsage_Write"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "b-mybookings",
+   "app": "ai",
+   "section": "ai",
+   "url": "/my/bookings",
+   "role": "traveler.chen@demo.sanpu.test",
+   "title": "My bookings (AI Travel)",
+   "purpose": "Bookings made with the assistant: pay a deposit, the balance or in full (sandbox), cancel; each step sends an email.",
+   "api": [
+    "GET /api/v1/my/bookings",
+    "POST /api/v1/my/bookings/{id}/pay {mode}",
+    "POST /api/v1/my/bookings/{id}/cancel"
+   ],
+   "procs": [
+    "usp_Reservation_ListForTraveler",
+    "usp_Reservation_Pay",
+    "usp_Reservation_Cancel"
+   ]
+  },
+  {
+   "tests": [],
+   "design": null,
+   "id": "b-reservations",
+   "app": "ai",
+   "section": "ai",
+   "url": "/admin/reservations",
+   "role": "admin@demo.sanpu.test",
+   "title": "Assistant bookings (admin)",
+   "purpose": "Every booking travelers prepared with the assistant and confirmed themselves, with paid amounts and status.",
+   "api": [
+    "GET /api/v1/aiops/reservations?status"
+   ],
+   "procs": [
+    "usp_Reservation_ListAll"
+   ]
+  }
+ ]
 }

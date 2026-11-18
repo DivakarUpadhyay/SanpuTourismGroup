@@ -1,6 +1,6 @@
 # Suppliers & connections
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Suppliers & connections](../assets/a-suppliers.png)
 

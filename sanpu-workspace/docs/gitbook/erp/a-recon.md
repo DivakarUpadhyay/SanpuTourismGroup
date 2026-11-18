@@ -1,6 +1,6 @@
 # Reconciliation & settlement
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Reconciliation & settlement](../assets/a-recon.png)
 

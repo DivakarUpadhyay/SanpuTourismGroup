@@ -1,6 +1,6 @@
 # Users & onboarding
 
-App A · Tour Operations ERP (the same screen exists in both apps)
+App A · Sanpu Travel (the same screen exists in both apps)
 
 ![Users & onboarding](../assets/users.png)
 

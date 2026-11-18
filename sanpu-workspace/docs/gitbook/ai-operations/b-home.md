@@ -1,6 +1,6 @@
 # My trips (traveler home)
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![My trips (traveler home)](../assets/b-home.png)
 

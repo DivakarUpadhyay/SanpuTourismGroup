@@ -1,6 +1,6 @@
 # Recovery proposal review
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Recovery proposal review](../assets/b-prop.png)
 

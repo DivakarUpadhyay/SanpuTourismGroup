@@ -1,6 +1,6 @@
 # My booking detail & cancellation
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![My booking detail & cancellation](../assets/a-mybook-detail.png)
 

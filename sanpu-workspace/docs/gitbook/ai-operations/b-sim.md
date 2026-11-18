@@ -1,6 +1,6 @@
 # Run disruption simulation
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Run disruption simulation](../assets/b-sim.png)
 

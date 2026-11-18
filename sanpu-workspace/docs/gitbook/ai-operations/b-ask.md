@@ -1,6 +1,6 @@
 # Ask about my trips (traveler)
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Ask about my trips (traveler)](../assets/b-ask.png)
 

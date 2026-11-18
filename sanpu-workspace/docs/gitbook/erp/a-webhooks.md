@@ -1,6 +1,6 @@
 # Integration jobs & webhooks
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Integration jobs & webhooks](../assets/a-webhooks.png)
 

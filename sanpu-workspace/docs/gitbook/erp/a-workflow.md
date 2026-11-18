@@ -1,6 +1,6 @@
 # Workflow designer
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Workflow designer](../assets/a-workflow.png)
 

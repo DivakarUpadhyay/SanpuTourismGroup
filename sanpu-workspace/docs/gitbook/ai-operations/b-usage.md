@@ -1,6 +1,6 @@
 # AI usage & cost
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![AI usage & cost](../assets/b-usage.png)
 

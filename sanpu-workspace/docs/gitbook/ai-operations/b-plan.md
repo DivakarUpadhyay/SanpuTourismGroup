@@ -1,6 +1,6 @@
 # Plan a trip (preferences)
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Plan a trip (preferences)](../assets/b-plan.png)
 

@@ -16,9 +16,11 @@ public record OpenAiCompatibleProfile(string Name, string SecretPrefix, string D
     public static readonly OpenAiCompatibleProfile Gemini = new("Gemini", "GEMINI", "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-2.5-flash");
 }
 
-public class OpenAiAssistantModel(HttpClient http, ISecretStore secrets, OpenAiCompatibleProfile profile) : IAssistantModel
+/// <summary>ChatGPT (OpenAI). One constructor so the typed HttpClient factory can create it.</summary>
+public sealed class OpenAiAssistantModel(HttpClient http, ISecretStore secrets) : OpenAiCompatibleModel(http, secrets, OpenAiCompatibleProfile.OpenAI);
+
+public abstract class OpenAiCompatibleModel(HttpClient http, ISecretStore secrets, OpenAiCompatibleProfile profile) : IAssistantModel
 {
-    public OpenAiAssistantModel(HttpClient http, ISecretStore secrets) : this(http, secrets, OpenAiCompatibleProfile.OpenAI) { }
     private readonly string? _key = secrets.Get(profile.SecretPrefix + "_API_KEY");
     private readonly string _model = secrets.Get(profile.SecretPrefix + "_MODEL") is { Length: > 0 } m ? m : profile.DefaultModel;
     private readonly string _base = (secrets.Get(profile.SecretPrefix + "_BASE_URL") is { Length: > 0 } b ? b : profile.DefaultBaseUrl).TrimEnd('/');
@@ -82,7 +84,7 @@ public class OpenAiAssistantModel(HttpClient http, ISecretStore secrets, OpenAiC
 }
 
 /// <summary>Google Gemini through its OpenAI-compatible endpoint (free key from aistudio.google.com): GEMINI_API_KEY, GEMINI_MODEL.</summary>
-public sealed class GeminiAssistantModel(HttpClient http, ISecretStore secrets) : OpenAiAssistantModel(http, secrets, OpenAiCompatibleProfile.Gemini);
+public sealed class GeminiAssistantModel(HttpClient http, ISecretStore secrets) : OpenAiCompatibleModel(http, secrets, OpenAiCompatibleProfile.Gemini);
 
 /// <summary>Tries the providers in order (setting Assistant.ProviderOrder, default "Gemini,OpenAI,Anthropic"): when one is not configured,
 /// out of credit, rate limited or down, the next one answers. Tool results are never repeated: a provider that already ran tools

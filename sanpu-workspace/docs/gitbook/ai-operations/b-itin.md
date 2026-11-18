@@ -1,6 +1,6 @@
 # Itinerary view
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Itinerary view](../assets/b-itin.png)
 

@@ -1,6 +1,6 @@
 # Tour detail & departures
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Tour detail & departures](../assets/a-tour.png)
 

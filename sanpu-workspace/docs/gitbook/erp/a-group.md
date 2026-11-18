@@ -1,6 +1,6 @@
 # Group assembly simulation
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Group assembly simulation](../assets/a-group.png)
 

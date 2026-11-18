@@ -1,6 +1,6 @@
 # Admin dashboard
 
-App A · Tour Operations ERP (the same screen exists in both apps)
+App A · Sanpu Travel (the same screen exists in both apps)
 
 ![Admin dashboard](../assets/adm-dash.png)
 

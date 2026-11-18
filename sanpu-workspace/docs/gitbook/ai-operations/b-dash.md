@@ -1,6 +1,6 @@
 # AI operations dashboard
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![AI operations dashboard](../assets/b-dash.png)
 

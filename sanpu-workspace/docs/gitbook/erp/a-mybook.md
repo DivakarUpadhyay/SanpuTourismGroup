@@ -1,6 +1,6 @@
 # My bookings
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![My bookings](../assets/a-mybook.png)
 

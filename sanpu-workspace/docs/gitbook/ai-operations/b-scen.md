@@ -1,6 +1,6 @@
 # Disruption scenarios
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Disruption scenarios](../assets/b-scen.png)
 

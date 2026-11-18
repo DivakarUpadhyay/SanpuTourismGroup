@@ -1,6 +1,6 @@
 # Create an account
 
-App A · Tour Operations ERP (the same screen exists in both apps)
+App A · Sanpu Travel (the same screen exists in both apps)
 
 ![Create an account](../assets/register.png)
 

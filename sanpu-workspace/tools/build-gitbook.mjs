@@ -35,7 +35,7 @@ function screenPage(s) {
   const role = s.role ? `\`${s.role}\` (fictional demo account)` : "anonymous visitor";
   return `# ${title}
 
-${s.app === "erp" ? "App A · Tour Operations ERP" : "App B · AI Operations Copilot"}${s.section === "common" ? " (the same screen exists in both apps)" : ""}
+${s.app === "erp" ? "App A · Sanpu Travel" : "App B · Sanpu AI Travel"}${s.section === "common" ? " (the same screen exists in both apps)" : ""}
 
 ![${title}](../assets/${s.id}.png)
 
@@ -78,14 +78,16 @@ function presenter(s, title, d) {
 }
 
 // ---- write screen pages + SUMMARY ----
-const groups = { common: "Shared admin & account screens", erp: "App A · Tour Operations ERP", "ai-operations": "App B · AI Operations Copilot" };
+const groups = { common: "Shared admin & account screens", erp: "App A · Sanpu Travel", "ai-operations": "App B · Sanpu AI Travel" };
 for (const g of Object.keys(groups)) fs.mkdirSync(path.join(gb, g), { recursive: true });
 for (const s of catalog) fs.writeFileSync(path.join(gb, pageFor(s), `${slug(s)}.md`), screenPage(s));
 
 const fixed = [
   ["Introduction", "README.md"], ["Getting started", "getting-started.md"], ["Architecture", "architecture.md"], ["Security & roles", "security-and-roles.md"],
   ["Database & stored procedures", "database-and-stored-procedures.md"], ["API: Swagger & Postman", "api-swagger-postman.md"], ["Cross-screen workflows", "workflows.md"],
-  ["Testing & evidence", "testing-and-evidence.md"], ["Troubleshooting", "troubleshooting.md"], ["Interview · 20 minutes", "interview-20-minute.md"], ["Interview · 60 minutes", "interview-60-minute.md"]
+  ["What's new", "whats-new.md"], ["Accounts, sessions & sign-up", "accounts-and-sessions.md"], ["Emails & notifications", "emails.md"],
+  ["Bookings & payments end to end", "bookings-and-payments.md"], ["AI Travel assistant", "ai-assistant.md"], ["News, blog & the AI writer", "news-and-blog.md"], ["Reports: Excel & PDF", "reports.md"],
+  ["Going live for a presentation", "going-live.md"], ["Testing & evidence", "testing-and-evidence.md"], ["Troubleshooting", "troubleshooting.md"], ["Interview · 20 minutes", "interview-20-minute.md"], ["Interview · 60 minutes", "interview-60-minute.md"]
 ];
 let summary = "# Summary\n\n" + fixed.map(([t, f]) => `* [${t}](${f})`).join("\n") + "\n";
 for (const [g, label] of Object.entries(groups)) {

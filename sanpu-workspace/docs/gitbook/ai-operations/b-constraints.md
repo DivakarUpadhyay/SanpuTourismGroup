@@ -1,6 +1,6 @@
 # Travel constraints
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Travel constraints](../assets/b-constraints.png)
 

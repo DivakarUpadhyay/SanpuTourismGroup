@@ -1,6 +1,6 @@
 # Document intake & review
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Document intake & review](../assets/b-docs.png)
 

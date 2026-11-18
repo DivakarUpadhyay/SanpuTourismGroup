@@ -1,6 +1,6 @@
 # My profile
 
-App A · Tour Operations ERP (the same screen exists in both apps)
+App A · Sanpu Travel (the same screen exists in both apps)
 
 ![My profile](../assets/profile.png)
 

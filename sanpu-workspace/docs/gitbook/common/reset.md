@@ -1,6 +1,6 @@
 # Reset password
 
-App A · Tour Operations ERP (the same screen exists in both apps)
+App A · Sanpu Travel (the same screen exists in both apps)
 
 ![Reset password](../assets/reset.png)
 

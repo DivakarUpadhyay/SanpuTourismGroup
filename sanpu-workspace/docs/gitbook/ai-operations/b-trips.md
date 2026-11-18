@@ -1,6 +1,6 @@
 # Trips & itinerary versions
 
-App B · AI Operations Copilot
+App B · Sanpu AI Travel
 
 ![Trips & itinerary versions](../assets/b-trips.png)
 

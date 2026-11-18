@@ -1,6 +1,6 @@
 # Booking detail · approve / reject / cancel / refund
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Booking detail · approve / reject / cancel / refund](../assets/a-booking.png)
 

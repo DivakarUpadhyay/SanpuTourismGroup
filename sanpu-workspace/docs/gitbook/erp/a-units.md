@@ -1,6 +1,6 @@
 # Business units
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Business units](../assets/a-units.png)
 

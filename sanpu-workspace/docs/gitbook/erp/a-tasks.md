@@ -1,6 +1,6 @@
 # Task queue & SLAs
 
-App A · Tour Operations ERP
+App A · Sanpu Travel
 
 ![Task queue & SLAs](../assets/a-tasks.png)
 
