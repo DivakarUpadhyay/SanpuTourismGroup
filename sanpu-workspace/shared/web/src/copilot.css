@@ -191,6 +191,15 @@ button.link { border: 0; background: none; padding: 0; color: var(--accent); fon
 /* staff: full-screen console look */
 .auth-screen.staff { background: #070B18; }
 .auth-screen.staff .auth-form-side { background: #fff; display: grid; align-content: center; }
+/* this panel is always white, so it keeps the light colours when the device is in dark mode */
+.auth-screen.staff .auth-form-side {
+  --accent: #0B5CAD; --accent-hover: #0A4F96; --accent-pressed: #083F78; --accent-soft: #E7F0FA; --on-accent: #ffffff;
+  --ink: #0F172A; --ink-2: #334155; --muted: #64748B; --layer: #FAFBFD; --card: #ffffff; --card-hover: #F8FAFC;
+  --subtle: rgba(15, 23, 42, .045); --subtle-2: rgba(15, 23, 42, .075); --stroke: rgba(15, 23, 42, .09); --stroke-strong: rgba(15, 23, 42, .18); --control-bottom: rgba(15, 23, 42, .45);
+  --shadow-1: 0 1px 2px rgba(15, 23, 42, .06), 0 0 0 1px rgba(15, 23, 42, .05); --shadow-2: 0 4px 14px rgba(15, 23, 42, .08), 0 0 0 1px rgba(15, 23, 42, .05);
+  --danger: #B42318; --danger-bg: #FEE4E2; --success: #067647; --success-bg: #DCFAE6; --warn: #93370D; --warn-bg: #FEF0C7; --info: #0B5CAD; --info-bg: #E7F0FA; --focus: #0B5CAD;
+  color-scheme: light; color: var(--ink);
+}
 .auth-screen.staff .auth-visual { background: radial-gradient(90% 90% at 80% 10%, #1C3A6E 0%, #0B1F3A 45%, #070B18 100%); }
 .auth-screen.staff .auth-visual::after { background: linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 32px 32px; }
 .auth-screen.staff .auth-visual .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
