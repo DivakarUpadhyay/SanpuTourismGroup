@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Async, Card, CleanParams, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, savePageParams, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
+import { Async, Card, Loading, CleanParams, DatePickerInput, Empty, Icon, PageHeader, Pill, SelectInput, TextArea, TextInput, fmtDate, get, money, post, savePageParams, useAction, useAsync, useAuth, useSetting } from "@sanpu/web";
 import { TourTile, type TourCard } from "./customer-home";
 import { TourResults } from "./advanced-filters";
 
@@ -478,6 +478,7 @@ function CompareInner({ params }: { params: URLSearchParams }) {
 
       {picked.length < 2 ? <Empty>{picked.length === 1 ? "Choose one more tour to compare." : "Choose at least two tours to compare."}</Empty> : (
         <Async state={cmp}>{(list) => {
+          if (list.length < 2) return <Loading />;
           const prices = list.map((r) => r.fromPrice).filter((v): v is number => v != null);
           const low = prices.length > 1 && new Set(prices).size > 1 ? Math.min(...prices) : null;
           return (
