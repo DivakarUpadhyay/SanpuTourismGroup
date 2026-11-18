@@ -64,7 +64,7 @@ Before you start, open these tabs and sign in: Sanpu Travel customer, Sanpu Trav
 | 5:00–6:30 | Admin operations | Dashboard, Bookings, Payments & transactions | "Every dashboard number opens its detail. Staff see each customer transaction, paid, pending or failed." |
 | 6:30–8:30 | AI assistant | /assistant | Type: **Find a hotel in Kinmen for 2 nights next Friday**. Press **Book this**, then **Pay**. "Prices are live. The AI can prepare a booking, but only the traveler can pay." |
 | 8:30–9:30 | AI admin | Assistant bookings, Payments | "Staff see every assistant booking and every payment attempt." |
-| 9:30–10:00 | Architecture and close | Swagger, or section 7 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
+| 9:30–10:00 | Architecture and close | Swagger, or section 8 below | "Next.js front ends, ASP.NET Core APIs, SQL Server with stored procedures, and role-based access from the database." |
 
 ### ECPay in the demo
 
@@ -213,7 +213,90 @@ A booking is confirmed automatically when it is fully paid through ECPay. The AI
 | AI quality and cost | PromptTemplates, AiUsageLogs, EvalCases, EvalRuns, EvalResults | Prompts, usage tracking and accuracy tests |
 | System | AuditLogs, DevOutbox, NewsletterSubscribers, SchemaVersions | Audit trail, email log, subscribers, database versions |
 
-## 7. Architecture answers
+## 7. Most important APIs and tables
+
+Swagger lists 151 Tour Operations routes and 92 AI Travel routes. These are the ones to explain first. All paths start with `/api/v1`.
+
+### Shared APIs (both apps)
+
+| Method and path | Purpose |
+|---|---|
+| `POST /auth/register` | Create a customer account |
+| `POST /auth/login` | Sign in and receive a token |
+| `POST /auth/refresh` | Renew the session from the refresh cookie |
+| `POST /auth/forgot-password`, `POST /auth/reset-password` | Password reset |
+| `GET /auth/me` | The signed-in user |
+| `GET /navigation/me` | Menus allowed for the user's role |
+| `GET /public/settings` | Public site settings |
+| `GET /admin/users`, `PUT /admin/users/{id}/roles` | Manage staff and their roles |
+| `POST /admin/users/access-requests/{id}` | Decide a staff access request |
+
+### Tour Operations APIs
+
+| Area | Method and path | Purpose |
+|---|---|---|
+| Catalog | `GET /catalog/tours`, `GET /catalog/tours/{code}` | Search tours and open one |
+| Catalog | `GET /discover/compare` | Compare tours |
+| Tour booking | `POST /bookings/holds` | Hold seats while the customer books |
+| Tour booking | `POST /bookings` | Create a booking from the hold |
+| Tour booking | `GET /my/bookings`, `POST /my/bookings/{id}/cancel` | Customer bookings and cancellation |
+| Travel services | `GET /travel/search` | Search hotels, flights, buses and taxis |
+| Travel services | `POST /travel/bookings` | Book a travel service |
+| Travel services | `POST /travel/my/bookings/{id}/cancel` | Cancel a travel service booking |
+| Payments | `GET /payments/summary` | Amount paid and balance |
+| Payments | `POST /payments/checkout` | Start an ECPay payment |
+| Payments | `POST /payments/{tradeNo}/refresh` | Re-check a payment with ECPay |
+| Payments | `POST /payments/ecpay/result`, `POST /payments/ecpay/notify` | ECPay results. These are hidden from Swagger |
+| Operations | `GET /ops/dashboard` | Admin business numbers |
+| Operations | `GET /ops/bookings`, `GET /ops/bookings/{id}` | Staff booking list and detail |
+| Operations | `POST /ops/bookings/{id}/decision` | Approve or reject a booking |
+| Operations | `POST /ops/bookings/{id}/cancel` | Staff cancellation |
+| Operations | `POST /ops/bookings/{id}/refunds` | Issue a refund |
+| Operations | `GET /ops/approvals/inbox`, `POST /ops/approvals/{id}/act` | Approval inbox and decisions |
+| Operations | `GET /ops/payments` | Every payment transaction |
+| Operations | `GET /ops/services/bookings` | Staff list of travel service bookings |
+
+### AI Travel APIs
+
+| Area | Method and path | Purpose |
+|---|---|---|
+| Assistant | `POST /assistant/chat` | One conversation turn with live results |
+| Assistant | `POST /assistant/prepare` | Prepare a booking at the live price |
+| Bookings | `GET /my/bookings`, `POST /my/bookings/{id}/cancel` | Traveler bookings and cancellation |
+| Payments | `POST /my/bookings/{id}/checkout` | Start an ECPay payment |
+| Payments | `POST /payments/{tradeNo}/refresh` | Re-check a payment with ECPay |
+| Payments | `POST /payments/ecpay/result`, `POST /payments/ecpay/notify` | ECPay results. These are hidden from Swagger |
+| Staff | `GET /aiops/reservations` | Every assistant booking |
+| Staff | `GET /aiops/payments` | Every payment attempt |
+| Staff | `GET /aiops/dashboard` | Admin overview |
+| Trip planning | `POST /trips`, `GET /my/trips` | Create and list trip plans |
+| Disruption recovery | `POST /aiops/simulations`, `POST /aiops/simulations/{id}/proposal` | Test a disruption and propose a new plan |
+| Disruption recovery | `POST /aiops/proposals/{id}/decision` | Staff approve or reject the proposal |
+| Documents | `POST /aiops/documents`, `POST /aiops/documents/{id}/review` | Upload a document and review its fields |
+| AI quality | `POST /aiops/evals/run`, `GET /aiops/ai-usage` | Run accuracy tests and track AI usage |
+
+### Most important tables
+
+| App | Table | Why it matters |
+|---|---|---|
+| Both | Users | Every staff and customer account |
+| Both | Roles, Permissions, RolePermissions | Who can do what |
+| Both | Menus, MenuPermissions | Menus come from the database by role |
+| Both | AuditLogs | Record of important actions |
+| Sanpu Travel | Tours, Departures | What is sold, with dates, price and seats |
+| Sanpu Travel | InventoryHolds | Stops two customers buying the same last seat |
+| Sanpu Travel | Bookings, BookingStatusHistory | Tour bookings and every status change |
+| Sanpu Travel | TravelServices, ServiceInventory, ServiceBookings | Hotels, flights, buses, taxis and their bookings |
+| Sanpu Travel | PaymentIntents | Every gateway attempt: paid, pending or failed |
+| Sanpu Travel | Payments, ServicePayments, Refunds | Money received and returned |
+| Sanpu Travel | WorkflowDefinitions, WorkflowSteps, ApprovalRequests, ApprovalActions | Approval rules and decisions |
+| AI Travel | Reservations | Bookings made through the assistant |
+| AI Travel | ReservationPayments | Every ECPay attempt on those bookings |
+| AI Travel | Trips, ItineraryVersions, ItineraryItems | Trip plans and their versions |
+| AI Travel | DisruptionScenarios, Simulations, RecoveryProposals | Disruption testing and staff-approved plan changes |
+| AI Travel | AiUsageLogs, EvalCases, EvalRuns, EvalResults | AI usage and accuracy |
+
+## 8. Architecture answers
 
 | Question | Answer |
 |---|---|
@@ -226,7 +309,7 @@ A booking is confirmed automatically when it is fully paid through ECPay. The AI
 | AI safety | The AI can prepare a booking but can never pay or confirm it |
 | Payments | ECPay sandbox. The signature is checked, then the trade is confirmed with ECPay server to server |
 
-## 8. Known limits
+## 9. Known limits
 
 Say these plainly if asked:
 
