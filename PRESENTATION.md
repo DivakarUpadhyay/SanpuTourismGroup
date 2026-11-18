@@ -330,26 +330,98 @@ Swagger lists 151 Tour Operations routes and 92 AI Travel routes. These are the 
 | Documents | `POST /aiops/documents`, `POST /aiops/documents/{id}/review` | Upload a document and review its fields |
 | AI quality | `POST /aiops/evals/run`, `GET /aiops/ai-usage` | Run accuracy tests and track AI usage |
 
-### Most important tables
+### Important database tables
 
-| App | Table | Why it matters |
-|---|---|---|
-| Both | Users | Every staff and customer account |
-| Both | Roles, Permissions, RolePermissions | Who can do what |
-| Both | Menus, MenuPermissions | Menus come from the database by role |
-| Both | AuditLogs | Record of important actions |
-| Sanpu Travel | Tours, Departures | What is sold, with dates, price and seats |
-| Sanpu Travel | InventoryHolds | Stops two customers buying the same last seat |
-| Sanpu Travel | Bookings, BookingStatusHistory | Tour bookings and every status change |
-| Sanpu Travel | TravelServices, ServiceInventory, ServiceBookings | Hotels, flights, buses, taxis and their bookings |
-| Sanpu Travel | PaymentIntents | Every gateway attempt: paid, pending or failed |
-| Sanpu Travel | Payments, ServicePayments, Refunds | Money received and returned |
-| Sanpu Travel | WorkflowDefinitions, WorkflowSteps, ApprovalRequests, ApprovalActions | Approval rules and decisions |
-| AI Travel | Reservations | Bookings made through the assistant |
-| AI Travel | ReservationPayments | Every ECPay attempt on those bookings |
-| AI Travel | Trips, ItineraryVersions, ItineraryItems | Trip plans and their versions |
-| AI Travel | DisruptionScenarios, Simulations, RecoveryProposals | Disruption testing and staff-approved plan changes |
-| AI Travel | AiUsageLogs, EvalCases, EvalRuns, EvalResults | AI usage and accuracy |
+Start with the **Must explain** tables. Use the others if the interviewer asks for more detail.
+
+#### Shared tables (in both databases)
+
+| Priority | Table | What it is used for | Key columns |
+|---|---|---|---|
+| Must explain | `Users` | Every staff and customer account, with the hashed password, lock status and customer or staff type | Email, PasswordHash, UserType, IsActive, IsLocked |
+| Must explain | `Roles` | Job roles such as system admin, finance or traveler | RoleKey, RoleName |
+| Must explain | `Permissions` | Each individual action the system can allow, such as approving a booking | PermissionKey, ModuleKey, ActionKey |
+| Must explain | `UserRoles` | Links each user to their roles | UserId, RoleId |
+| Must explain | `RolePermissions` | Links each role to the actions it may perform | RoleId, PermissionId |
+| Must explain | `Menus` | Builds the admin and customer menus from the database | Title, RoutePath, ParentMenuId, ApplicationArea |
+| Must explain | `MenuPermissions` | Decides which roles can see each menu | MenuId, PermissionId |
+| Must explain | `AuditLogs` | Records who did what and when | ActorUserId, Action, EntityType, EntityId, OccurredAtUtc |
+| If asked | `RefreshTokens` | Keeps users signed in safely and lets sessions be revoked | UserId, FamilyId, TokenHash, ExpiresAtUtc, RevokedAtUtc |
+| If asked | `AppSettings` | Business settings that can change without new code, such as the deposit percentage | SettingKey, SettingValue, ValueType |
+| If asked | `ContentTemplates` | Email and content templates | TemplateKey, Subject, Body |
+| If asked | `DevOutbox` | A copy of each generated email, used to check notifications | ToAddress, Subject, CreatedAtUtc |
+
+#### Sanpu Travel (`SanpuErp`)
+
+| Priority | Area | Table | What it is used for | Key columns |
+|---|---|---|---|---|
+| Must explain | Tours | `Tours` | The tour products customers can buy | Code, Title, Days, BasePrice, IsPublished |
+| Must explain | Tours | `Departures` | Each tour date, with its price and seats | TourId, DepartureDate, Capacity, SeatsSold, SeatsHeld, Price |
+| Must explain | Tour booking | `InventoryHolds` | Holds seats for a short time so two customers cannot buy the same last seat | DepartureId, UserId, Pax, ExpiresAtUtc, Status |
+| Must explain | Tour booking | `Bookings` | The main tour booking record | BookingRef, CustomerUserId, DepartureId, TotalAmount, Status, PaymentStatus, AmountPaid |
+| Must explain | Tour booking | `BookingStatusHistory` | Every status change on a booking | BookingId, FromStatus, ToStatus, ActorUserId, Comment |
+| Must explain | Travel services | `TravelServices` | Hotels, flights, buses and taxis | Code, Kind, Name, FromPlaceId, ToPlaceId, BasePrice |
+| Must explain | Travel services | `ServiceInventory` | Daily availability and price for each service | ServiceId, ServiceDate, Capacity, Sold, Held, Price |
+| Must explain | Travel services | `ServiceBookings` | Hotel, flight, bus and taxi bookings | BookingRef, ServiceId, StartDate, TotalAmount, Status, PaymentStatus |
+| Must explain | Payments | `PaymentIntents` | Every payment attempt sent to ECPay: paid, pending or failed | MerchantTradeNo, OrderType, OrderRef, Mode, Amount, Status, ProviderTradeNo |
+| Must explain | Payments | `Payments` | Money received for tour bookings | BookingId, Amount, Provider, ProviderRef, Method |
+| Must explain | Payments | `ServicePayments` | Money received for travel service bookings | ServiceBookingId, Amount, Mode, Provider, ProviderRef |
+| Must explain | Payments | `Refunds` | Money returned to customers | RefundRef, BookingId, Amount, Reason, Status |
+| Must explain | Approvals | `WorkflowDefinitions` | The approval processes the business uses | WorkflowKey, Version, EntityType, Name |
+| Must explain | Approvals | `WorkflowSteps` | Who approves each step, under what condition and by when | WorkflowId, StepNo, ApproverRoleId, ConditionType, SlaHours |
+| Must explain | Approvals | `ApprovalRequests` | Each item waiting for approval | EntityType, EntityRef, Amount, CurrentStepNo, Status |
+| Must explain | Approvals | `ApprovalActions` | Each approve, reject or delegate decision | ApprovalRequestId, ActorUserId, Decision, Comment |
+| If asked | Tours | `Destinations` | Destination pages and travel guides | Code, Name, Region, Overview, BestTime |
+| If asked | Travel services | `Places` | Cities, airports and stations used for routes | Code, Name, Kind, City |
+| If asked | Suppliers | `Suppliers` | Hotels, transport companies and other partners | Code, Name, SupplierType, ConnectionStatus |
+| If asked | Suppliers | `DepartureCosts` | What each tour date costs the business | DepartureId, SupplierId, CostType, Amount |
+| If asked | Suppliers | `SupplierStatements` | Amounts suppliers say they are owed | SupplierId, Period, Amount |
+| If asked | Suppliers | `Reconciliations` | Compares Sanpu's amount with the supplier's amount | SupplierId, Period, OurAmount, SupplierAmount, Difference, Status |
+| If asked | Suppliers | `IntegrationEvents` | Supplier messages, with protection against duplicates | SupplierId, EventType, IdempotencyKey, Status, Attempts |
+| If asked | Operations | `StaffTasks` | Work assigned to staff | Title, TaskType, AssignedUserId, Status, Priority, DueAtUtc |
+| If asked | Operations | `GroupPlans` | Group trip cost, revenue and margin simulations | DepartureId, ProjectedCost, ProjectedRevenue, ProjectedMarginPct |
+| If asked | Marketing | `Promotions` | Banners and offers on the website | Title, Placement, CouponCode, StartsAtUtc, EndsAtUtc |
+| If asked | Marketing | `Coupons` | Discount codes and their limits | Code, DiscountType, DiscountValue, UsageLimit |
+| If asked | Marketing | `CouponRedemptions` | Each time a customer uses a coupon | CouponId, CustomerUserId, OrderRef, DiscountAmount |
+| If asked | Content | `Articles` | News and blog posts | Kind, Title, Body, Status, WrittenBy, PublishedAtUtc |
+| If asked | Content | `ArticleBotSchedules` | When the AI writer creates news and blog posts | Kind, IsEnabled, Days, TimeLocal, AutoPublish |
+| If asked | Customer care | `ContactRequests` | Messages from the contact form | ContactRef, Name, Email, Topic, Status |
+| If asked | Customer care | `HelpArticles` | Help center questions and answers | Category, Question, Answer, IsPublished |
+
+#### Sanpu AI Travel (`SanpuAiOps`)
+
+| Priority | Area | Table | What it is used for | Key columns |
+|---|---|---|---|---|
+| Must explain | Assistant booking | `Reservations` | Bookings prepared by the AI assistant and paid by the traveler | Ref, TravelerUserId, Kind, ItemName, Total, PaidAmount, Status, ExpiresAtUtc |
+| Must explain | Assistant booking | `ReservationPayments` | Every ECPay attempt on those bookings | MerchantTradeNo, ReservationId, Mode, Amount, Status, ProviderTradeNo |
+| Must explain | Trip planning | `Trips` | A traveler's trip plan and preferences | TripRef, TravelerUserId, StartDate, Days, Pax, BudgetPerPax, Status |
+| Must explain | Trip planning | `ItineraryVersions` | Each saved version of a trip plan | TripId, VersionNo, Source, ProposalId |
+| Must explain | Trip planning | `ItineraryItems` | The day-by-day activities in a version | VersionId, DayNo, StartTime, Title, Category, Status |
+| Must explain | Disruption recovery | `DisruptionScenarios` | Problems to test, such as a delay or closure | Code, Name, AffectedCategories, Effect, DelayMinutes |
+| Must explain | Disruption recovery | `Simulations` | The result of testing a disruption on a trip | TripId, VersionId, ScenarioId, ImpactJson, ImpactCount |
+| Must explain | Disruption recovery | `RecoveryProposals` | The suggested plan change, which staff approve or reject | ProposalRef, TripId, Status, ChangesJson, Explanation, CostImpactPerPax, DecidedBy |
+| Must explain | AI control | `AiUsageLogs` | Each AI call, with its tokens, cost, speed and result | Feature, Provider, Model, InputTokens, OutputTokens, CostUsd, LatencyMs, Outcome |
+| If asked | Trip planning | `ItineraryTemplates` | Ready-made trip plans | Code, Name, RegionId, Days, Pace |
+| If asked | Trip planning | `TemplateItems` | The activities inside a ready-made plan | TemplateId, DayNo, StartTime, PlaceId |
+| If asked | Trip planning | `Regions` | Travel regions | Code, Name |
+| If asked | Trip planning | `Places` | Attractions and stops, with opening times and access details | Code, Name, Category, OpenTime, CloseTime, WheelchairAccessible |
+| If asked | Disruption recovery | `TravelConstraints` | Rules that every proposed plan must follow | Code, Name, RuleType, Value |
+| If asked | Documents | `Documents` | Uploaded travel documents and their review status | DocumentRef, DocType, Status, TripId, RedactionCount, ReviewedBy |
+| If asked | Documents | `DocumentFields` | Details extracted from a document, with a confidence score | DocumentId, FieldName, Value, Confidence, ReviewedValue |
+| If asked | AI control | `PromptTemplates` | Versioned instructions given to the AI | PromptKey, Version, Body, IsActive |
+| If asked | AI control | `EvalCases` | Test questions used to check AI accuracy | Code, Name, InputJson, ExpectedJson |
+| If asked | AI control | `EvalRuns` | The overall score of each accuracy test | RunAtUtc, Total, Passed, GroundingScore, UsedModel |
+| If asked | AI control | `EvalResults` | The pass or fail result for each test question | RunId, CaseId, Passed, Detail, HumanFeedback |
+
+#### How the main tables connect
+
+| Flow | Tables, in order |
+|---|---|
+| Sign-in and access | `Users` → `UserRoles` → `Roles` → `RolePermissions` → `Permissions` → `MenuPermissions` → `Menus` |
+| Tour booking | `Tours` → `Departures` → `InventoryHolds` → `Bookings` → `PaymentIntents` → `Payments` → `ApprovalRequests` → `ApprovalActions` → `BookingStatusHistory` |
+| Hotel, flight, bus or taxi booking | `TravelServices` → `ServiceInventory` → `ServiceBookings` → `PaymentIntents` → `ServicePayments` |
+| AI assistant booking | `Reservations` → `ReservationPayments` → `Reservations` updated after ECPay confirms payment |
+| Disruption recovery | `Trips` → `ItineraryVersions` → `ItineraryItems` → `DisruptionScenarios` → `Simulations` → `RecoveryProposals` → new `ItineraryVersions` after staff approval |
 
 ## 8. Ready-to-use API requests
 
